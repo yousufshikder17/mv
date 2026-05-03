@@ -1,0 +1,15 @@
+node_modules/
+.env
+
+# Build outputs
+dist/
+build/
+
+# Misc
+.DS_Store
+npm-debug.log*
+
+# Ignore ONLY database dumps/backups (not migrations)
+# If you save backups in a specific folder, list that here instead
+backup_*.sql
+*.bak

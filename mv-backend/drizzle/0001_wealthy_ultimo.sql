@@ -1,0 +1,1 @@
+ALTER TABLE "watchlist_item" ADD CONSTRAINT "watchlist_item_user_id_movie_id_unique" UNIQUE("user_id","movie_id");
