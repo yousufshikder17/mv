@@ -1,0 +1,55 @@
+/* Shared styles for LoginPage & RegisterPage */
+.page {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  position: relative; overflow: hidden;
+}
+
+/* Ambient glow */
+.glow {
+  position: absolute; top: -10%; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(212,168,83,.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.card {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 420px;
+  background: var(--c-surface); border: 1px solid var(--c-line);
+  border-radius: 18px; padding: 40px 36px 36px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.35);
+}
+
+/* Brand */
+.brand {
+  display: flex; align-items: baseline; gap: 5px;
+  font-family: var(--ff-display); font-size: 20px; font-weight: 500;
+  margin-bottom: 28px;
+}
+.brandMark { color: var(--c-accent); font-size: 16px; }
+.brandName  { font-style: italic; }
+
+.heading {
+  font-family: var(--ff-display);
+  font-size: 28px; font-weight: 400; letter-spacing: -.025em;
+  margin: 0 0 8px;
+}
+.sub { font-size: 14px; color: var(--c-muted); margin: 0 0 28px; }
+
+.form { display: flex; flex-direction: column; gap: 16px; }
+
+.switchLink {
+  font-size: 13.5px; color: var(--c-muted); text-align: center;
+  margin: 22px 0 0;
+}
+.switchLink a {
+  color: var(--c-accent); font-weight: 500;
+  transition: opacity .15s;
+}
+.switchLink a:hover { opacity: .8; }
+
+@media (max-width: 480px) {
+  .card { padding: 32px 22px 28px; border-radius: 14px; }
+}

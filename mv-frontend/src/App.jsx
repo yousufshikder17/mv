@@ -1,0 +1,72 @@
+import { useState, useEffect } from 'react'
+import { Routes, Route, useLocation } from 'react-router-dom'
+import Navbar         from './components/layout/Navbar.jsx'
+import ProtectedRoute from './components/layout/ProtectedRoute.jsx'
+import Toast          from './components/ui/Toast.jsx'
+import LandingPage    from './pages/LandingPage.jsx'
+import LoginPage      from './pages/LoginPage.jsx'
+import RegisterPage   from './pages/RegisterPage.jsx'
+import WatchlistPage  from './pages/WatchlistPage.jsx'
+import { useToast }   from './hooks/useToast.js'
+
+// Pages that hide the Navbar
+const BARE_ROUTES = ['/login', '/register']
+
+export default function App() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('mv_theme') ?? 'dark')
+  const { toast, showToast } = useToast()
+  const { pathname } = useLocation()
+
+  // Apply theme to root element
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('mv_theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
+  const showNav = !BARE_ROUTES.includes(pathname)
+
+  return (
+    <>
+      {showNav && (
+        <Navbar onThemeToggle={toggleTheme} theme={theme} />
+      )}
+
+      <Routes>
+        <Route path="/"         element={<LandingPage />} />
+        <Route path="/login"    element={<LoginPage    showToast={showToast} />} />
+        <Route path="/register" element={<RegisterPage showToast={showToast} />} />
+        <Route
+          path="/watchlist"
+          element={
+            <ProtectedRoute>
+              <WatchlistPage showToast={showToast} />
+            </ProtectedRoute>
+          }
+        />
+        {/* 404 fallback */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+
+      {/* Global toast */}
+      {toast && <Toast message={toast.message} type={toast.type} />}
+    </>
+  )
+}
+
+function NotFound() {
+  return (
+    <main style={{
+      minHeight: '100vh', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', gap: 16,
+    }}>
+      <p style={{ fontFamily: 'var(--ff-mono)', fontSize: 11, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--c-muted)' }}>
+        404
+      </p>
+      <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: 48, letterSpacing: '-.03em', fontWeight: 400, margin: 0 }}>
+        Page not found
+      </h1>
+      <a href="/" className="btn-ghost" style={{ marginTop: 8 }}>← Back to home</a>
+    </main>
+  )
+}

@@ -1,0 +1,20 @@
+.stars {
+  display: flex; align-items: center; gap: 2px;
+}
+.star {
+  background: none; border: none; padding: 1px;
+  color: var(--c-line); font-size: 16px; line-height: 1;
+  transition: color .1s, transform .1s;
+}
+.stars:not(.readonly) .star:hover { color: var(--c-accent); transform: scale(1.15); }
+.star.filled { color: var(--c-accent); }
+.star:disabled { cursor: default; }
+
+.label {
+  font-family: var(--ff-mono); font-size: 11px;
+  color: var(--c-muted); margin-left: 6px;
+}
+
+/* sizes */
+.sm .star { font-size: 13px; }
+.lg .star { font-size: 22px; }

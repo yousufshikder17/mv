@@ -1,0 +1,60 @@
+.closeBtn {
+  position: absolute; top: 14px; right: 14px; z-index: 2;
+  width: 34px; height: 34px; border-radius: 999px;
+  background: rgba(0,0,0,.55); color: #fff; border: 0; font-size: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; backdrop-filter: blur(8px);
+  transition: background .15s;
+}
+.closeBtn:hover { background: rgba(0,0,0,.8); }
+
+.backdropPoster { line-height: 0; }
+.backdropImg { border-radius: 0 !important; }
+
+.body { padding: 26px 32px 48px; }
+
+.eyebrow {
+  font-family: var(--ff-mono); font-size: 11px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--c-muted); margin: 0 0 8px;
+}
+.title {
+  font-family: var(--ff-display);
+  font-size: clamp(28px, 5vw, 44px); line-height: 1.02;
+  letter-spacing: -.025em; font-weight: 400;
+  margin: 0 0 14px; text-wrap: balance;
+}
+.genres { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+
+.overview {
+  font-size: 14.5px; line-height: 1.6; color: var(--c-fg); opacity: .82;
+  text-wrap: pretty; margin: 0;
+}
+
+.divider { border: 0; border-top: 1px solid var(--c-line); margin: 24px 0; }
+
+.section { margin-bottom: 22px; }
+.sectionLabel {
+  font-family: var(--ff-mono); font-size: 11px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--c-muted); margin: 0 0 12px;
+}
+
+.ratingNum {
+  font-family: var(--ff-display); font-size: 13px; color: var(--c-muted);
+  margin: 8px 0 0;
+}
+
+.statusRow { display: flex; gap: 6px; flex-wrap: wrap; }
+.statusChip {
+  padding: 7px 14px; border-radius: 999px;
+  border: 1px solid var(--c-line); background: transparent; color: var(--c-fg);
+  font-size: 13px; cursor: pointer;
+  transition: all .15s;
+}
+.statusChip:hover { border-color: var(--c-fg); }
+.statusActive {
+  background: var(--c-accent); color: var(--c-bg); border-color: var(--c-accent);
+}
+
+.actions { display: flex; gap: 10px; margin-top: 24px; }
+.bigBtn { flex: 1; padding: 14px 20px; border-radius: 10px; font-size: 14px; }
+.removeBtn { padding: 14px 16px; border-radius: 10px; }
