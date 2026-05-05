@@ -1,31 +1,30 @@
 import express from "express";
 import { config } from 'dotenv';
-import { connectDB } from "./config/db.js"; // Removed disconnectDB
-
+import { connectDB } from "./config/db.js";
 import movieRoutes from "./routes/movieRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
 import watchlistRoutes from "./routes/watchlistRoutes.js"
+import { notFound, errorHandler } from "./middleware/errorMiddleware.js"; // Import your handlers
 
 config();
-// Initialize the database connection check
 connectDB();
 
 const app = express();
 
-//Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Important: Add middleware to parse JSON bodies 
-// (Prisma tutorials often skip this until later, but you'll need it for Drizzle)
-app.use(express.json());
 
 // API Routes
 app.use("/movies", movieRoutes);
 app.use("/auth", authRoutes);
 app.use("/watchlist", watchlistRoutes);
 
-const PORT = 5001;
+// Error Handling Middleware (MUST be after routes)
+app.use(notFound);      // Catches 404s
+app.use(errorHandler);  // Catches all other errors
+
+// Use process.env.PORT for hosting
+const PORT = process.env.PORT || 5001;
 const server = app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
 });
