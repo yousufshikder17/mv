@@ -20,18 +20,26 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// ── Response interceptor: handle 429 Rate Limit globally ────────
+// ── Response interceptor: handle global error codes ─────────────
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 429) {
-      // Dispatch a custom event so Toast can pick it up instead of a raw alert
+    const status = error.response?.status
+
+    if (status === 401) {
+      localStorage.removeItem('mv_token')
+      localStorage.removeItem('mv_user')
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    } else if (status === 429) {
       window.dispatchEvent(
         new CustomEvent('mv:toast', {
           detail: { message: '⚠️ Too many requests — please slow down.', type: 'error' },
         })
       )
     }
+
     return Promise.reject(error)
   }
 )

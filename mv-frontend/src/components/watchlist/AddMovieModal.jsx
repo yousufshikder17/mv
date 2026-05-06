@@ -17,7 +17,7 @@ export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
     if (!open) return
     setLoading(true)
     getAllMovies()
-      .then((res) => setMovies(res.data ?? []))
+      .then((res) => setMovies(Array.isArray(res.data) ? res.data : []))
       .catch(() => showToast('Could not load movies from server.', 'error'))
       .finally(() => setLoading(false))
   }, [open]) // eslint-disable-line

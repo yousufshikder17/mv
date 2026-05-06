@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 /**
  * useToast — manages a single toast notification
@@ -6,11 +6,19 @@ import { useState, useEffect, useCallback } from 'react'
  */
 export function useToast() {
   const [toast, setToast] = useState(null) // { message, type }
+  const timerRef = useRef(null)
 
   const showToast = useCallback((message, type = 'default') => {
+    if (timerRef.current) clearTimeout(timerRef.current)
     setToast({ message, type })
-    const timer = setTimeout(() => setToast(null), 3500)
-    return () => clearTimeout(timer)
+    timerRef.current = setTimeout(() => {
+      setToast(null)
+      timerRef.current = null
+    }, 3500)
+  }, [])
+
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current)
   }, [])
 
   // Listen for the 429 event fired by api.js interceptor

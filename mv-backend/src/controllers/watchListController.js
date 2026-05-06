@@ -8,10 +8,16 @@ export const getUserWatchlist = async (req, res) => {
     const userId = req.user.id; // Deriving identity from the verified JWT
 
     try {
-        const watchlist = await db
-            .select()
+        const rows = await db
+            .select({
+                item: watchlistItems,
+                movie: moviesTable,
+            })
             .from(watchlistItems)
+            .leftJoin(moviesTable, eq(watchlistItems.movieId, moviesTable.id))
             .where(eq(watchlistItems.userId, userId));
+
+        const watchlist = rows.map(({ item, movie }) => ({ ...item, movie }));
 
         return res.status(200).json({
             status: "Success",

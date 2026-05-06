@@ -1,6 +1,7 @@
+import 'dotenv/config';
 import express from "express";
 import cors from "cors";
-import { config } from 'dotenv';
+import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db.js";
 import apiLimiter from "./middleware/rateLimiter.js"; // 1. Import the limiter
 import movieRoutes from "./routes/movieRoutes.js"
@@ -8,7 +9,6 @@ import authRoutes from "./routes/authRoutes.js"
 import watchlistRoutes from "./routes/watchlistRoutes.js"
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
-config();
 connectDB();
 
 const app = express();
@@ -25,6 +25,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // 3. Apply the limiter HERE (Global shield)
 app.use(apiLimiter);
