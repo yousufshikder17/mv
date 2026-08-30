@@ -60,7 +60,9 @@ const login = async (req, res) => {
     //Generate JWT token
     const token = generateToken(user.id, res);
 
-    res.status(201).json({
+    // 200, not 201: logging in creates no resource. Registration below is the
+    // only endpoint here that does.
+    res.status(200).json({
         user: {
             id: user.id,
             name: user.name,
@@ -76,7 +78,7 @@ const logout = async (req, res) => {
         expires: new Date(0),
     });
     res.status(200).json({
-        status: "sucess",
+        status: "success",
         message: "Logged out successfully",
     });
 };
