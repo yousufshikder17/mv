@@ -29,12 +29,15 @@ export const authMiddleware = async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        //return res.status(401).json({ message: "Unauthorized: Invalid or expired token" });
-        // This will tell you if it's "invalid signature", "jwt expired", etc.
-        console.log("FULL AUTH ERROR:", error);
+        // Detail stays server-side. Telling a caller *why* verification failed
+        // ("invalid signature" vs "jwt expired") is a hint we don't owe them,
+        // and there is no identity to authorise here — verification is what
+        // just failed — so this can't be gated by role.
+        console.error("Auth failure:", error.message);
+
         return res.status(401).json({
-            message: "Debug Error",
-            detail: error.message
+            message: "Unauthorized: Invalid or expired token",
+            ...(process.env.NODE_ENV === "development" && { detail: error.message }),
         });
     }
 }
