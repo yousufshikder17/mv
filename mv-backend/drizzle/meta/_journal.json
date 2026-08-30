@@ -15,6 +15,13 @@
       "when": 1777822467136,
       "tag": "0001_wealthy_ultimo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785609570851,
+      "tag": "0002_melodic_starfox",
+      "breakpoints": true
     }
   ]
 }

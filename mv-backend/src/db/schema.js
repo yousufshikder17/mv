@@ -13,16 +13,27 @@ export const users = pgTable('user', {
 });
 
 // 3. Movie Table
+// Shared catalogue. Rows sourced from TMDB are keyed by tmdbId so two users
+// adding the same film resolve to one row (which is what makes the
+// unique(userId, movieId) constraint on watchlist_item meaningful).
+//
+// Everything except tmdbId is a CACHE of TMDB content, not our data — TMDB's
+// API terms forbid retaining it beyond 6 months. refreshedAt is the stamp that
+// makes expiry enforceable; see refreshIfStale in movieController.js.
 export const movies = pgTable('movie', {
     id: uuid('id').primaryKey().defaultRandom(),
+    tmdbId: integer('tmdb_id').unique(),
     title: text('title').notNull(),
     overview: text('overview'),
-    releaseYear: integer('release_year').notNull(),
+    // Nullable: TMDB carries announced-but-unreleased films with an empty
+    // release_date, and we'd rather store those than reject them.
+    releaseYear: integer('release_year'),
     genres: text('genres').array().notNull().default([]),
     runtime: integer('runtime'),
     posterUrl: text('poster_url'),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').defaultNow(),
+    refreshedAt: timestamp('refreshed_at').defaultNow(),
 });
 
 // 4. Watchlist Junction Table

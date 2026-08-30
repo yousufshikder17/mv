@@ -1,24 +1,28 @@
 import express from "express";
+import { authMiddleware } from '../middleware/authMiddleware.js';
+import { catchAsync } from '../middleware/catchAsyncMiddleware.js';
+import { validateRequest } from '../middleware/validateMiddleware.js';
+import { importMovieSchema } from '../validators/movieValidator.js';
+import {
+    searchTmdb,
+    importFromTmdb,
+    getAllMovies,
+    getMovieById,
+} from "../controllers/movieController.js";
 
-// Import Routes
+const router = express.Router();
 
-const router = express.Router()
+// Auth on everything: search proxies TMDB, and an open proxy would let anyone
+// burn our API quota.
+router.use(authMiddleware);
 
-router.get("/", (req, res) => {
-    res.json({ httpMethod: "get" })
-})
+// Must precede "/:id" or Express matches "search" as a uuid param.
+router.get("/search", catchAsync(searchTmdb));
 
-router.post("/", (req, res) => {
-    res.json({ httpMethod: "post" })
-})
+router.post("/import", validateRequest(importMovieSchema), catchAsync(importFromTmdb));
 
-router.put("/", (req, res) => {
-    res.json({ httpMethod: "put" })
-})
+router.get("/", catchAsync(getAllMovies));
 
-router.delete("/", (req, res) => {
-    res.json({ httpMethod: "delete" })
-})
+router.get("/:id", catchAsync(getMovieById));
 
 export default router;
-
