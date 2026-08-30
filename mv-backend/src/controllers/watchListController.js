@@ -2,127 +2,118 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '../config/db.js';
 import { movies as moviesTable, watchlistItems } from '../db/schema.js';
 
-// Use "export const" for a Named Export to resolve the SyntaxError
+// No try/catch in here. Every handler is wrapped in catchAsync at the route,
+// which forwards to errorMiddleware — and that is where the Postgres SQLSTATE
+// mappings live (23505 unique, 23503 foreign key, 22P02 malformed uuid).
+// Catching locally and returning a bare 500 made all three unreachable: a
+// request to DELETE /watchlist/not-a-uuid answered 500 when the mapping for it
+// was already written and sitting one layer up.
+//
+// Deliberate 404s and 400s below are business answers, not errors, so they stay.
 
 export const getUserWatchlist = async (req, res) => {
     const userId = req.user.id; // Deriving identity from the verified JWT
 
-    try {
-        const rows = await db
-            .select({
-                item: watchlistItems,
-                movie: moviesTable,
-            })
-            .from(watchlistItems)
-            .leftJoin(moviesTable, eq(watchlistItems.movieId, moviesTable.id))
-            .where(eq(watchlistItems.userId, userId));
+    const rows = await db
+        .select({
+            item: watchlistItems,
+            movie: moviesTable,
+        })
+        .from(watchlistItems)
+        .leftJoin(moviesTable, eq(watchlistItems.movieId, moviesTable.id))
+        .where(eq(watchlistItems.userId, userId));
 
-        const watchlist = rows.map(({ item, movie }) => ({ ...item, movie }));
+    const watchlist = rows.map(({ item, movie }) => ({ ...item, movie }));
 
-        return res.status(200).json({
-            status: "Success",
-            results: watchlist.length,
-            data: { watchlist }
-        });
-    } catch (error) {
-        console.error("Fetch Error:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
-    }
+    return res.status(200).json({
+        status: "Success",
+        results: watchlist.length,
+        data: { watchlist }
+    });
 };
-
 
 export const addToWatchlist = async (req, res) => {
     const { movieId, status, rating, notes } = req.body;
 
-    // SECURITY FIX: Pull userId from req.user (populated by authMiddleware)
-    // This prevents IDOR attacks where users could add to others' lists.
+    // Pull userId from req.user (populated by authMiddleware) rather than the
+    // body. Trusting a body-supplied userId is the classic IDOR: it would let
+    // any caller write into another user's list.
     const userId = req.user.id;
 
-    try {
-        // 1. Verify Movie Exists
-        const [movie] = await db
-            .select()
-            .from(moviesTable)
-            .where(eq(moviesTable.id, movieId))
-            .limit(1);
+    // 1. Verify Movie Exists
+    const [movie] = await db
+        .select()
+        .from(moviesTable)
+        .where(eq(moviesTable.id, movieId))
+        .limit(1);
 
-        if (!movie) {
-            return res.status(404).json({ error: "Movie not found" });
-        }
-
-        // 2. Check if already in Watchlist
-        const [exists] = await db
-            .select()
-            .from(watchlistItems)
-            .where(
-                and(
-                    eq(watchlistItems.userId, userId),
-                    eq(watchlistItems.movieId, movieId)
-                )
-            )
-            .limit(1);
-
-        if (exists) {
-            return res.status(400).json({ error: "Movie already in your watchlist" });
-        }
-
-        // 3. Insert using the secure userId
-        const [newItem] = await db
-            .insert(watchlistItems)
-            .values({
-                userId,
-                movieId,
-                status: status || 'PLANNED',
-                rating: rating || null,
-                notes: notes || null
-            })
-            .returning();
-
-        return res.status(201).json({
-            status: "Success",
-            data: { watchlistItem: newItem },
-        });
-
-    } catch (error) {
-        console.error("Database Error:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+    if (!movie) {
+        return res.status(404).json({ error: "Movie not found" });
     }
 
-};
+    // 2. Check if already in Watchlist.
+    // Advisory only — two concurrent requests can both pass this. The
+    // unique(user_id, movie_id) constraint is the actual guarantee, and its
+    // 23505 now reaches errorMiddleware, which answers 400 either way.
+    const [exists] = await db
+        .select()
+        .from(watchlistItems)
+        .where(
+            and(
+                eq(watchlistItems.userId, userId),
+                eq(watchlistItems.movieId, movieId)
+            )
+        )
+        .limit(1);
 
+    if (exists) {
+        return res.status(400).json({ error: "Movie already in your watchlist" });
+    }
+
+    // 3. Insert using the secure userId
+    const [newItem] = await db
+        .insert(watchlistItems)
+        .values({
+            userId,
+            movieId,
+            status: status || 'PLANNED',
+            rating: rating || null,
+            notes: notes || null
+        })
+        .returning();
+
+    return res.status(201).json({
+        status: "Success",
+        data: { watchlistItem: newItem },
+    });
+};
 
 export const removeFromWatchlist = async (req, res) => {
     const { id } = req.params; // The ID of the watchlist item from the URL
-    const userId = req.user.id; // From your authMiddleware
+    const userId = req.user.id; // From authMiddleware
 
-    try {
-        // We use 'and' to ensure the item belongs to the logged-in user
-        const result = await db
-            .delete(watchlistItems)
-            .where(
-                and(
-                    eq(watchlistItems.id, id),
-                    eq(watchlistItems.userId, userId)
-                )
+    // The userId in the WHERE is what makes this safe: a request for someone
+    // else's item matches no row and is indistinguishable from one that does
+    // not exist, so the response leaks nothing about other users' lists.
+    const result = await db
+        .delete(watchlistItems)
+        .where(
+            and(
+                eq(watchlistItems.id, id),
+                eq(watchlistItems.userId, userId)
             )
-            .returning();
+        )
+        .returning();
 
-        // If the array is empty, it means either the ID didn't exist 
-        // or the user didn't own that record.
-        if (result.length === 0) {
-            return res.status(404).json({ error: "Item not found or unauthorized" });
-        }
-
-        return res.status(200).json({
-            status: "Success",
-            message: "Item removed from watchlist",
-            deletedItem: result[0]
-        });
-
-    } catch (error) {
-        console.error("Delete Error:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+    if (result.length === 0) {
+        return res.status(404).json({ error: "Item not found or unauthorized" });
     }
+
+    return res.status(200).json({
+        status: "Success",
+        message: "Item removed from watchlist",
+        deletedItem: result[0]
+    });
 };
 
 export const updateWatchlistItem = async (req, res) => {
@@ -130,35 +121,32 @@ export const updateWatchlistItem = async (req, res) => {
     const { status, rating, notes } = req.body;
     const userId = req.user.id; // From authMiddleware
 
-    try {
-        const result = await db
-            .update(watchlistItems)
-            .set({
-                // Only update fields that are provided in the request
-                ...(status && { status }),
-                ...(rating !== undefined && { rating }),
-                ...(notes && { notes }),
-                updatedAt: new Date(), // Good practice for tracking changes
-            })
-            .where(
-                and(
-                    eq(watchlistItems.id, id),
-                    eq(watchlistItems.userId, userId)
-                )
+    const result = await db
+        .update(watchlistItems)
+        .set({
+            // Only update fields that are provided in the request.
+            // Tested against `undefined`, not truthiness: `notes: ""` is a
+            // request to clear the note, and a falsy check silently drops
+            // it, leaving the old text in place with a 200 response.
+            ...(status !== undefined && { status }),
+            ...(rating !== undefined && { rating }),
+            ...(notes !== undefined && { notes }),
+            updatedAt: new Date(), // Good practice for tracking changes
+        })
+        .where(
+            and(
+                eq(watchlistItems.id, id),
+                eq(watchlistItems.userId, userId)
             )
-            .returning();
+        )
+        .returning();
 
-        if (result.length === 0) {
-            return res.status(404).json({ error: "Item not found or unauthorized" });
-        }
-
-        return res.status(200).json({
-            status: "Success",
-            data: { watchlistItem: result[0] },
-        });
-
-    } catch (error) {
-        console.error("Update Error:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+    if (result.length === 0) {
+        return res.status(404).json({ error: "Item not found or unauthorized" });
     }
+
+    return res.status(200).json({
+        status: "Success",
+        data: { watchlistItem: result[0] },
+    });
 };
