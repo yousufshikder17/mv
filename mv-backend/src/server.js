@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { connectDB } from "./config/db.js";
+import { connectDB, disconnectDB } from "./config/db.js";
 import apiLimiter from "./middleware/rateLimiter.js"; // 1. Import the limiter
 import movieRoutes from "./routes/movieRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
@@ -44,11 +44,14 @@ const server = app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
 });
 
-// Simplified Error Handling 
-// (No disconnectDB needed because HTTP connections aren't persistent)
+// disconnectDB is a no-op under Neon HTTP but drains the pool when running
+// against a local Postgres, so shutdown is clean on either driver.
 process.on("unhandledRejection", (err) => {
     console.error("🚨 unhandledRejection:", err);
-    server.close(() => process.exit(1));
+    server.close(async () => {
+        await disconnectDB();
+        process.exit(1);
+    });
 });
 
 process.on("uncaughtException", (err) => {
@@ -56,7 +59,13 @@ process.on("uncaughtException", (err) => {
     process.exit(1);
 });
 
-process.on("SIGTERM", () => {
-    console.log("👋 SIGTERM received, shutting down gracefully...");
-    server.close(() => process.exit(0));
-});
+const shutdown = (signal) => {
+    console.log(`👋 ${signal} received, shutting down gracefully...`);
+    server.close(async () => {
+        await disconnectDB();
+        process.exit(0);
+    });
+};
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
