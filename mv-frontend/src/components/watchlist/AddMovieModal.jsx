@@ -1,49 +1,89 @@
-import { useState, useEffect } from 'react'
-import { addToWatchlist, getAllMovies } from '../../services/watchlistService.js'
+import { useState, useEffect, useRef } from 'react'
+import { addToWatchlist, searchMovies, importMovie } from '../../services/watchlistService.js'
 import styles from './AddMovieModal.module.css'
 
+const DEBOUNCE_MS = 350
+
 /**
- * AddMovieModal — searches movies from your PostgreSQL DB,
- * then posts to /watchlist to add the selected one.
+ * AddMovieModal — searches TMDB through our backend proxy, then imports the
+ * chosen film into our catalogue and adds it to the user's watchlist.
  */
 export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
-  const [movies,   setMovies]   = useState([])
-  const [query,    setQuery]    = useState('')
-  const [loading,  setLoading]  = useState(false)
-  const [adding,   setAdding]   = useState(null) // movieId being added
+  const [query,   setQuery]   = useState('')
+  const [results, setResults] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [adding,  setAdding]  = useState(null) // tmdbId being added
 
-  // Fetch full catalogue from DB on open
+  // Lets a newer keystroke cancel the request the previous one fired.
+  const abortRef = useRef(null)
+
+  // Debounced search. All state changes happen inside the timer rather than
+  // the effect body — synchronous setState in an effect cascades renders.
   useEffect(() => {
     if (!open) return
-    setLoading(true)
-    getAllMovies()
-      .then((res) => setMovies(Array.isArray(res.data) ? res.data : []))
-      .catch(() => showToast('Could not load movies from server.', 'error'))
-      .finally(() => setLoading(false))
-  }, [open]) // eslint-disable-line
+
+    const q = query.trim()
+
+    const timer = setTimeout(async () => {
+      if (!q) {
+        setResults([])
+        setLoading(false)
+        return
+      }
+
+      setLoading(true)
+      abortRef.current?.abort()
+      const controller = new AbortController()
+      abortRef.current = controller
+
+      try {
+        const res = await searchMovies(q, { signal: controller.signal })
+        setResults(res.data?.data ?? [])
+      } catch (err) {
+        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return
+        showToast(errorMessage(err, 'Search failed.'), 'error')
+        setResults([])
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
+      }
+    }, DEBOUNCE_MS)
+
+    return () => clearTimeout(timer)
+  }, [query, open]) // eslint-disable-line
+
+  // Reset on the way out, so the modal opens clean next time. Done here rather
+  // than in an effect keyed on `open` for the same cascading-render reason.
+  const handleClose = () => {
+    abortRef.current?.abort()
+    setQuery('')
+    setResults([])
+    setAdding(null)
+    setLoading(false)
+    onClose()
+  }
 
   // Close on Escape
   useEffect(() => {
     if (!open) return
-    const h = (e) => { if (e.key === 'Escape') onClose() }
+    const h = (e) => { if (e.key === 'Escape') handleClose() }
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
-  }, [open, onClose])
+  }) // no dep array: handleClose is re-created each render
 
-  const filtered = movies.filter((m) =>
-    m.title?.toLowerCase().includes(query.toLowerCase())
-  )
-
-  const handleAdd = async (movie) => {
-    setAdding(movie.id)
+  const handleAdd = async (film) => {
+    setAdding(film.tmdbId)
     try {
+      // Resolve the TMDB id to a row in our own catalogue first — /watchlist
+      // keys off our uuid, not TMDB's id.
+      const imported = await importMovie(film.tmdbId)
+      const movie = imported.data?.data?.movie
+
       await addToWatchlist({ movieId: movie.id, status: 'PLANNED' })
       showToast(`"${movie.title}" added to your watchlist!`, 'success')
       onAdded()
-      onClose()
+      handleClose()
     } catch (err) {
-      const msg = err.response?.data?.error ?? 'Could not add movie.'
-      showToast(msg, 'error')
+      showToast(errorMessage(err, 'Could not add movie.'), 'error')
     } finally {
       setAdding(null)
     }
@@ -51,13 +91,15 @@ export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
 
   if (!open) return null
 
+  const q = query.trim()
+
   return (
-    <div className="modal-overlay" id="add-movie-overlay" onClick={onClose}>
+    <div className="modal-overlay" id="add-movie-overlay" onClick={handleClose}>
       <div className="modal-card" id="add-movie-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className={styles.header}>
           <h3 className={styles.heading}>Add to Watchlist</h3>
-          <button className="icon-btn" onClick={onClose} id="add-movie-close" aria-label="Close">✕</button>
+          <button className="icon-btn" onClick={handleClose} id="add-movie-close" aria-label="Close">✕</button>
         </div>
 
         {/* Search */}
@@ -66,7 +108,7 @@ export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
           <input
             className="form-input"
             style={{ paddingLeft: '36px' }}
-            placeholder="Search your movie catalogue…"
+            placeholder="Search for a film…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
@@ -79,29 +121,39 @@ export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
           {loading && (
             <div className={styles.center}><div className="spinner" /></div>
           )}
-          {!loading && filtered.length === 0 && (
-            <p className={styles.empty}>
-              {query ? `No movies matching "${query}"` : 'No movies in your database yet.'}
-            </p>
+
+          {!loading && !q && (
+            <p className={styles.empty}>Start typing to search films.</p>
           )}
-          {!loading && filtered.map((movie) => (
-            <div key={movie.id} className={styles.resultRow} id={`movie-result-${movie.id}`}>
+
+          {!loading && q && results.length === 0 && (
+            <p className={styles.empty}>No films matching &ldquo;{q}&rdquo;</p>
+          )}
+
+          {!loading && results.map((film) => (
+            <div key={film.tmdbId} className={styles.resultRow} id={`movie-result-${film.tmdbId}`}>
+              {film.posterUrl ? (
+                <img src={film.posterUrl} alt="" className={styles.poster} loading="lazy" />
+              ) : (
+                <div className={styles.posterFallback} aria-hidden="true">◆</div>
+              )}
+
               <div className={styles.resultInfo}>
-                <p className={styles.resultTitle}>{movie.title}</p>
+                <p className={styles.resultTitle}>{film.title}</p>
                 <p className={styles.resultSub}>
-                  {movie.releaseYear}
-                  {movie.runtime ? ` · ${movie.runtime}m` : ''}
-                  {movie.genres?.length > 0 ? ` · ${movie.genres.slice(0,2).join(', ')}` : ''}
+                  {film.releaseYear ?? 'TBA'}
+                  {film.overview ? ` · ${film.overview.slice(0, 60)}…` : ''}
                 </p>
               </div>
+
               <button
                 className="btn-primary"
                 style={{ padding: '6px 14px', fontSize: '12.5px', flexShrink: 0 }}
-                onClick={() => handleAdd(movie)}
-                disabled={adding === movie.id}
-                id={`add-movie-btn-${movie.id}`}
+                onClick={() => handleAdd(film)}
+                disabled={adding === film.tmdbId}
+                id={`add-movie-btn-${film.tmdbId}`}
               >
-                {adding === movie.id ? '…' : '+ Add'}
+                {adding === film.tmdbId ? '…' : '+ Add'}
               </button>
             </div>
           ))}
@@ -109,4 +161,11 @@ export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
       </div>
     </div>
   )
+}
+
+// Controllers return { error }, but anything thrown lands in errorMiddleware
+// which returns { message } — check both so real messages aren't swallowed.
+function errorMessage(err, fallback) {
+  const data = err.response?.data
+  return data?.error ?? data?.message ?? fallback
 }

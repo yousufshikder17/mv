@@ -4,6 +4,7 @@ import WatchlistCard from '../components/watchlist/WatchlistCard.jsx'
 import WatchlistRow  from '../components/watchlist/WatchlistRow.jsx'
 import MovieDrawer   from '../components/watchlist/MovieDrawer.jsx'
 import AddMovieModal from '../components/watchlist/AddMovieModal.jsx'
+import TmdbCredit    from '../components/layout/TmdbCredit.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 import styles from './WatchlistPage.module.css'
 
@@ -271,6 +272,11 @@ export default function WatchlistPage({ showToast }) {
         onAdded={fetchWatchlist}
         showToast={showToast}
       />
+
+      {/* Required TMDB attribution — this page renders their data. */}
+      <footer className={styles.attribution}>
+        <TmdbCredit />
+      </footer>
     </div>
   )
 }

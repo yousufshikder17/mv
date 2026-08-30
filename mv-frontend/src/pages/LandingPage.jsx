@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import TmdbCredit from '../components/layout/TmdbCredit.jsx'
 import styles from './LandingPage.module.css'
 
 const FEATURES = [
@@ -135,6 +136,7 @@ export default function LandingPage() {
         <div className={styles.footerInner}>
           <span className={styles.footerLogo}>◆ <em>mv</em></span>
           <p className={styles.footerNote}>Personal film ledger — built for cinephiles.</p>
+          <TmdbCredit />
           {/* Ad slot placeholder */}
           <div className={styles.adSlot} id="footer-ad-slot" data-slot="ad">
             <span>Ad slot</span>

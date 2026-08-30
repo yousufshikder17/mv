@@ -1,0 +1,39 @@
+/* Deliberately understated — the terms require the TMDB mark to sit less
+   prominently than our own branding. */
+.credit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
+}
+
+.link:hover { opacity: 1; }
+
+.logo {
+  height: 14px;
+  width: auto;
+  display: block;
+}
+
+.wordmark {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--c-muted);
+}
+
+.notice {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--c-muted);
+  max-width: 46ch;
+}

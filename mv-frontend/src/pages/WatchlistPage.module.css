@@ -130,6 +130,12 @@
 .emptyIcon { font-size: 52px; opacity: .35; margin: 0; }
 .emptyMsg  { font-family: var(--ff-display); font-size: 20px; color: var(--c-muted); margin: 0; }
 
+.attribution {
+  padding: 28px 32px 40px;
+  border-top: 1px solid var(--c-line);
+  margin-top: 24px;
+}
+
 /* Responsive */
 @media (max-width: 720px) {
   .hero    { padding: 32px 18px 20px; }
