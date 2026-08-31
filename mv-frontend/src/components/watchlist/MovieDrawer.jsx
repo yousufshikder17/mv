@@ -152,7 +152,7 @@ export default function MovieDrawer({ item, movie, open, onClose, onUpdateRating
           {/* Per-season ratings. TV only. */}
           {type === 'tv' && movie.seasonCount > 0 && (
             <div className={styles.section}>
-              <SeasonRatings itemId={item.id} seasonCount={movie.seasonCount} showToast={showToast} />
+              <SeasonRatings key={item.id} itemId={item.id} seasonCount={movie.seasonCount} showToast={showToast} />
             </div>
           )}
 

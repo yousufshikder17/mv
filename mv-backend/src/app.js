@@ -6,6 +6,7 @@ import movieRoutes from "./routes/movieRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+import { mountSpa } from "./middleware/spa.js";
 
 // Building the app is separated from starting it so a test can mount this
 // with supertest without opening a socket or connecting to a database.
@@ -43,6 +44,11 @@ export const createApp = () => {
     app.use("/movies", movieRoutes);
     app.use("/auth", authRoutes);
     app.use("/watchlist", watchlistRoutes);
+
+    // Serves the built frontend when one exists, with per-item meta tags so
+    // shared links preview correctly. No-op in development, where Vite serves
+    // the frontend itself.
+    mountSpa(app);
 
     app.use(notFound);
     app.use(errorHandler);

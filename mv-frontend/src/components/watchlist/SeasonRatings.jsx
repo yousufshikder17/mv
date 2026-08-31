@@ -12,11 +12,12 @@ import styles from './SeasonRatings.module.css'
  */
 export default function SeasonRatings({ itemId, seasonCount, showToast }) {
   const [ratings, setRatings] = useState({})   // seasonNumber -> rating
+  // Starts true: this component is remounted per tracked item (see the key
+  // in MovieDrawer), so it always begins by loading.
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let alive = true
-    setLoading(true)
     getSeasonRatings(itemId)
       .then((res) => {
         if (!alive) return

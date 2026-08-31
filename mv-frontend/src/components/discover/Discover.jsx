@@ -36,10 +36,12 @@ export default function Discover() {
 
   useEffect(() => {
     const q = query.trim()
-    if (!q) { setResults([]); setLoading(false); return }
+    // Nothing to clear: `shown` falls back to trending whenever the query is
+    // empty, so stale results are never displayed.
+    if (!q) return
 
-    setLoading(true)
     const timer = setTimeout(async () => {
+      setLoading(true)
       abortRef.current?.abort()
       const controller = new AbortController()
       abortRef.current = controller

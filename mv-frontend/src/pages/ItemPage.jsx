@@ -26,11 +26,21 @@ export default function ItemPage({ showToast }) {
 
   useEffect(() => {
     let alive = true
-    setLoading(true); setError(false)
-    getPublicDetails(type, externalId)
-      .then((res) => { if (alive) setItem(res.data?.data?.item ?? null) })
-      .catch(() => { if (alive) setError(true) })
-      .finally(() => { if (alive) setLoading(false) })
+
+    const load = async () => {
+      setLoading(true)
+      setError(false)
+      try {
+        const res = await getPublicDetails(type, externalId)
+        if (alive) setItem(res.data?.data?.item ?? null)
+      } catch {
+        if (alive) setError(true)
+      } finally {
+        if (alive) setLoading(false)
+      }
+    }
+
+    load()
     return () => { alive = false }
   }, [type, externalId])
 
