@@ -65,6 +65,7 @@ export const dealReason = (deal) => {
  */
 export const listDeals = async (opts = {}) => {
     const {
+        q = null,
         type = null,
         minDiscount = 0,
         platform = null,
@@ -104,8 +105,16 @@ export const listDeals = async (opts = {}) => {
     const now = Date.now();
     const deals = [];
 
+    // Matched in memory rather than in SQL. The candidate set is already
+    // capped and deduplicated to one row per item by this point, so a LIKE in
+    // the query would filter before the cheapest-store pass and could drop the
+    // very row that survives it.
+    const needle = q ? String(q).trim().toLowerCase() : null;
+
     for (const row of best.values()) {
         const { quote, item, votes } = row;
+        if (needle && !item.title.toLowerCase().includes(needle)) continue;
+
         const discountPercent = quote.discountPercent ?? 0;
         if (discountPercent < minDiscount) continue;
         if (maxPriceCents != null && quote.priceCents > maxPriceCents) continue;

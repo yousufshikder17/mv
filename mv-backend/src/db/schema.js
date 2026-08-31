@@ -78,6 +78,19 @@ export const mediaItems = pgTable('media_item', {
     // ponytail: one nullable column per price source. Books will want a second
     // when M6 lands; a media_external_id(item, source, id) table earns its
     // place at three, not at two.
+    // Polled for prices even when nobody tracks it.
+    //
+    // The deal feed is public, and a public feed that only shows what existing
+    // users happen to track is empty on day one - and stays empty, because
+    // nobody signs up for an empty feed. A small seeded set makes it live from
+    // the start, the same way GOOGLE_BOOKS_WATCH_IDS does for book prices in
+    // M0.
+    //
+    // This does NOT weaken SPEC 7's rule. That rule is that polling
+    // deduplicates by ITEM rather than by user; a fixed seed set is still one
+    // poll per item, and adds a constant rather than something that grows with
+    // signups.
+    featured: boolean('featured').notNull().default(false),
     itadId: text('itad_id'),
     // ITAD's historical lows, cached on the row when the poller sees them.
     //

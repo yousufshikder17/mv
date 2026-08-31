@@ -92,6 +92,13 @@
       "when": 1788216544996,
       "tag": "0012_m7_deals",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1788217330585,
+      "tag": "0013_m7_featured",
+      "breakpoints": true
     }
   ]
 }

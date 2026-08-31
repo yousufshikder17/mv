@@ -17,12 +17,13 @@ const intOrNull = (v) => {
  * persistence, not access - so only voting below needs a session.
  */
 export const getDeals = async (req, res) => {
-    const { type, platform, sort } = req.query;
+    const { q, type, platform, sort } = req.query;
     const minDiscount = intOrNull(req.query.minDiscount) ?? 0;
     const maxPrice = intOrNull(req.query.maxPrice);
     const expiring = req.query.expiring === 'true' ? 24 : intOrNull(req.query.expiringWithinHours);
 
     const deals = await listDeals({
+        q: q || null,
         type: type || null,
         platform: platform || null,
         minDiscount,

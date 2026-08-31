@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth.js'
 import Poster from '../components/ui/Poster.jsx'
 import TmdbCredit from '../components/layout/TmdbCredit.jsx'
 import RawgCredit from '../components/layout/RawgCredit.jsx'
+import { SearchIcon } from '../components/ui/Icon.jsx'
 import { TYPE_LABEL } from '../lib/media.js'
 import styles from './DealsPage.module.css'
 
@@ -25,6 +26,9 @@ export default function DealsPage({ showToast }) {
   const [loading, setLoading] = useState(true)
   const [voted, setVoted] = useState({})
 
+  const [query, setQuery] = useState('')
+  // Debounced separately so typing does not fire a request per keystroke.
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [type, setType] = useState('')
   const [minDiscount, setMinDiscount] = useState(0)
   const [platform, setPlatform] = useState('')
@@ -35,6 +39,7 @@ export default function DealsPage({ showToast }) {
     setLoading(true)
     try {
       const res = await getDeals({
+        q: debouncedQuery || undefined,
         type: type || undefined,
         minDiscount: minDiscount || undefined,
         platform: platform || undefined,
@@ -47,9 +52,16 @@ export default function DealsPage({ showToast }) {
     } finally {
       setLoading(false)
     }
-  }, [type, minDiscount, platform, expiring, sort])
+  }, [debouncedQuery, type, minDiscount, platform, expiring, sort])
 
   useEffect(() => { const t = setTimeout(load, 0); return () => clearTimeout(t) }, [load])
+
+  // 300ms. Long enough that a normal typing speed produces one request,
+  // short enough that the list does not feel stuck.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query.trim()), 300)
+    return () => clearTimeout(t)
+  }, [query])
 
   useEffect(() => {
     getDealPlatforms()
@@ -88,6 +100,24 @@ export default function DealsPage({ showToast }) {
       </section>
 
       <div className={styles.filters}>
+        {/* Searches what is actually on sale, not the whole catalogue - a
+            result you cannot buy is not a deal. */}
+        <div className={styles.searchWrap}>
+          <SearchIcon size={16} className={styles.searchIcon} />
+          <input
+            className={styles.searchInput}
+            placeholder="Search deals..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            id="deal-search"
+          />
+          {query && (
+            <button className={styles.clear} onClick={() => setQuery('')} aria-label="Clear search">
+              &#215;
+            </button>
+          )}
+        </div>
+
         <div className={styles.filterGroup}>
           {[['', 'All'], ['game', 'Games'], ['book', 'Books'], ['album', 'Music']].map(([v, label]) => (
             <button
@@ -142,8 +172,11 @@ export default function DealsPage({ showToast }) {
 
         {!loading && deals.length === 0 && (
           <p className={styles.empty}>
-            No deals match that right now. The poller collects prices daily, so this
-            fills up as items are tracked.
+            {debouncedQuery
+              ? `Nothing on sale matching "${debouncedQuery}". Only titles currently
+                 discounted appear here - try clearing the filters.`
+              : `No deals match those filters right now. Prices are collected daily,
+                 so this changes as sales come and go.`}
           </p>
         )}
 

@@ -10,6 +10,7 @@
     "poll": "node src/jobs/dailyPoll.js",
     "backup": "node scripts/backup.mjs",
     "bench:music": "node scripts/benchmark-music.mjs",
+    "seed:deals": "node scripts/seed-deals.mjs",
     "dev:poll": "npm run poll && npm run dev",
     "test:watch": "vitest"
   },

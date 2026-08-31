@@ -41,7 +41,9 @@ export const watchedGames = async () => {
         .from(mediaItems)
         .where(and(
             eq(mediaItems.type, 'game'),
-            sql`${mediaItems.id} IN (${tracked}) OR ${mediaItems.id} IN (${alerted})`,
+            // Featured items are polled regardless of who tracks them, so the
+            // public deal feed has something in it before anyone signs up.
+            sql`(${mediaItems.featured} = true OR ${mediaItems.id} IN (${tracked}) OR ${mediaItems.id} IN (${alerted}))`,
         ));
 };
 

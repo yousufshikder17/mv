@@ -1,0 +1,1 @@
+ALTER TABLE "media_item" ADD COLUMN "featured" boolean DEFAULT false NOT NULL;

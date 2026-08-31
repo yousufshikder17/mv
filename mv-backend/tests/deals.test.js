@@ -102,6 +102,30 @@ describe('the feed', () => {
         expect(await listDeals({ maxPriceCents: 5000 })).toHaveLength(1);
     });
 
+    it('searches by title within the deals that exist', async () => {
+        // Searching deals means searching what is actually on sale, not the
+        // whole catalogue - a result you cannot buy is not a deal.
+        const a = await createMovie({ type: 'game', source: 'rawg', title: 'Hollow Knight' });
+        const b = await createMovie({ type: 'game', source: 'rawg', title: 'Celeste' });
+        await quote(a.id);
+        await quote(b.id);
+
+        expect((await listDeals({ q: 'hollow' })).map((d) => d.title)).toEqual(['Hollow Knight']);
+        expect(await listDeals({ q: 'CELESTE' })).toHaveLength(1);
+        expect(await listDeals({ q: 'nothing here' })).toHaveLength(0);
+    });
+
+    it('searches after picking the cheapest store, not before', async () => {
+        // Filtering in SQL would run before the cheapest-store pass and could
+        // drop the very row that survives it.
+        const game = await createMovie({ type: 'game', source: 'rawg', title: 'Subnautica' });
+        await quote(game.id, { priceCents: 2000, platform: 'Steam' });
+        await quote(game.id, { priceCents: 749, platform: 'Humble Store' });
+
+        const [deal] = await listDeals({ q: 'subnautica' });
+        expect(deal.priceCents).toBe(749);
+    });
+
     it('ranks an all-time low above a bigger raw discount', async () => {
         const atLow = await createMovie({ type: 'game', source: 'rawg', title: 'At low', historyLowCents: 2000 });
         const bigCut = await createMovie({ type: 'game', source: 'rawg', title: 'Big cut', historyLowCents: 500 });

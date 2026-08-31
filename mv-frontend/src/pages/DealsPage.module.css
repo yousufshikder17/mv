@@ -113,3 +113,22 @@
   .actions { grid-column: 1 / -1; flex-direction: row; }
   .actions a { flex: 1; text-align: center; }
 }
+
+/* Search */
+.searchWrap { position: relative; display: flex; align-items: center; flex: 1; min-width: 200px; }
+.searchIcon { position: absolute; left: 13px; pointer-events: none; color: var(--c-muted); }
+.searchInput {
+  width: 100%; padding: 9px 34px 9px 38px; border-radius: 999px;
+  border: 1px solid var(--c-line); background: var(--c-faint); color: var(--c-fg);
+  font: inherit; font-size: 14px; outline: none; transition: border-color .15s;
+}
+.searchInput:focus { border-color: var(--c-accent); }
+.searchInput::placeholder { color: var(--c-muted); }
+.clear {
+  position: absolute; right: 10px;
+  width: 20px; height: 20px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0; background: transparent; color: var(--c-muted);
+  font-size: 16px; line-height: 1; cursor: pointer;
+}
+.clear:hover { color: var(--c-fg); background: var(--c-line); }
