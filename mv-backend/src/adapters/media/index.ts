@@ -3,6 +3,7 @@ import * as rawg from './rawg.ts';
 import * as openlibrary from './openlibrary.ts';
 import * as musicbrainz from './musicbrainz.ts';
 import type { MediaSearchResult, MediaType } from './types.ts';
+import { rankResults } from '../../services/rankingService.js';
 
 /**
  * Which adapter owns which source and which media type.
@@ -48,8 +49,18 @@ const searchOne = (type: string, query: string): Promise<MediaSearchResult[]> =>
     return tmdb.searchFilms(query);
 };
 
-export const search = (type: string | undefined, query: string) =>
-    type ? searchOne(type, query) : searchAll(query);
+/**
+ * Search, with ordering owned here rather than by whichever provider answered.
+ *
+ * Every result passes through the ranking service, including single-type
+ * searches. Provider order is a suggestion: MusicBrainz returns a relevance
+ * score it does not sort by, and TMDB's ordering is popularity rather than
+ * relevance to what was typed.
+ */
+export const search = async (type: string | undefined, query: string) => {
+    const results = type ? await searchOne(type, query) : await searchAll(query);
+    return rankResults(query, results);
+};
 
 /**
  * Every type at once, interleaved.

@@ -9,6 +9,7 @@
     "start": "node src/server.js",
     "poll": "node src/jobs/dailyPoll.js",
     "backup": "node scripts/backup.mjs",
+    "bench:music": "node scripts/benchmark-music.mjs",
     "dev:poll": "npm run poll && npm run dev",
     "test:watch": "vitest"
   },

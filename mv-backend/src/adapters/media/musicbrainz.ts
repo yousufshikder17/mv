@@ -93,48 +93,31 @@ const artistsOf = (rg: any): string[] =>
 export const coverUrl = (releaseGroupId: string, size = 'front-500') =>
     releaseGroupId ? COVER_ART + '/release-group/' + releaseGroupId + '/' + size : null;
 
-// Ranking hints, for the one part of this that IS fixable.
+// MusicBrainz vocabulary -> the shared RankingSignals shape.
 //
-// MusicBrainz is a catalogue, not a chart: it has no popularity data at all,
-// and 330 release groups are called "Thriller". Every exact title match scores
-// 100, so the original and a karaoke cover are indistinguishable to it - the
-// Michael Jackson album sits at position 71 for a bare search.
-//
-// Nothing below fixes that; no signal in their data can. What it does fix is
-// the ordering WITHIN a set of results, so that when a search is specific
-// enough to find the right artist, the album outranks the single and the
-// karaoke version.
-
-const TYPE_RANK: Record<string, number> = {
-    Album: 3,
-    EP: 2,
-    Single: 1,
-    Broadcast: 0,
-    Other: 0,
+// The adapter's job is translation, not ordering. It knows what a release
+// group is; it does not decide whether an album should outrank a single,
+// because that judgement belongs to the application and applies to every
+// source with the same problem. See services/rankingService.js.
+const PRIMARY_TYPES: Record<string, 'album' | 'ep' | 'single' | 'other'> = {
+    Album: 'album',
+    EP: 'ep',
+    Single: 'single',
+    Broadcast: 'other',
+    Other: 'other',
 };
 
-// Derivative releases. Real, worth keeping, and rarely what someone searching
-// a title actually meant.
-const SECONDARY_PENALTY: Record<string, number> = {
-    Compilation: 2,
-    Live: 2,
-    Remix: 3,
-    Soundtrack: 1,
-    Demo: 3,
-    Mixtape: 2,
-    'DJ-mix': 3,
-    Interview: 4,
-    Audiobook: 4,
-};
-
-const rank = (rg: any): number => {
-    let score = (rg.score ?? 0) / 10;
-    score += TYPE_RANK[rg['primary-type']] ?? 0;
-    for (const secondary of rg['secondary-types'] ?? []) {
-        score -= SECONDARY_PENALTY[secondary] ?? 1;
-    }
-    return score;
-};
+const signalsFor = (rg: any) => ({
+    // MusicBrainz scores 0-100 already, and famously ties: every exact title
+    // match gets 100.
+    relevance: rg.score ?? undefined,
+    releaseType: PRIMARY_TYPES[rg['primary-type']] ?? 'other',
+    variants: (rg['secondary-types'] ?? []).map((v: string) => v.toLowerCase()),
+    // Deliberately absent. MusicBrainz is a catalogue, not a chart - it has no
+    // popularity data at all, which is the whole reason a bare search for
+    // "thriller" puts Michael Jackson at position 71 of 330.
+    popularity: undefined,
+});
 
 /**
  * Search release groups - the album-level entity.
@@ -146,13 +129,11 @@ const rank = (rg: any): number => {
 export const searchAlbums = async (query: string): Promise<MediaSearchResult[]> => {
     const data = await request('/release-group', { query, limit: 25 });
 
+    // Returned unsorted, on purpose. Ordering happens once, centrally, in the
+    // ranking service - provider order is a suggestion and MusicBrainz's is
+    // barely that.
     return (data['release-groups'] ?? [])
-        // MusicBrainz returns a relevance score and does NOT sort by it, and
-        // ties on that score are extremely common - every exact title match
-        // gets 100. `rank` breaks those ties with the only real signals their
-        // data has: an Album beats a Single, and neither is a karaoke remix.
-        .sort((a: any, b: any) => rank(b) - rank(a))
-        .slice(0, 20)
+        .slice(0, 25)
         .map((rg: any) => ({
             type: 'album' as const,
             source: SOURCE,
@@ -165,6 +146,7 @@ export const searchAlbums = async (query: string): Promise<MediaSearchResult[]> 
             releaseYear: year(rg['first-release-date']),
             posterUrl: coverUrl(rg.id, 'front-250'),
             overview: null,
+            ranking: signalsFor(rg),
         }));
 };
 
