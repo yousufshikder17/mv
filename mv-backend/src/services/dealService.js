@@ -265,12 +265,13 @@ export const liveDealsFor = async (query, { limit = 8 } = {}) => {
             const matches = await itad.searchGames(q, limit);
             if (!matches.length) return [];
 
-            const byId = new Map(matches.map((m) => [m.id, m.title]));
+            const byId = new Map(matches.map((m) => [m.id, m]));
             const entries = await itad.fetchPrices([...byId.keys()]);
 
             const out = [];
             for (const entry of entries ?? []) {
-                const title = byId.get(entry.id);
+                const match = byId.get(entry.id);
+                const title = match?.title;
                 const best = (entry.deals ?? [])
                     .filter((d) => Number.isFinite(d?.price?.amountInt))
                     .sort((a, b) => a.price.amountInt - b.price.amountInt)[0];
@@ -294,7 +295,10 @@ export const liveDealsFor = async (query, { limit = 8 } = {}) => {
                     title,
                     type: 'game',
                     source: 'itad',
-                    posterUrl: null,
+                    // ITAD's own box art. A feed of untitled grey rectangles
+                    // is unusable, and this arrives in the search response, so
+                    // it costs nothing extra.
+                    posterUrl: match?.boxart ?? null,
                     platform: best.shop?.name ?? 'Unknown store',
                     url: best.url,
                     currency: best.price?.currency ?? 'USD',

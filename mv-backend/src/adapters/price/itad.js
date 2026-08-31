@@ -102,7 +102,13 @@ export const searchGames = async (title, limit = 8) => {
     const results = await request('/games/search/v1', { params: { title, results: limit } });
     return (results ?? [])
         .filter((g) => g?.id && g.type === 'game')
-        .map((g) => ({ id: g.id, title: g.title }));
+        .map((g) => ({
+            id: g.id,
+            title: g.title,
+            // Box art comes back in the same response, so a live search
+            // result can show a cover without a second call per game.
+            boxart: g.assets?.boxart ?? null,
+        }));
 };
 
 /** Resolves a title to ITAD's own game id. Null when they do not have it. */

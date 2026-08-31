@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth.js'
 import Poster from '../components/ui/Poster.jsx'
 import TmdbCredit from '../components/layout/TmdbCredit.jsx'
 import RawgCredit from '../components/layout/RawgCredit.jsx'
+import ItadCredit from '../components/layout/ItadCredit.jsx'
 import { SearchIcon } from '../components/ui/Icon.jsx'
 import { TYPE_LABEL } from '../lib/media.js'
 import styles from './DealsPage.module.css'
@@ -230,6 +231,9 @@ export default function DealsPage({ showToast }) {
       {/* Credit whichever sources are actually on screen. RAWG requires the
           link on every page displaying their data. */}
       <footer className={styles.attribution}>
+        {/* Every price here is ITAD's, so this is unconditional. The others
+            depend on which sources supplied the covers on screen. */}
+        <ItadCredit />
         {sourcesShown.has('tmdb') && <TmdbCredit />}
         {sourcesShown.has('rawg') && <RawgCredit />}
       </footer>
