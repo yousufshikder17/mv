@@ -79,6 +79,16 @@ export const mediaItems = pgTable('media_item', {
     // when M6 lands; a media_external_id(item, source, id) table earns its
     // place at three, not at two.
     itadId: text('itad_id'),
+    // ITAD's historical lows, cached on the row when the poller sees them.
+    //
+    // SPEC 7: ITAD SERVES this, so it is read and never accumulated - copying
+    // it here is caching their answer, not rebuilding their dataset. Stored
+    // rather than fetched per request because deal scoring compares every
+    // deal against its own history, and doing that live would be one ITAD
+    // call per row in a feed.
+    historyLowCents: integer('history_low_cents'),
+    historyLow1yCents: integer('history_low_1y_cents'),
+    historyLow3mCents: integer('history_low_3m_cents'),
     // Games only: every platform the title is released on. The platform a
     // given user actually plays it on lives on tracking_item, because those
     // are different facts - the catalogue row is shared between users.
@@ -242,7 +252,28 @@ export const pushSubscriptions = pgTable('push_subscription', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// 9. Price Quote
+// 9. Deal Vote
+//
+// Community signal on a deal. One vote per person per item - a second vote is
+// a change of mind, not a second endorsement, which is what the unique
+// constraint enforces.
+export const dealVotes = pgTable('deal_vote', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+        .references(() => users.id, { onDelete: 'cascade' })
+        .notNull(),
+    mediaItemId: uuid('media_item_id')
+        .references(() => mediaItems.id, { onDelete: 'cascade' })
+        .notNull(),
+    // +1 or -1. An integer rather than a boolean so a downvote is expressible
+    // without a second column.
+    value: integer('value').notNull().default(1),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (t) => [
+    unique().on(t.userId, t.mediaItemId),
+]);
+
+// 10. Price Quote
 // One row per (source, item, day). The normalized shape from SPEC §7 — the
 // price layer never learns which adapter produced a row.
 //

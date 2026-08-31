@@ -5,6 +5,7 @@ import ProtectedRoute from './components/layout/ProtectedRoute.jsx'
 import Toast          from './components/ui/Toast.jsx'
 import LandingPage    from './pages/LandingPage.jsx'
 import ItemPage       from './pages/ItemPage.jsx'
+import DealsPage      from './pages/DealsPage.jsx'
 import LoginPage      from './pages/LoginPage.jsx'
 import RegisterPage   from './pages/RegisterPage.jsx'
 import WatchlistPage  from './pages/WatchlistPage.jsx'
@@ -38,6 +39,9 @@ export default function App() {
         {/* Public item page - no ProtectedRoute. Reading is free; keeping
             needs an account (M3). */}
         <Route path="/media/:type/:externalId" element={<ItemPage showToast={showToast} />} />
+        {/* Public. A deal is a link - browsing needs no account, and only
+            voting writes a row (M7). */}
+        <Route path="/deals" element={<DealsPage showToast={showToast} />} />
         <Route path="/login"    element={<LoginPage    showToast={showToast} />} />
         <Route path="/register" element={<RegisterPage showToast={showToast} />} />
         <Route

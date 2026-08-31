@@ -25,6 +25,13 @@ export default function Navbar({ onThemeToggle, theme }) {
           >
             Home
           </Link>
+          <Link
+            to="/deals"
+            id="nav-deals"
+            className={`${styles.navItem} ${pathname === '/deals' ? styles.active : ''}`}
+          >
+            Deals
+          </Link>
           {isAuthenticated && (
             <Link
               to="/watchlist"

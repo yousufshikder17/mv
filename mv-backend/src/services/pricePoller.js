@@ -92,7 +92,25 @@ export const pollGamePrices = async ({ now = new Date() } = {}) => {
             const entries = await itad.fetchPrices(batch);
             for (const entry of entries ?? []) {
                 const mediaItemId = byItadId.get(entry.id);
-                if (mediaItemId) quotes.push(...itad.dealsToQuotes(entry, mediaItemId, now));
+                if (!mediaItemId) continue;
+
+                quotes.push(...itad.dealsToQuotes(entry, mediaItemId, now));
+
+                // Cache ITAD's historical lows on the row.
+                //
+                // Deal scoring compares each price against its own history, so
+                // fetching this per request would be one ITAD call per feed
+                // row. Caching their answer is not rebuilding their dataset,
+                // which SPEC 12 forbids - the numbers stay theirs and refresh
+                // whenever we poll.
+                const low = itad.historyLowOf(entry);
+                if (low) {
+                    await db.update(mediaItems).set({
+                        historyLowCents: low.allTimeCents,
+                        historyLow1yCents: low.year1Cents,
+                        historyLow3mCents: low.month3Cents,
+                    }).where(eq(mediaItems.id, mediaItemId));
+                }
             }
         } catch (err) {
             errors.push(`itad: ${err.message}`);

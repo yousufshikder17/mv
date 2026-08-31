@@ -30,3 +30,10 @@ export const getVapidKey      = ()            => api.get('/notifications/vapid-k
 export const subscribePush    = (sub)         => api.post('/notifications/subscribe', sub)
 export const getAllMovies    = ()           => api.get('/movies')
 export const getMovieById    = (id)         => api.get(`/movies/${id}`)
+
+
+// Deals are public - no account to look or click through. Only the vote writes.
+export const getDeals         = (params)    => api.get('/deals', { params })
+export const getDealPlatforms = ()          => api.get('/deals/platforms')
+export const voteDeal         = (id, value) => api.post('/deals/' + id + '/vote', { value })
+export const unvoteDeal       = (id)        => api.delete('/deals/' + id + '/vote')

@@ -1,0 +1,115 @@
+.page { min-height: 100vh; display: flex; flex-direction: column; }
+
+.hero {
+  padding: 48px clamp(18px, 3vw, 48px) 28px;
+  border-bottom: 1px solid var(--c-line);
+  background: linear-gradient(180deg, rgba(212,168,83,.06) 0%, transparent 100%);
+}
+.heroInner { max-width: 1100px; margin: 0 auto; }
+.eyebrow {
+  font-family: var(--ff-mono); font-size: 11px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--c-accent); margin: 0 0 14px;
+}
+.title {
+  font-family: var(--ff-display); font-size: clamp(30px, 4.5vw, 52px);
+  line-height: 1.02; letter-spacing: -.03em; font-weight: 400; margin: 0 0 14px;
+}
+.sub { font-size: 15px; color: var(--c-muted); margin: 0; max-width: 60ch; line-height: 1.6; }
+.rss { color: var(--c-accent); }
+
+.filters {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  max-width: 1100px; margin: 0 auto; width: 100%;
+  padding: 18px clamp(18px, 3vw, 48px);
+  border-bottom: 1px solid var(--c-line);
+}
+.filterGroup { display: flex; gap: 2px; }
+
+.chip, .chipOn {
+  padding: 7px 14px; font-size: 13px; border-radius: 999px;
+  border: 0; cursor: pointer; font: inherit; font-size: 13px;
+  transition: all .15s;
+}
+.chip { background: transparent; color: var(--c-muted); }
+.chip:hover { color: var(--c-fg); background: var(--c-faint); }
+.chipOn { background: var(--c-faint); color: var(--c-fg); }
+
+.select {
+  padding: 7px 11px; border-radius: 8px;
+  border: 1px solid var(--c-line); background: var(--c-faint); color: var(--c-fg);
+  font: inherit; font-size: 13px; cursor: pointer; outline: none;
+}
+
+.feed {
+  flex: 1; width: 100%;
+  max-width: 1100px; margin: 0 auto;
+  padding: 24px clamp(18px, 3vw, 48px) 64px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.center { display: flex; justify-content: center; padding: 60px 0; }
+.empty { font-size: 15px; color: var(--c-muted); line-height: 1.6; max-width: 52ch; }
+
+.deal {
+  display: grid; grid-template-columns: 64px 1fr auto;
+  gap: 18px; align-items: center;
+  padding: 14px 16px; border-radius: var(--radius-lg);
+  border: 1px solid var(--c-line);
+  transition: border-color .15s;
+}
+.deal:hover { border-color: var(--c-muted); }
+.posterWrap { width: 64px; }
+
+.meta { font-size: 12.5px; color: var(--c-muted); margin: 0 0 4px; }
+.badge {
+  font-family: var(--ff-mono); font-size: 10px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--c-accent);
+}
+.urgent { color: var(--c-accent); }
+
+.dealTitle {
+  font-family: var(--ff-display); font-size: 19px; font-weight: 500;
+  letter-spacing: -.01em; margin: 0 0 8px; line-height: 1.2;
+}
+
+.priceRow { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.price {
+  font-family: var(--ff-display); font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.was {
+  font-size: 13px; color: var(--c-muted); text-decoration: line-through;
+  font-variant-numeric: tabular-nums;
+}
+.reason, .reasonStrong {
+  padding: 3px 9px; border-radius: 999px;
+  font-family: var(--ff-mono); font-size: 9.5px;
+  letter-spacing: .08em; text-transform: uppercase;
+}
+.reason { border: 1px solid var(--c-line); color: var(--c-muted); }
+/* An all-time low is rare enough to be worth saying loudly. */
+.reasonStrong { background: var(--c-accent); color: var(--c-bg); font-weight: 500; }
+
+.actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+.vote, .voteOn {
+  padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  font-family: var(--ff-mono); font-size: 11px;
+  border: 1px solid var(--c-line); background: transparent; color: var(--c-muted);
+  transition: all .15s;
+}
+.vote:hover { color: var(--c-fg); border-color: var(--c-muted); }
+.voteOn { background: var(--c-accent); color: var(--c-bg); border-color: var(--c-accent); }
+
+.attribution {
+  max-width: 1100px; margin: 0 auto; width: 100%;
+  padding: 28px clamp(18px, 3vw, 48px) 40px;
+  border-top: 1px solid var(--c-line);
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+@media (max-width: 640px) {
+  /* Poster above, actions full width - adapt, never hide. */
+  .deal { grid-template-columns: 52px 1fr; }
+  .posterWrap { width: 52px; }
+  .actions { grid-column: 1 / -1; flex-direction: row; }
+  .actions a { flex: 1; text-align: center; }
+}
