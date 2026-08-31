@@ -9,6 +9,8 @@ import DealsPage      from './pages/DealsPage.jsx'
 import LoginPage      from './pages/LoginPage.jsx'
 import RegisterPage   from './pages/RegisterPage.jsx'
 import WatchlistPage  from './pages/WatchlistPage.jsx'
+import ProfilePage    from './pages/ProfilePage.jsx'
+import FeedPage       from './pages/FeedPage.jsx'
 import { useToast }   from './hooks/useToast.js'
 
 // Pages that hide the Navbar
@@ -42,8 +44,21 @@ export default function App() {
         {/* Public. A deal is a link - browsing needs no account, and only
             voting writes a row (M7). */}
         <Route path="/deals" element={<DealsPage showToast={showToast} />} />
+        {/* Public. A profile is a page about someone's taste - reading it
+            needs no account, and its owner can make it private (M8). */}
+        <Route path="/u/:userId" element={<ProfilePage showToast={showToast} />} />
         <Route path="/login"    element={<LoginPage    showToast={showToast} />} />
         <Route path="/register" element={<RegisterPage showToast={showToast} />} />
+        {/* Gated because it is built from YOUR follow list, not because
+            reading is gated - every item it links to is public. */}
+        <Route
+          path="/feed"
+          element={
+            <ProtectedRoute>
+              <FeedPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/watchlist"
           element={

@@ -82,3 +82,20 @@
 }
 .platformSelect:focus { border-color: var(--c-accent); }
 .credit { margin: 24px 0 4px; }
+
+/* Per-item privacy (M8). */
+.privacyRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.privacyHint {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--c-muted);
+}

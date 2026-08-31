@@ -35,8 +35,35 @@ export const users = pgTable('user', {
     name: text('name').notNull(),
     email: text('email').unique().notNull(),
     password: text('password').notNull(),
+    // SPEC 9: privacy is per-list, per-item AND profile-level. This is the
+    // outermost of the three - a private profile is invisible to everyone,
+    // regardless of what individual items say.
+    profilePublic: boolean('profile_public').notNull().default(true),
+    // Shown on a public profile. Optional, and never populated from anything
+    // the user did not type.
+    bio: text('bio'),
     createdAt: timestamp('created_at').defaultNow(),
 });
+
+// 2. Follow
+//
+// Asymmetric, the Twitter model (SPEC 9): following someone does not require
+// their approval and does not make them follow back. A symmetric model needs
+// a request/accept flow, which is a whole feature for a product with no users
+// to accept anything yet.
+export const follows = pgTable('follow', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    followerId: uuid('follower_id')
+        .references(() => users.id, { onDelete: 'cascade' })
+        .notNull(),
+    followingId: uuid('following_id')
+        .references(() => users.id, { onDelete: 'cascade' })
+        .notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (t) => [
+    // Following twice is the same as following once.
+    unique().on(t.followerId, t.followingId),
+]);
 
 // 3. Media Item — the shared catalogue (was `movie`)
 //
@@ -159,6 +186,10 @@ export const trackingItems = pgTable('tracking_item', {
     progressTotal: integer('progress_total'),
     progressUnit: text('progress_unit'),
     notes: text('notes'),
+    // Per-item privacy (SPEC 9). Hidden items stay out of the activity feed
+    // and off a public profile, while remaining fully visible to their owner -
+    // the point is to track something without announcing it.
+    hidden: boolean('hidden').notNull().default(false),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
 }, (t) => [
@@ -166,6 +197,50 @@ export const trackingItems = pgTable('tracking_item', {
     // tests rest on.
     unique().on(t.userId, t.mediaItemId),
 ]);
+
+// Review
+//
+// Long-form, one per person per item - a second review is an edit rather than
+// a second opinion. Separate from tracking_item.notes, which are private
+// scratch text: a review is written to be read.
+export const reviews = pgTable('review', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+    mediaItemId: uuid('media_item_id').references(() => mediaItems.id, { onDelete: 'cascade' }).notNull(),
+    body: text('body').notNull(),
+    // Blurs the whole review until clicked (SPEC 9). Author-declared: nothing
+    // tries to detect spoilers automatically, because being wrong in either
+    // direction is worse than asking.
+    hasSpoilers: boolean('has_spoilers').notNull().default(false),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (t) => [
+    unique().on(t.userId, t.mediaItemId),
+]);
+
+// Review vote - helpful / unhelpful
+export const reviewVotes = pgTable('review_vote', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+    reviewId: uuid('review_id').references(() => reviews.id, { onDelete: 'cascade' }).notNull(),
+    helpful: boolean('helpful').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (t) => [
+    unique().on(t.userId, t.reviewId),
+]);
+
+// Comment - per-item discussion threads
+export const comments = pgTable('comment', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+    mediaItemId: uuid('media_item_id').references(() => mediaItems.id, { onDelete: 'cascade' }).notNull(),
+    // One level of nesting only. Arbitrary depth needs a tree query and a
+    // collapse UI, and a thread nobody has posted in does not need either.
+    parentId: uuid('parent_id'),
+    body: text('body').notNull(),
+    hasSpoilers: boolean('has_spoilers').notNull().default(false),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+});
 
 // 5. Season Rating
 //

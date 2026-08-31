@@ -6,6 +6,7 @@ import Poster from '../components/ui/Poster.jsx'
 import TmdbCredit from '../components/layout/TmdbCredit.jsx'
 import RawgCredit from '../components/layout/RawgCredit.jsx'
 import PricePanel from '../components/prices/PricePanel.jsx'
+import Discussion from '../components/social/Discussion.jsx'
 import { TYPE_LABEL } from '../lib/media.js'
 import styles from './ItemPage.module.css'
 
@@ -177,6 +178,18 @@ export default function ItemPage({ showToast }) {
           )}
         </div>
       </div>
+
+      {/* Reviews and discussion (M8). Only once the item has a catalogue
+          row - they are keyed by our uuid, and a page nobody has added yet
+          has no uuid to key them to. */}
+      {item.mediaItemId
+        ? <Discussion mediaItemId={item.mediaItemId} showToast={showToast} />
+        : (
+          <p className={styles.noDiscussion}>
+            No one has added this yet. Add it to your watchlist to start the
+            discussion.
+          </p>
+        )}
 
       {/* TMDB requires attribution wherever their data is rendered (SPEC 3),
           and this page is public. */}

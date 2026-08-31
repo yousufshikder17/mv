@@ -99,6 +99,13 @@
       "when": 1788217330585,
       "tag": "0013_m7_featured",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1788218895564,
+      "tag": "0014_m8_social",
+      "breakpoints": true
     }
   ]
 }

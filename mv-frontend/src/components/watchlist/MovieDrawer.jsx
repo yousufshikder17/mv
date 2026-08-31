@@ -197,6 +197,26 @@ export default function MovieDrawer({ item, movie, open, onClose, onUpdateRating
             </div>
           </div>
 
+          {/* Per-item privacy - the middle of SPEC 9's three layers. Hiding
+              one row is a smaller ask than making the whole profile private,
+              and without a control here the flag would be unreachable. */}
+          <div className={styles.section}>
+            <label className={styles.privacyRow} htmlFor="drawer-hidden">
+              <input
+                type="checkbox"
+                id="drawer-hidden"
+                checked={Boolean(item.hidden)}
+                onChange={(e) => onUpdateProgress(item.id, { hidden: e.target.checked })}
+              />
+              <span>
+                Keep this off my profile
+                <span className={styles.privacyHint}>
+                  Hidden from your public profile, activity and stats. Still yours.
+                </span>
+              </span>
+            </label>
+          </div>
+
           {/* RAWG requires an active hyperlink on every page showing their
               data. The drawer is a page as far as that obligation goes. */}
           {type === 'game' && <RawgCredit className={styles.credit} />}

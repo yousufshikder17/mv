@@ -122,7 +122,7 @@ export const removeFromWatchlist = async (req, res) => {
 
 export const updateWatchlistItem = async (req, res) => {
     const { id } = req.params; // The ID of the watchlist entry
-    const { status, rating, notes, platform, progressSeason, progressCurrent, progressTotal } = req.body;
+    const { status, rating, notes, platform, hidden, progressSeason, progressCurrent, progressTotal } = req.body;
     const userId = req.user.id; // From authMiddleware
 
     const result = await db
@@ -139,6 +139,7 @@ export const updateWatchlistItem = async (req, res) => {
             // Zod, passed, and were dropped here, so the API answered 200 with
             // the old values.
             ...(platform !== undefined && { platform }),
+            ...(hidden !== undefined && { hidden }),
             ...(progressSeason !== undefined && { progressSeason }),
             ...(progressCurrent !== undefined && { progressCurrent }),
             ...(progressTotal !== undefined && { progressTotal }),

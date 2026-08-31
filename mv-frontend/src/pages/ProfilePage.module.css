@@ -1,0 +1,164 @@
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  display: grid;
+  gap: 32px;
+}
+
+.hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.name {
+  margin: 0 0 6px;
+  font-family: var(--ff-display);
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.bio { margin: 0 0 10px; max-width: 60ch; font-size: 15px; line-height: 1.6; color: var(--c-fg); }
+
+.meta { margin: 0; font-size: 13px; color: var(--c-muted); }
+.meta b { color: var(--c-fg); }
+.dot { margin: 0 8px; opacity: 0.4; }
+.private { color: var(--c-accent); }
+
+.notFoundH { margin: 0; font-family: var(--ff-display); font-size: 28px; font-weight: 600; }
+.muted { margin: 0; color: var(--c-muted); font-size: 14px; }
+.link { color: var(--c-accent); }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1px;
+  background: var(--c-line);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.stat {
+  display: grid;
+  gap: 4px;
+  padding: 16px;
+  background: var(--c-surface);
+}
+
+.statValue { font-family: var(--ff-display); font-size: 24px; font-weight: 600; }
+
+.statLabel {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.byType { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.typeChip {
+  padding: 5px 12px;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  color: var(--c-muted);
+}
+.typeChip b { color: var(--c-fg); }
+
+.h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 14px;
+  font-family: var(--ff-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.hint { font-family: var(--ff-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-muted); }
+
+/* ── Library grid ─────────────────────────────────────────────────── */
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 20px;
+}
+
+.cardLink { text-decoration: none; color: inherit; display: block; }
+
+.cardTitle {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+.cardLink:hover .cardTitle { color: var(--c-accent); }
+
+.cardMeta { display: flex; gap: 6px; margin: 6px 0 0; }
+
+.rating {
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--c-faint);
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: var(--c-accent);
+}
+
+.hiddenTag {
+  padding: 2px 7px;
+  border: 1px dashed var(--c-line);
+  border-radius: var(--radius-pill);
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+/* ── Your own account ─────────────────────────────────────────────── */
+
+.settings {
+  padding: 20px;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-md);
+  background: var(--c-surface);
+}
+
+.settingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0;
+  border-top: 1px solid var(--c-line);
+  flex-wrap: wrap;
+}
+.settingRow:first-of-type { border-top: 0; }
+
+.settingLabel { margin: 0 0 3px; font-size: 14px; font-weight: 600; }
+.settingHelp { margin: 0; max-width: 52ch; font-size: 12.5px; line-height: 1.55; color: var(--c-muted); }
+
+.bioField { flex: 1; min-width: 240px; }
+
+.input {
+  width: 100%;
+  margin-top: 4px;
+  padding: 9px 12px;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-sm);
+  background: var(--c-bg);
+  color: var(--c-fg);
+  font: inherit;
+  font-size: 14px;
+}
+.input:focus { outline: none; border-color: var(--c-accent); }

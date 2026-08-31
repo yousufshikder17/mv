@@ -1,0 +1,38 @@
+.veil {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 1px dashed var(--c-line);
+  border-radius: var(--radius-sm);
+  background: var(--c-faint);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  overflow: hidden;
+}
+
+.veil:hover { border-color: var(--c-accent); }
+
+.hidden {
+  display: block;
+  padding: 10px 12px;
+  filter: blur(6px);
+  /* Selecting blurred text would copy it straight out. */
+  user-select: none;
+  pointer-events: none;
+}
+
+.label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}

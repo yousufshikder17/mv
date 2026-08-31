@@ -34,6 +34,15 @@ export default function Navbar({ onThemeToggle, theme }) {
           </Link>
           {isAuthenticated && (
             <Link
+              to="/feed"
+              id="nav-feed"
+              className={`${styles.navItem} ${pathname === '/feed' ? styles.active : ''}`}
+            >
+              Activity
+            </Link>
+          )}
+          {isAuthenticated && (
+            <Link
               to="/watchlist"
               id="nav-watchlist"
               className={`${styles.navItem} ${pathname === '/watchlist' ? styles.active : ''}`}
@@ -59,9 +68,14 @@ export default function Navbar({ onThemeToggle, theme }) {
         {isAuthenticated && <NotificationBell />}
         {isAuthenticated ? (
           <>
-            <span className={styles.userGreeting} id="nav-user-greeting">
+            <Link
+              to={`/u/${user?.id}`}
+              className={styles.userGreeting}
+              id="nav-user-greeting"
+              title="Your profile and privacy settings"
+            >
               {user?.name ?? user?.email ?? 'Account'}
-            </span>
+            </Link>
             <button
               id="nav-logout-btn"
               className="btn-ghost"

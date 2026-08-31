@@ -104,6 +104,8 @@ const updateWatchlistSchema = z.object({
     // Free text: platform names come from RAWG and new consoles arrive
     // without asking us.
     platform: z.union([z.null(), z.string().max(120)]).optional(),
+    // Per-item privacy (SPEC 9): tracked, but not announced.
+    hidden: z.boolean().optional(),
     progressSeason: z.union([z.null(), z.coerce.number().int().min(0)]).optional(),
     progressCurrent: z.union([z.null(), z.coerce.number().int().min(0)]).optional(),
     progressTotal: z.union([z.null(), z.coerce.number().int().min(0)]).optional(),
