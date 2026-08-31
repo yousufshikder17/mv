@@ -70,6 +70,15 @@ export const mediaItems = pgTable('media_item', {
     // lengths — TMDB's episode_run_time is often an empty array.
     runtime: integer('runtime'),
     posterUrl: text('poster_url'),
+    // The item's id in its PRICE source, which is a different service from its
+    // metadata source: a game's metadata is RAWG's, its prices are ITAD's.
+    // Resolved once by title lookup and kept, so the poller does not spend a
+    // request rediscovering it every run.
+    //
+    // ponytail: one nullable column per price source. Books will want a second
+    // when M6 lands; a media_external_id(item, source, id) table earns its
+    // place at three, not at two.
+    itadId: text('itad_id'),
     // Games only: every platform the title is released on. The platform a
     // given user actually plays it on lives on tracking_item, because those
     // are different facts - the catalogue row is shared between users.

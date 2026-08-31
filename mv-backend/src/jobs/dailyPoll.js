@@ -6,6 +6,8 @@ import { db, disconnectDB } from '../config/db.js';
 import { priceQuotes } from '../db/schema.js';
 import { fetchKindleDeals } from '../adapters/price/kindle.js';
 import { fetchBookPrices } from '../adapters/price/googlebooks.js';
+import { pollGamePrices } from '../services/pricePoller.js';
+import { evaluateAlerts } from '../services/alertService.js';
 import { refreshStaleMovies } from '../controllers/movieController.js';
 
 // SPEC §7: raw quotes keep 90 days in Postgres. Neon's free tier is 0.5 GB and
@@ -50,7 +52,7 @@ export const pruneOldQuotes = async (now = new Date()) => {
  * thing in this system that cannot be backfilled (SPEC §7).
  */
 export const runDailyPoll = async () => {
-    const summary = { fetched: 0, inserted: 0, pruned: 0, refreshed: 0, skipped: [], errors: [] };
+    const summary = { fetched: 0, inserted: 0, gamesPolled: 0, alertsDue: 0, pruned: 0, refreshed: 0, skipped: [], errors: [] };
 
     // An adapter with no configuration is not a failure, it is a source that
     // is not turned on yet. Keeping the two apart matters: the exit code gates
@@ -83,6 +85,17 @@ export const runDailyPoll = async () => {
         record('googlebooks', err);
     }
 
+    // Games. Deduplicated by item, never by user (SPEC 7).
+    try {
+        const { quotes, polled, errors } = await pollGamePrices();
+        summary.gamesPolled = polled;
+        summary.fetched += quotes.length;
+        summary.inserted += await storeQuotes(quotes);
+        for (const e of errors) summary.errors.push(e);
+    } catch (err) {
+        record('itad', err);
+    }
+
     try {
         summary.pruned = await pruneOldQuotes();
     } catch (err) {
@@ -96,6 +109,15 @@ export const runDailyPoll = async () => {
         summary.refreshed = await refreshStaleMovies();
     } catch (err) {
         summary.errors.push(`tmdb: ${err.message}`);
+    }
+
+    // Evaluated after prices land, so an alert can fire on a price recorded
+    // minutes ago. Returns who to tell; delivery is deliberately separate, so
+    // a missing mail server cannot cost the day's price history.
+    try {
+        summary.alertsDue = (await evaluateAlerts()).length;
+    } catch (err) {
+        summary.errors.push(`alerts: ${err.message}`);
     }
 
     return summary;
