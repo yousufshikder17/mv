@@ -8,6 +8,7 @@ import {
     searchTmdb,
     trending,
     publicDetails,
+    itemPrices,
     importFromTmdb,
     getSeasonEpisodes,
     getAllMovies,
@@ -31,6 +32,7 @@ const router = express.Router();
 router.get("/search", publicLimiter, catchAsync(searchTmdb));
 router.get("/trending", publicLimiter, catchAsync(trending));
 router.get("/details/:type/:externalId", publicLimiter, catchAsync(publicDetails));
+router.get("/prices/:type/:externalId", publicLimiter, catchAsync(itemPrices));
 
 // ── Everything below writes, or reads our own catalogue ──────────────
 router.use(authMiddleware);

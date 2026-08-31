@@ -1,9 +1,11 @@
 import { eq, and, or, inArray, desc, lt } from 'drizzle-orm';
 import { db } from '../config/db.js';
-import { mediaItems } from '../db/schema.js';
+import { mediaItems, priceQuotes } from '../db/schema.js';
 import * as tmdb from '../adapters/media/tmdb.ts';
 import { adapterForSource, adapterForType, search as searchMedia } from '../adapters/media/index.ts';
 import { cached } from '../utils/cache.js';
+import * as itad from '../adapters/price/itad.js';
+import { asc } from 'drizzle-orm';
 
 // TMDB forbids caching their content beyond 6 months. We refresh well inside
 // that window so a row is never served stale enough to breach it.
@@ -154,7 +156,100 @@ export const publicDetails = async (req, res) => {
         () => adapter.getDetailsWithCast(type, externalId),
     );
 
-    return res.status(200).json({ status: 'Success', data: { item } });
+    // Our own row for this title, if it has ever been imported. Deliberately
+    // NOT cached with the item above: the row appears the moment someone adds
+    // it, and an hour of "not in the catalogue" would hide the alert control
+    // from the person who just added it.
+    const [row] = await db
+        .select({ id: mediaItems.id })
+        .from(mediaItems)
+        .where(and(eq(mediaItems.source, adapter.SOURCE), eq(mediaItems.externalId, String(externalId))))
+        .limit(1);
+
+    return res.status(200).json({
+        status: 'Success',
+        data: { item: { ...item, mediaItemId: row?.id ?? null } },
+    });
+};
+
+/**
+ * GET /movies/prices/:type/:externalId - current deals and price history.
+ *
+ * Public, because game covers and data may appear publicly (RAWG's
+ * redistribution clause is about reselling their dataset, not display) and a
+ * price is ours either way.
+ *
+ * historyLow comes from ITAD, never from us. SPEC 7: they serve overall,
+ * 1-year and 3-month lows, so "cheapest in two years" works on day one and
+ * there is nothing to accumulate. Our own stored quotes are only what we have
+ * observed since we started watching, and are used for the shape of the line
+ * rather than for the claim about the low.
+ */
+export const itemPrices = async (req, res) => {
+    const { type, externalId } = req.params;
+    if (type !== 'game') {
+        // Books have prices too, but through a different adapter (M0/M6).
+        return res.status(200).json({ status: 'Success', data: { deals: [], historyLow: null, observed: [] } });
+    }
+
+    // Our catalogue row, if this game has ever been imported. Absent for a
+    // title nobody tracks, which is fine - ITAD still answers.
+    const [item] = await db
+        .select()
+        .from(mediaItems)
+        .where(and(eq(mediaItems.source, 'rawg'), eq(mediaItems.externalId, String(externalId))))
+        .limit(1);
+
+    const payload = await cached(`prices:game:${externalId}`, 30 * 60 * 1000, async () => {
+        // An id we already resolved costs no lookup. One we have not needs the
+        // title, which only exists once the game is in our catalogue.
+        let itadId = item?.itadId ?? null;
+        if (!itadId && item?.title) {
+            itadId = await itad.lookupGameId(item.title);
+            if (itadId) await db.update(mediaItems).set({ itadId }).where(eq(mediaItems.id, item.id));
+        }
+        if (!itadId) return { deals: [], historyLow: null };
+
+        const [entry] = await itad.fetchPrices([itadId]);
+        return {
+            deals: itad.dealsToQuotes(entry, item?.id ?? null).map((q) => ({
+                platform: q.platform,
+                priceCents: q.priceCents,
+                originalPriceCents: q.originalPriceCents,
+                discountPercent: q.discountPercent,
+                currency: q.currency,
+                url: q.url,
+            })).sort((a, b) => a.priceCents - b.priceCents),
+            historyLow: itad.historyLowOf(entry),
+        };
+    });
+
+    // What our own polling has seen. Not a claim about the all-time low -
+    // that is ITAD's field - just the line we can honestly draw.
+    const observed = item
+        ? await db
+            .select({ quoteDate: priceQuotes.quoteDate, priceCents: priceQuotes.priceCents })
+            .from(priceQuotes)
+            .where(eq(priceQuotes.mediaItemId, item.id))
+            .orderBy(asc(priceQuotes.quoteDate))
+            .limit(400)
+        : [];
+
+    // One point per day: the cheapest store that day is the price that
+    // mattered.
+    const byDay = new Map();
+    for (const row of observed) {
+        const prev = byDay.get(row.quoteDate);
+        if (!prev || row.priceCents < prev) byDay.set(row.quoteDate, row.priceCents);
+    }
+
+    return res.status(200).json({
+        status: 'Success',
+        data: {
+            ...payload,
+            observed: [...byDay.entries()].map(([date, priceCents]) => ({ date, priceCents })),
+        },
+    });
 };
 
 /** GET /movies/:id/seasons/:n - episodes of one season. TV only. */

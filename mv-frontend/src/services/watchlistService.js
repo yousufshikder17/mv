@@ -18,5 +18,15 @@ export const getTrending     = ()           => api.get('/movies/trending')
 // Public - no account needed. Reads straight from TMDB and creates no
 // catalogue row, so browsing does not cache content we then have to expire.
 export const getPublicDetails = (type, externalId) => api.get(`/movies/details/${type}/${externalId}`)
+export const getItemPrices    = (type, externalId) => api.get(`/movies/prices/${type}/${externalId}`)
+
+// Alerts and notifications - always private (SPEC 9).
+export const getAlerts        = ()            => api.get('/alerts')
+export const setAlert         = (data)        => api.post('/alerts', data)
+export const deleteAlert      = (id)          => api.delete(`/alerts/${id}`)
+export const getNotifications = ()            => api.get('/notifications')
+export const markNotificationsRead = (id)     => api.post('/notifications/read', id ? { id } : {})
+export const getVapidKey      = ()            => api.get('/notifications/vapid-key')
+export const subscribePush    = (sub)         => api.post('/notifications/subscribe', sub)
 export const getAllMovies    = ()           => api.get('/movies')
 export const getMovieById    = (id)         => api.get(`/movies/${id}`)

@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth.js'
 import Poster from '../components/ui/Poster.jsx'
 import TmdbCredit from '../components/layout/TmdbCredit.jsx'
 import RawgCredit from '../components/layout/RawgCredit.jsx'
+import PricePanel from '../components/prices/PricePanel.jsx'
 import { TYPE_LABEL } from '../lib/media.js'
 import styles from './ItemPage.module.css'
 
@@ -148,6 +149,17 @@ export default function ItemPage({ showToast }) {
               <span className={styles.factLabel}>{item.type === 'tv' ? 'Created by' : 'Directed by'}</span>
               {item.creators.join(', ')}
             </p>
+          )}
+
+          {/* Prices. Games only for now - books price through a different
+              adapter (M0/M6) and films have no price at all. */}
+          {item.type === 'game' && (
+            <PricePanel
+              type={item.type}
+              externalId={externalId}
+              mediaItemId={item.mediaItemId ?? null}
+              showToast={showToast}
+            />
           )}
 
           {item.cast?.length > 0 && (

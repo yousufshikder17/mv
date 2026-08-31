@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.js'
+import NotificationBell from '../notifications/NotificationBell.jsx'
 import styles from './Navbar.module.css'
 
 export default function Navbar({ onThemeToggle, theme }) {
@@ -48,6 +49,7 @@ export default function Navbar({ onThemeToggle, theme }) {
           {theme === 'dark' ? '☀' : '◑'}
         </button>
 
+        {isAuthenticated && <NotificationBell />}
         {isAuthenticated ? (
           <>
             <span className={styles.userGreeting} id="nav-user-greeting">

@@ -1,0 +1,59 @@
+.wrap { position: relative; }
+
+.bell {
+  position: relative; width: 34px; height: 34px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; color: var(--c-muted);
+  border-radius: 999px; cursor: pointer; transition: all .15s;
+}
+.bell:hover { color: var(--c-fg); background: var(--c-faint); }
+.bell svg { width: 18px; height: 18px; }
+
+.dot {
+  position: absolute; top: 1px; right: 1px;
+  min-width: 15px; height: 15px; padding: 0 4px;
+  border-radius: 999px; background: var(--c-accent); color: var(--c-bg);
+  font-family: var(--ff-mono); font-size: 9px; font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+.panel {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 60;
+  width: min(340px, calc(100vw - 32px));
+  background: var(--c-surface); border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  padding: 14px; max-height: 70vh; overflow-y: auto;
+}
+
+.head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.title {
+  font-family: var(--ff-mono); font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--c-muted);
+}
+.readAll {
+  background: none; border: 0; cursor: pointer; padding: 0;
+  font-size: 12px; color: var(--c-accent);
+}
+
+.enablePush {
+  width: 100%; margin-bottom: 12px; padding: 9px 12px;
+  border-radius: 8px; border: 1px dashed var(--c-line);
+  background: transparent; color: var(--c-muted);
+  font: inherit; font-size: 12.5px; cursor: pointer; text-align: left;
+}
+.enablePush:hover { color: var(--c-fg); border-color: var(--c-accent); }
+
+.empty { font-size: 13px; color: var(--c-muted); margin: 6px 0; line-height: 1.5; }
+
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.item {
+  width: 100%; text-align: left; background: none; border: 0; cursor: pointer;
+  padding: 10px; border-radius: 8px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.item:hover { background: var(--c-faint); }
+.itemTitle { font-size: 13.5px; font-weight: 500; color: var(--c-muted); }
+.itemBody  { font-size: 12.5px; color: var(--c-muted); line-height: 1.4; }
+/* Unread reads as still-to-deal-with: full contrast plus an accent marker. */
+.unreadItem .itemTitle { color: var(--c-fg); }
+.unreadItem { border-left: 2px solid var(--c-accent); border-radius: 0 8px 8px 0; }
