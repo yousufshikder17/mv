@@ -81,7 +81,11 @@ export const mediaItems = pgTable('media_item', {
     createdAt: timestamp('created_at').defaultNow(),
     refreshedAt: timestamp('refreshed_at').defaultNow(),
 }, (t) => [
-    unique().on(t.source, t.externalId),
+    // type is part of the key, not decoration. A source's id space is only
+    // unique WITHIN a media type: TMDB movie 550 is Fight Club and TMDB tv 550
+    // is "Till Death Us Do Part". Keyed on (source, externalId) alone, the
+    // second import silently overwrote the first.
+    unique().on(t.source, t.type, t.externalId),
 ]);
 
 // 4. Tracking Item — the junction (was `watchlist_item`)

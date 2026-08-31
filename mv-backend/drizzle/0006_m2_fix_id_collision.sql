@@ -1,0 +1,2 @@
+ALTER TABLE "media_item" DROP CONSTRAINT "media_item_source_external_id_unique";--> statement-breakpoint
+ALTER TABLE "media_item" ADD CONSTRAINT "media_item_source_type_external_id_unique" UNIQUE("source","type","external_id");

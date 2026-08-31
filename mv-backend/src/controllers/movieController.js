@@ -104,7 +104,9 @@ export const importFromTmdb = async (req, res) => {
         .insert(mediaItems)
         .values({ ...details, createdBy: req.user.id, refreshedAt: new Date() })
         .onConflictDoUpdate({
-            target: [mediaItems.source, mediaItems.externalId],
+            // Must match the unique constraint exactly, or the conflict is
+            // not detected and a film gets clobbered by a show sharing its id.
+            target: [mediaItems.source, mediaItems.type, mediaItems.externalId],
             set: { ...details, refreshedAt: new Date() },
         })
         .returning();
