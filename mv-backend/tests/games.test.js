@@ -26,8 +26,11 @@ describe('every searchable type can actually be imported', () => {
     });
 
     it('still rejects a type no adapter owns', async () => {
+        // Deliberately not a real media type. 'book' and then 'album' were
+        // each used here and each stopped testing anything the moment that
+        // type shipped - the assertion passed for the wrong reason.
         const user = await registerUser();
-        const res = await user.auth(api().post('/movies/import')).send({ tmdbId: 1, type: 'album' });
+        const res = await user.auth(api().post('/movies/import')).send({ tmdbId: 1, type: 'podcast' });
         expect(res.status).toBe(400);
     });
 });

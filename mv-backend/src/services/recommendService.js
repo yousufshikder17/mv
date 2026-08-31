@@ -17,8 +17,19 @@ import { mediaItems, trackingItems } from '../db/schema.js';
  * adds one.
  */
 
-// Spotify data may never enter this pipeline (SPEC 3). Enforced on the source
-// rather than the type, because the licence attaches to who supplied the row.
+// Sources whose licence forbids their data being used to build a
+// recommendation system. Keyed on SOURCE rather than type, because the licence
+// attaches to whoever supplied the row, not to what kind of thing it is.
+//
+// Spotify stays listed even though nothing imports from it: SPEC 3 forbids
+// their content in recommendations or ML, and if a Spotify adapter is ever
+// added the exclusion must already be in force rather than remembered.
+//
+// MusicBrainz is deliberately NOT here. Its core data is CC0, so albums
+// sourced from it are recommendable - which is exactly what SPEC 3 anticipated
+// when it said music is excluded "until MusicBrainz replaces Spotify as the
+// metadata source". Choosing MusicBrainz did not just avoid a subscription, it
+// unblocked a capability.
 const EXCLUDED_SOURCES = ['spotify'];
 
 // A shared creator is far stronger evidence than a shared genre: half the

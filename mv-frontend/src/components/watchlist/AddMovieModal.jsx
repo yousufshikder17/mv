@@ -110,7 +110,7 @@ export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
         {/* Type filter. Empty string means both, interleaved by TMDB's own
             popularity ordering — the common case is not knowing which it is. */}
         <div className={styles.typeTabs}>
-          {[['', 'All'], ['film', 'Films'], ['tv', 'TV'], ['game', 'Games'], ['book', 'Books']].map(([value, label]) => (
+          {[['', 'All'], ['film', 'Films'], ['tv', 'TV'], ['game', 'Games'], ['book', 'Books'], ['album', 'Music']].map(([value, label]) => (
             <button
               key={label}
               type="button"

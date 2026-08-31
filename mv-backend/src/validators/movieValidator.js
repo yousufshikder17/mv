@@ -35,5 +35,5 @@ export const importMovieSchema = z.object({
     // landed, so every game import was rejected by validation before the
     // controller ever saw it - a 400 that looked like a bad request rather
     // than a missing case.
-    type: z.enum(["film", "tv", "game", "book"]).default("film"),
+    type: z.enum(["film", "tv", "game", "book", "album"]).default("film"),
 });

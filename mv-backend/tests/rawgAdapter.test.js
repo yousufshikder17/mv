@@ -156,6 +156,6 @@ describe('the adapter registry routes by source, not by guesswork', () => {
         // silently overwrite it with whatever TMDB returned for that id.
         const { adapterForSource, adapterForType } = await import('../src/adapters/media/index.ts');
         expect(adapterForSource('igdb')).toBeNull();
-        expect(adapterForType('album')).toBeNull();
+        expect(adapterForType('podcast')).toBeNull();
     });
 });

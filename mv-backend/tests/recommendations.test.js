@@ -116,6 +116,41 @@ describe('Spotify data is excluded by licence', () => {
     });
 });
 
+// The payoff of choosing MusicBrainz over Spotify. SPEC 3 excluded music from
+// recommendations because Spotify's terms forbid it; MusicBrainz core data is
+// CC0, so that exclusion simply does not apply.
+describe('MusicBrainz albums ARE recommendable', () => {
+    it('recommends an album sourced from MusicBrainz', async () => {
+        const user = await registerUser();
+        const liked = await createMovie({ type: 'album', source: 'musicbrainz', genres: ['Shoegaze'] });
+        const candidate = await createMovie({ type: 'album', source: 'musicbrainz', genres: ['Shoegaze'] });
+        await track(user.id, liked.id, 'COLLECTED', 9);
+
+        const { recommendations } = await recommendFor(user.id);
+        expect(recommendations.map((r) => r.item.id)).toContain(candidate.id);
+    });
+
+    it('learns taste from a MusicBrainz album', async () => {
+        const user = await registerUser();
+        const album = await createMovie({ type: 'album', source: 'musicbrainz', genres: ['Shoegaze'] });
+        await track(user.id, album.id, 'COLLECTED', 10);
+
+        const { genres } = await tasteProfile(user.id);
+        expect(genres.has('shoegaze')).toBe(true);
+    });
+
+    it('still excludes Spotify, if a Spotify row ever exists', async () => {
+        // The exclusion is on the source, so it holds regardless of type.
+        const user = await registerUser();
+        const liked = await createMovie({ type: 'album', source: 'musicbrainz', genres: ['Ambient'] });
+        await createMovie({ type: 'album', source: 'spotify', genres: ['Ambient'] });
+        await track(user.id, liked.id, 'COLLECTED', 9);
+
+        const { recommendations } = await recommendFor(user.id);
+        expect(recommendations.every((r) => r.item.source !== 'spotify')).toBe(true);
+    });
+});
+
 describe('the endpoint', () => {
     it('returns recommendations with their reasons', async () => {
         const user = await registerUser();

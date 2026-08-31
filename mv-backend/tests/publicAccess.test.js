@@ -186,10 +186,11 @@ describe('RAWG quota protection', () => {
 
 describe('public details', () => {
     it('rejects a media type no adapter owns, instead of guessing', async () => {
-        // 'album' until Spotify lands. Using a type that later becomes valid
-        // is how this test quietly stopped testing anything when books landed.
+        // Not a real media type, on purpose. This used 'book', then 'album',
+        // and each time the type shipped the assertion started passing for
+        // the wrong reason.
         stubTmdb();
-        const res = await api().get('/movies/details/album/123');
+        const res = await api().get('/movies/details/podcast/123');
         expect(res.status).toBe(400);
     });
 

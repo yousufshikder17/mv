@@ -75,7 +75,7 @@ export default function Discover() {
             <SearchIcon size={16} className={styles.searchIcon} />
             <input
               className={styles.searchInput}
-              placeholder="Search films, shows, games and books..."
+              placeholder="Search anything..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               id="discover-search"
@@ -83,7 +83,7 @@ export default function Discover() {
           </div>
 
           <div className={styles.typeTabs}>
-            {[['', 'All'], ['film', 'Films'], ['tv', 'TV'], ['game', 'Games'], ['book', 'Books']].map(([value, label]) => (
+            {[['', 'All'], ['film', 'Films'], ['tv', 'TV'], ['game', 'Games'], ['book', 'Books'], ['album', 'Music']].map(([value, label]) => (
               <button
                 key={label}
                 type="button"

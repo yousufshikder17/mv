@@ -1,6 +1,7 @@
 import * as tmdb from './tmdb.ts';
 import * as rawg from './rawg.ts';
 import * as openlibrary from './openlibrary.ts';
+import * as musicbrainz from './musicbrainz.ts';
 import type { MediaSearchResult, MediaType } from './types.ts';
 
 /**
@@ -10,7 +11,7 @@ import type { MediaSearchResult, MediaType } from './types.ts';
  * registry, no factory, no dynamic loading", and this is a static lookup
  * written out in full. Adding a source is a line here and a new file.
  */
-const BY_SOURCE = { tmdb, rawg, openlibrary } as const;
+const BY_SOURCE = { tmdb, rawg, openlibrary, musicbrainz } as const;
 
 const BY_TYPE = {
     film: tmdb,
@@ -21,6 +22,10 @@ const BY_TYPE = {
     // not for a search box. Google Books keeps the prices; Open Library
     // answers the requests.
     book: openlibrary,
+    // MusicBrainz, not Spotify. CC0 core data with no restriction on
+    // recommendations - which is what SPEC 3 said would unblock music for
+    // recs, and which Spotify's terms forbid outright.
+    album: musicbrainz,
 } as const;
 
 export type Source = keyof typeof BY_SOURCE;
@@ -33,12 +38,13 @@ export const adapterForSource = (source: string) =>
 export const adapterForType = (type: string) =>
     BY_TYPE[type as keyof typeof BY_TYPE] ?? null;
 
-export const SEARCHABLE_TYPES: MediaType[] = ['film', 'tv', 'game', 'book'];
+export const SEARCHABLE_TYPES: MediaType[] = ['film', 'tv', 'game', 'book', 'album'];
 
 const searchOne = (type: string, query: string): Promise<MediaSearchResult[]> => {
     if (type === 'tv') return tmdb.searchTv(query);
     if (type === 'game') return rawg.searchGames(query);
     if (type === 'book') return openlibrary.searchBooks(query);
+    if (type === 'album') return musicbrainz.searchAlbums(query);
     return tmdb.searchFilms(query);
 };
 

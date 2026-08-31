@@ -213,7 +213,7 @@ export default function WatchlistPage({ showToast }) {
               a films-only vault has nothing to filter. */}
           {new Set(items.map((i) => getMovie(i)?.type ?? 'film')).size > 1 && (
             <div className={styles.filterTabs} role="tablist">
-              {['ALL', 'film', 'tv', 'game', 'book'].map((t) => (
+              {['ALL', 'film', 'tv', 'game', 'book', 'album'].map((t) => (
                 <button
                   key={t}
                   role="tab"
