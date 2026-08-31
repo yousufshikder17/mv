@@ -1,7 +1,7 @@
 import rateLimit from 'express-rate-limit';
 
 // Defaults matter here. These were read with a bare parseInt, so a missing or
-// malformed RATE_LIMIT_* produced NaN — and `windowMs: NaN` does not fail
+// malformed RATE_LIMIT_* produced NaN - and `windowMs: NaN` does not fail
 // loudly, it just yields a limiter with undefined behaviour. A rate limiter
 // that silently stops limiting is worse than one that is absent, because
 // nothing tells you it went away.
@@ -18,10 +18,35 @@ const apiLimiter = rateLimit({
     max: intFromEnv('RATE_LIMIT_MAX_REQUESTS', DEFAULT_MAX_REQUESTS),
     standardHeaders: true,
     legacyHeaders: false,
-    message: {
-        status: 429,
-        error: "Too many requests."
-    }
+    message: { status: 429, error: "Too many requests." },
 });
 
+/**
+ * Stricter limit for the unauthenticated TMDB proxy routes.
+ *
+ * These sit in front of somebody else's quota rather than our own database,
+ * and they answer to anyone on the internet. The general limiter allows 100
+ * requests per 15 minutes per IP, which is generous for a logged-in user and
+ * an invitation for an anonymous script.
+ *
+ * Deliberately still usable by a real person: a search box firing on every
+ * keystroke is debounced client-side, so 25 requests in 5 minutes is far more
+ * than browsing needs and far less than scraping wants. Combined with the
+ * response cache, a repeated query costs TMDB nothing at all.
+ *
+ * The number has to be checked against the GLOBAL limiter, not chosen alone.
+ * apiLimiter runs first on every request at 100 per 15 minutes; a public
+ * limit of 40 per 5 minutes is 120 per 15, so the global one bound first and
+ * this was strictly decorative. 25 per 5 minutes is 75 per 15 - genuinely
+ * tighter, which is the entire point of having it.
+ */
+const publicLimiter = rateLimit({
+    windowMs: intFromEnv('PUBLIC_RATE_LIMIT_WINDOW_MINUTES', 5) * 60 * 1000,
+    max: intFromEnv('PUBLIC_RATE_LIMIT_MAX_REQUESTS', 25),
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { status: 429, error: "Too many requests. Please slow down." },
+});
+
+export { publicLimiter };
 export default apiLimiter;

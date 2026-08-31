@@ -1,11 +1,15 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { loginUser } from '../services/authService.js'
 import { useAuth } from '../hooks/useAuth.js'
 import styles from './AuthPage.module.css'
 
 export default function LoginPage({ showToast }) {
   const navigate = useNavigate()
+  const location = useLocation()
+  // Where the visitor was before signing in - set by ProtectedRoute or by an
+  // item page's add button, so they land back on what they were reading.
+  const from = location.state?.from
   const { login } = useAuth()
 
   const [form,    setForm]    = useState({ email: '', password: '' })
@@ -28,7 +32,7 @@ export default function LoginPage({ showToast }) {
       const res = await loginUser(form)
       login(res.data.user, res.data.token)
       showToast('Welcome back!', 'success')
-      navigate('/watchlist')
+      navigate(from || '/watchlist')
     } catch (err) {
       setError(err.response?.data?.error ?? 'Login failed. Please try again.')
     } finally {

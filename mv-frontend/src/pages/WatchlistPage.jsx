@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { getWatchlist, updateWatchItem, removeFromWatch } from '../services/watchlistService.js'
 import WatchlistCard from '../components/watchlist/WatchlistCard.jsx'
 import WatchlistRow  from '../components/watchlist/WatchlistRow.jsx'
@@ -289,11 +290,14 @@ export default function WatchlistPage({ showToast }) {
                 + Add a film
               </button>
             )}
-            {/* Parked. TrendingStrip + GET /movies/trending stay in the tree —
-                discovery is moving to a public home page, where this belongs
-                instead of inside the gated vault.
-            {!search && <TrendingStrip onAdded={fetchWatchlist} showToast={showToast} />}
-            */}
+            {/* Discovery lives on the public home page now (M3), so an empty
+                vault points there rather than carrying its own copy of a
+                trending strip. TrendingStrip was deleted as superseded. */}
+            {!search && (
+              <Link to="/" className="btn-ghost" id="empty-browse-link">
+                Browse films and shows
+              </Link>
+            )}
           </div>
         ) : view === 'grid' ? (
           <div className={`${styles.grid} ${styles[density]}`}>

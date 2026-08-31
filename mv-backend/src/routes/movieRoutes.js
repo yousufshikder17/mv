@@ -3,9 +3,11 @@ import { authMiddleware } from '../middleware/authMiddleware.js';
 import { catchAsync } from '../middleware/catchAsyncMiddleware.js';
 import { validateRequest } from '../middleware/validateMiddleware.js';
 import { importMovieSchema } from '../validators/movieValidator.js';
+import { publicLimiter } from '../middleware/rateLimiter.js';
 import {
     searchTmdb,
     trending,
+    publicDetails,
     importFromTmdb,
     getSeasonEpisodes,
     getAllMovies,
@@ -14,15 +16,24 @@ import {
 
 const router = express.Router();
 
-// Auth on everything: search proxies TMDB, and an open proxy would let anyone
-// burn our API quota.
+// ── Public ───────────────────────────────────────────────────────────
+//
+// M3: the gate is persistence, not access. Reading about a film needs no
+// account; keeping it does. A logged-out visitor can find and read anything a
+// logged-in one can, and simply cannot save it.
+//
+// The auth gate WAS the quota defence, so removing it needs a real
+// replacement rather than nothing: publicLimiter caps a single IP well below
+// what scraping wants, and the controller serves these from a TTL cache so a
+// repeated query never reaches TMDB at all. Do not drop either one.
+//
+// Declared before "/:id", or Express matches "search" and "details" as uuids.
+router.get("/search", publicLimiter, catchAsync(searchTmdb));
+router.get("/trending", publicLimiter, catchAsync(trending));
+router.get("/details/:type/:externalId", publicLimiter, catchAsync(publicDetails));
+
+// ── Everything below writes, or reads our own catalogue ──────────────
 router.use(authMiddleware);
-
-// Must precede "/:id" or Express matches "search" as a uuid param.
-router.get("/search", catchAsync(searchTmdb));
-
-// Also before "/:id" — same reason.
-router.get("/trending", catchAsync(trending));
 
 router.post("/import", validateRequest(importMovieSchema), catchAsync(importFromTmdb));
 

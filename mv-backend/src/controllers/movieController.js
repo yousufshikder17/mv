@@ -2,6 +2,7 @@ import { eq, and, or, inArray, desc, lt } from 'drizzle-orm';
 import { db } from '../config/db.js';
 import { mediaItems } from '../db/schema.js';
 import * as tmdb from '../adapters/media/tmdb.ts';
+import { cached } from '../utils/cache.js';
 
 // TMDB forbids caching their content beyond 6 months. We refresh well inside
 // that window so a row is never served stale enough to breach it.
@@ -60,14 +61,22 @@ export const searchTmdb = async (req, res) => {
 
     const search =
         type === 'tv' ? tmdb.searchTv : type === 'film' ? tmdb.searchFilms : tmdb.searchAll;
-    const results = await search(query);
+
+    // Five minutes. Long enough that a shared link or a repeated query costs
+    // TMDB nothing, short enough that a new release appears the same session.
+    const results = await cached(
+        `search:${type ?? 'all'}:${query.toLowerCase()}`,
+        5 * 60 * 1000,
+        () => search(query),
+    );
 
     return res.status(200).json({ status: 'Success', results: results.length, data: results });
 };
 
 /** GET /movies/trending - TMDB weekly trending, proxied. */
 export const trending = async (req, res) => {
-    const results = await tmdb.getTrending();
+    // Trending is a weekly list. An hour is already far fresher than the data.
+    const results = await cached('trending:film:week', 60 * 60 * 1000, () => tmdb.getTrending());
     return res.status(200).json({ status: 'Success', results: results.length, data: results });
 };
 
@@ -112,6 +121,30 @@ export const importFromTmdb = async (req, res) => {
         .returning();
 
     return res.status(201).json({ status: 'Success', data: { movie } });
+};
+
+/**
+ * GET /movies/details/:type/:externalId - public item page data.
+ *
+ * Reads straight from TMDB and writes NOTHING to the catalogue. That is the
+ * point: a visitor browsing must not create rows, or every idle click would
+ * cache TMDB content we then have to expire within six months (SPEC 3) for a
+ * title nobody tracks. A row is created only when someone actually adds it.
+ */
+export const publicDetails = async (req, res) => {
+    const { type, externalId } = req.params;
+
+    if (type !== 'film' && type !== 'tv') {
+        return res.status(400).json({ error: 'Unknown media type' });
+    }
+
+    const item = await cached(
+        `details:${type}:${externalId}`,
+        60 * 60 * 1000,
+        () => tmdb.getDetailsWithCast(type, externalId),
+    );
+
+    return res.status(200).json({ status: 'Success', data: { item } });
 };
 
 /** GET /movies/:id/seasons/:n - episodes of one season. TV only. */

@@ -19,6 +19,12 @@ export default defineConfig({
             // through and tests fail for a reason unrelated to what they assert.
             RATE_LIMIT_MAX_REQUESTS: '1000000',
             RATE_LIMIT_WINDOW_MINUTES: '15',
+            // Deliberately a DIFFERENT number from the one above, and still
+            // far above what the suite needs. It has to stay lower so a test
+            // can prove the stricter limiter is actually mounted on the
+            // public routes rather than merely defined.
+            PUBLIC_RATE_LIMIT_MAX_REQUESTS: '1000',
+            PUBLIC_RATE_LIMIT_WINDOW_MINUTES: '5',
         },
         // pglite compiles a WASM Postgres on first boot.
         testTimeout: 30000,

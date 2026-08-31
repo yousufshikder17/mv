@@ -17,9 +17,17 @@ export const createApp = () => {
     // proxy rather than the proxy's own.
     app.set("trust proxy", 1);
 
+    // Hardcoding localhost blocked every deployed frontend, which matters now
+    // that M3 serves public pages. Comma-separated CORS_ORIGINS in .env, with
+    // the dev defaults kept so nothing local has to change.
+    const origins = (process.env.CORS_ORIGINS ?? "http://localhost:5173,http://127.0.0.1:5173")
+        .split(",")
+        .map((o) => o.trim())
+        .filter(Boolean);
+
     app.use(
         cors({
-            origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+            origin: origins,
             credentials: true,
             methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             allowedHeaders: ["Content-Type", "Authorization"],

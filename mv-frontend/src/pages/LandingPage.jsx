@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import TmdbCredit from '../components/layout/TmdbCredit.jsx'
+import Discover from '../components/discover/Discover.jsx'
 import { ClapperIcon } from '../components/ui/Icon.jsx'
 import styles from './LandingPage.module.css'
 
@@ -95,6 +96,9 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* ── Discover (public, no account) ────────────────────────── */}
+      <Discover />
 
       {/* ── Features ─────────────────────────────────────────────── */}
       <section className={styles.section} id="features">

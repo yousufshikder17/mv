@@ -113,9 +113,7 @@ export const getTrending = async (): Promise<MediaSearchResult[]> => {
     }));
 };
 
-export const getFilmDetails = async (externalId: string): Promise<MediaItem> => {
-    const m = await request(`/movie/${externalId}`, { language: 'en-US' });
-    return {
+const mapFilm = (m: any): MediaItem => ({
         type: 'film',
         source: SOURCE,
         externalId: String(m.id),
@@ -128,15 +126,15 @@ export const getFilmDetails = async (externalId: string): Promise<MediaItem> => 
         genres: (m.genres ?? []).map((g: any) => g.name),
         runtime: m.runtime || null,
         posterUrl: posterUrl(m.poster_path),
-        seasonCount: null,
-        episodeCount: null,
-        releaseStatus: m.status || null,
-    };
-};
+    seasonCount: null,
+    episodeCount: null,
+    releaseStatus: m.status || null,
+});
 
-export const getTvDetails = async (externalId: string): Promise<MediaItem> => {
-    const s = await request(`/tv/${externalId}`, { language: 'en-US' });
-    return {
+export const getFilmDetails = async (externalId: string): Promise<MediaItem> =>
+    mapFilm(await request(`/movie/${externalId}`, { language: 'en-US' }));
+
+const mapTv = (s: any): MediaItem => ({
         type: 'tv',
         source: SOURCE,
         externalId: String(s.id),
@@ -153,11 +151,13 @@ export const getTvDetails = async (externalId: string): Promise<MediaItem> => {
         posterUrl: posterUrl(s.poster_path),
         seasonCount: s.number_of_seasons ?? null,
         episodeCount: s.number_of_episodes ?? null,
-        // 'Returning Series' | 'Ended' | 'Canceled' | 'In Production'.
-        // Drives a shorter cache TTL - see refreshIfStale.
-        releaseStatus: s.status || null,
-    };
-};
+    // 'Returning Series' | 'Ended' | 'Canceled' | 'In Production'.
+    // Drives a shorter cache TTL - see refreshIfStale.
+    releaseStatus: s.status || null,
+});
+
+export const getTvDetails = async (externalId: string): Promise<MediaItem> =>
+    mapTv(await request(`/tv/${externalId}`, { language: 'en-US' }));
 
 /** Episodes of one season. Only TV has these. */
 export const getSeason = async (externalId: string, seasonNumber: number): Promise<Episode[]> => {
@@ -169,6 +169,32 @@ export const getSeason = async (externalId: string, seasonNumber: number): Promi
         airDate: e.air_date || null,
         runtime: e.runtime ?? null,
     }));
+};
+
+/**
+ * Detail plus top-billed cast, for a public item page.
+ *
+ * append_to_response fetches credits in the same round trip - two calls would
+ * be two against the rate limit for one page, and TMDB provides this exact
+ * mechanism to avoid that.
+ */
+export const getDetailsWithCast = async (type: string, externalId: string) => {
+    const path = type === 'tv' ? `/tv/${externalId}` : `/movie/${externalId}`;
+    const raw = await request(path, { language: 'en-US', append_to_response: 'credits' });
+    const item = type === 'tv' ? mapTv(raw) : mapFilm(raw);
+
+    return {
+        ...item,
+        // Ten is what a page shows before it becomes a list nobody reads.
+        cast: (raw.credits?.cast ?? []).slice(0, 10).map((c: any) => ({
+            name: c.name,
+            character: c.character || null,
+            profileUrl: posterUrl(c.profile_path, 'w185'),
+        })),
+        creators: type === 'tv'
+            ? (raw.created_by ?? []).map((c: any) => c.name)
+            : (raw.credits?.crew ?? []).filter((c: any) => c.job === 'Director').map((c: any) => c.name),
+    };
 };
 
 /** Details for either type, chosen by what the catalogue row says it is. */

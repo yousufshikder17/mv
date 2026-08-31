@@ -27,9 +27,17 @@ api.interceptors.response.use(
     const status = error.response?.status
 
     if (status === 401) {
+      // Only an EXPIRED SESSION should bounce anyone to the login page.
+      //
+      // Since M3, public pages call authenticated endpoints on purpose - an
+      // anonymous visitor pressing "Add to watchlist" gets a 401, and that is
+      // the signal to prompt, not to eject them from the page they were
+      // reading. Redirecting unconditionally logged out a browse session that
+      // was never logged in.
+      const hadSession = Boolean(localStorage.getItem('mv_token'))
       localStorage.removeItem('mv_token')
       localStorage.removeItem('mv_user')
-      if (window.location.pathname !== '/login') {
+      if (hadSession && window.location.pathname !== '/login') {
         window.location.href = '/login'
       }
     } else if (status === 429) {

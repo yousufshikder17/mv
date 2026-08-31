@@ -15,5 +15,8 @@ export const getSeasonRatings = (itemId)             => api.get(`/watchlist/${it
 export const setSeasonRating  = (itemId, n, data)    => api.put(`/watchlist/${itemId}/seasons/${n}`, data)
 export const getSeasonEpisodes = (mediaId, n)        => api.get(`/movies/${mediaId}/seasons/${n}`)
 export const getTrending     = ()           => api.get('/movies/trending')
+// Public - no account needed. Reads straight from TMDB and creates no
+// catalogue row, so browsing does not cache content we then have to expire.
+export const getPublicDetails = (type, externalId) => api.get(`/movies/details/${type}/${externalId}`)
 export const getAllMovies    = ()           => api.get('/movies')
 export const getMovieById    = (id)         => api.get(`/movies/${id}`)
