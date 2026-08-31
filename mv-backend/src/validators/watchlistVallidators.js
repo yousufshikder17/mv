@@ -82,6 +82,7 @@ const addToWatchlistSchema = z.object({
     }).optional(),
     rating: ratingValue.optional(),
     notes: z.string().optional(),
+    progressSeason: z.coerce.number().int().min(0).optional(),
     progressCurrent: z.coerce.number().int().min(0).optional(),
     progressTotal: z.coerce.number().int().min(0).optional(),
 });
@@ -99,6 +100,7 @@ const updateWatchlistSchema = z.object({
     // which would fail the min(1) bound and make a rating impossible to clear.
     rating: z.union([z.null(), ratingValue]).optional(),
     notes: z.string().optional(),
+    progressSeason: z.union([z.null(), z.coerce.number().int().min(0)]).optional(),
     progressCurrent: z.union([z.null(), z.coerce.number().int().min(0)]).optional(),
     progressTotal: z.union([z.null(), z.coerce.number().int().min(0)]).optional(),
 });

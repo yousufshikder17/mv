@@ -122,7 +122,7 @@ export const removeFromWatchlist = async (req, res) => {
 
 export const updateWatchlistItem = async (req, res) => {
     const { id } = req.params; // The ID of the watchlist entry
-    const { status, rating, notes } = req.body;
+    const { status, rating, notes, progressSeason, progressCurrent, progressTotal } = req.body;
     const userId = req.user.id; // From authMiddleware
 
     const result = await db
@@ -135,6 +135,12 @@ export const updateWatchlistItem = async (req, res) => {
             ...(status !== undefined && { status }),
             ...(rating !== undefined && { rating }),
             ...(notes !== undefined && { notes }),
+            // Progress was validated but never written — the fields reached
+            // Zod, passed, and were dropped here, so the API answered 200 with
+            // the old values.
+            ...(progressSeason !== undefined && { progressSeason }),
+            ...(progressCurrent !== undefined && { progressCurrent }),
+            ...(progressTotal !== undefined && { progressTotal }),
             updatedAt: new Date(), // Good practice for tracking changes
         })
         .where(
