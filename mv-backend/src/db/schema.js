@@ -70,6 +70,10 @@ export const mediaItems = pgTable('media_item', {
     // lengths — TMDB's episode_run_time is often an empty array.
     runtime: integer('runtime'),
     posterUrl: text('poster_url'),
+    // Games only: every platform the title is released on. The platform a
+    // given user actually plays it on lives on tracking_item, because those
+    // are different facts - the catalogue row is shared between users.
+    platforms: text('platforms').array().notNull().default([]),
     // TV only. Null for every other type.
     seasonCount: integer('season_count'),
     episodeCount: integer('episode_count'),
@@ -111,6 +115,10 @@ export const trackingItems = pgTable('tracking_item', {
     // TV needs three numbers, not two: "season 2, episode 4 of 10". Season is
     // separate because progressTotal counts episodes within the current
     // season, which is what a viewer actually tracks against.
+    // Which platform this user plays it on (SPEC §6, games "Extra"). Free
+    // text rather than an enum: platform names come from RAWG and new consoles
+    // arrive without asking us.
+    platform: text('platform'),
     progressSeason: integer('progress_season'),
     progressCurrent: integer('progress_current'),
     progressTotal: integer('progress_total'),

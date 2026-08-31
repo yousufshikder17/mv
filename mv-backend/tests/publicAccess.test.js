@@ -56,13 +56,27 @@ describe('quota defence that replaced the auth gate', () => {
         expect(cacheStats.hits).toBe(2);
     });
 
-    it('caches the untyped search too, which costs two upstream calls', async () => {
-        // No type means searchAll, which hits /search/movie and /search/tv.
-        // One request, two calls; the second request, none.
+    it('caches the untyped search too, which costs one call per source', async () => {
+        // No type means searchAll across film, tv and game - three upstream
+        // calls for one request, and none at all for the second.
         const spy = stubTmdb();
         await api().get('/movies/search?q=dune');
         await api().get('/movies/search?q=dune');
-        expect(spy).toHaveBeenCalledTimes(2);
+        expect(spy).toHaveBeenCalledTimes(3);
+    });
+
+    it('returns the sources that worked when one is down', async () => {
+        // A RAWG outage must not cost the film and TV results. searchAll
+        // settles rather than races, so a failing source contributes nothing
+        // instead of failing the request.
+        vi.stubGlobal('fetch', vi.fn(async (url) => {
+            if (String(url).includes('rawg.io')) throw new Error('ENOTFOUND');
+            return { ok: true, status: 200, json: async () => ({ results: [{ id: 1, title: 'F', name: 'F' }] }) };
+        }));
+
+        const res = await api().get('/movies/search?q=dune');
+        expect(res.status).toBe(200);
+        expect(res.body.results).toBeGreaterThan(0);
     });
 
     it('treats a different query as a different key', async () => {
@@ -97,6 +111,8 @@ describe('quota defence that replaced the auth gate', () => {
     });
 
     it('does not cache a failure - a blip must not become an outage', async () => {
+        // Typed, so the failure propagates: an untyped search settles across
+        // sources and deliberately absorbs one being down.
         let calls = 0;
         vi.stubGlobal('fetch', vi.fn(async () => {
             calls += 1;
@@ -104,12 +120,12 @@ describe('quota defence that replaced the auth gate', () => {
             return { ok: true, status: 200, json: async () => ({ results: [] }) };
         }));
 
-        const first = await api().get('/movies/search?q=dune');
+        const first = await api().get('/movies/search?q=dune&type=film');
         expect(first.status).toBe(502);
 
         // Serving the error back for the full TTL would turn a two-second
         // TMDB wobble into a five-minute one.
-        const second = await api().get('/movies/search?q=dune');
+        const second = await api().get('/movies/search?q=dune&type=film');
         expect(second.status).toBe(200);
     });
 

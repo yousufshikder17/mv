@@ -4,6 +4,7 @@ import { getPublicDetails, importMovie, addToWatchlist } from '../services/watch
 import { useAuth } from '../hooks/useAuth.js'
 import Poster from '../components/ui/Poster.jsx'
 import TmdbCredit from '../components/layout/TmdbCredit.jsx'
+import RawgCredit from '../components/layout/RawgCredit.jsx'
 import { TYPE_LABEL } from '../lib/media.js'
 import styles from './ItemPage.module.css'
 
@@ -117,6 +118,12 @@ export default function ItemPage({ showToast }) {
             <p className={styles.original}>{item.originalTitle}</p>
           )}
 
+          {item.platforms?.length > 0 && (
+            <div className={styles.genres}>
+              {item.platforms.map((p) => <span key={p} className={styles.genre}>{p}</span>)}
+            </div>
+          )}
+
           {item.genres?.length > 0 && (
             <div className={styles.genres}>
               {item.genres.map((g) => <span key={g} className={styles.genre}>{g}</span>)}
@@ -129,6 +136,9 @@ export default function ItemPage({ showToast }) {
               <span>{item.seasonCount} season{item.seasonCount === 1 ? '' : 's'}</span>
             )}
             {item.episodeCount != null && <span>{item.episodeCount} episodes</span>}
+            {item.type === 'game' && item.runtime && (
+              <span>~{Math.round(item.runtime / 60)}h to play</span>
+            )}
           </div>
 
           {item.overview && <p className={styles.overview}>{item.overview}</p>}
@@ -158,7 +168,10 @@ export default function ItemPage({ showToast }) {
 
       {/* TMDB requires attribution wherever their data is rendered (SPEC 3),
           and this page is public. */}
-      <footer className={styles.attribution}><TmdbCredit /></footer>
+      {/* Credit the source that actually supplied this page. */}
+      <footer className={styles.attribution}>
+        {item.type === 'game' ? <RawgCredit /> : <TmdbCredit />}
+      </footer>
     </main>
   )
 }

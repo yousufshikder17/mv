@@ -82,6 +82,7 @@ const addToWatchlistSchema = z.object({
     }).optional(),
     rating: ratingValue.optional(),
     notes: z.string().optional(),
+    platform: z.string().max(120).optional(),
     progressSeason: z.coerce.number().int().min(0).optional(),
     progressCurrent: z.coerce.number().int().min(0).optional(),
     progressTotal: z.coerce.number().int().min(0).optional(),
@@ -100,6 +101,9 @@ const updateWatchlistSchema = z.object({
     // which would fail the min(1) bound and make a rating impossible to clear.
     rating: z.union([z.null(), ratingValue]).optional(),
     notes: z.string().optional(),
+    // Free text: platform names come from RAWG and new consoles arrive
+    // without asking us.
+    platform: z.union([z.null(), z.string().max(120)]).optional(),
     progressSeason: z.union([z.null(), z.coerce.number().int().min(0)]).optional(),
     progressCurrent: z.union([z.null(), z.coerce.number().int().min(0)]).optional(),
     progressTotal: z.union([z.null(), z.coerce.number().int().min(0)]).optional(),

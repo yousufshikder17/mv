@@ -5,6 +5,7 @@ import Poster from '../ui/Poster.jsx'
 import { SearchIcon } from '../ui/Icon.jsx'
 import { TYPE_LABEL } from '../../lib/media.js'
 import styles from './Discover.module.css'
+import RawgCredit from '../layout/RawgCredit.jsx'
 
 /**
  * Public discovery: search and trending, no account (M3).
@@ -74,7 +75,7 @@ export default function Discover() {
             <SearchIcon size={16} className={styles.searchIcon} />
             <input
               className={styles.searchInput}
-              placeholder="Search films and shows..."
+              placeholder="Search films, shows and games..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               id="discover-search"
@@ -82,7 +83,7 @@ export default function Discover() {
           </div>
 
           <div className={styles.typeTabs}>
-            {[['', 'All'], ['film', 'Films'], ['tv', 'TV']].map(([value, label]) => (
+            {[['', 'All'], ['film', 'Films'], ['tv', 'TV'], ['game', 'Games']].map(([value, label]) => (
               <button
                 key={label}
                 type="button"
@@ -117,6 +118,11 @@ export default function Discover() {
             </Link>
           ))}
         </div>
+
+        {/* RAWG requires an active hyperlink on every page showing their
+            data, so the credit follows the results rather than living in a
+            footer. Only rendered when a game is actually on screen. */}
+        {shown.some((r) => r.type === 'game') && <RawgCredit className={styles.credit} />}
 
         {query.trim() && !loading && failed && (
           <p className={styles.empty}>

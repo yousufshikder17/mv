@@ -19,7 +19,15 @@ export const updateMovieSchema = createMovieSchema.partial();
 // Import takes only the TMDB id — every other field comes from TMDB itself,
 // so there is nothing else for the client to get wrong.
 export const importMovieSchema = z.object({
-    tmdbId: z.coerce.number().int().positive("A valid TMDB id is required"),
+    // Named tmdbId for the original films-only contract; it now carries the
+    // source's own id, whichever source that is. Renamed with the rest of the
+    // contract when a caller other than our own frontend exists.
+    tmdbId: z.coerce.number().int().positive("A valid source id is required"),
     // Defaulted, so the pre-M2 contract (films only) keeps working unchanged.
-    type: z.enum(["film", "tv"]).default("film"),
+    //
+    // This list has to grow with the adapter registry. It did not when games
+    // landed, so every game import was rejected by validation before the
+    // controller ever saw it - a 400 that looked like a bad request rather
+    // than a missing case.
+    type: z.enum(["film", "tv", "game"]).default("film"),
 });

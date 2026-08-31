@@ -109,7 +109,7 @@ export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
         {/* Type filter. Empty string means both, interleaved by TMDB's own
             popularity ordering — the common case is not knowing which it is. */}
         <div className={styles.typeTabs}>
-          {[['', 'All'], ['film', 'Films'], ['tv', 'TV']].map(([value, label]) => (
+          {[['', 'All'], ['film', 'Films'], ['tv', 'TV'], ['game', 'Games']].map(([value, label]) => (
             <button
               key={label}
               type="button"
@@ -128,7 +128,7 @@ export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
           <input
             className="form-input"
             style={{ paddingLeft: '36px' }}
-            placeholder="Search films and shows…"
+            placeholder="Search films, shows and games…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
@@ -143,7 +143,7 @@ export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
           )}
 
           {!loading && !q && (
-            <p className={styles.empty}>Start typing to search films and shows.</p>
+            <p className={styles.empty}>Start typing to search films, shows and games.</p>
           )}
 
           {!loading && q && results.length === 0 && (

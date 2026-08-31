@@ -3,6 +3,7 @@ import Poster from '../ui/Poster.jsx'
 import StarRating from '../ui/StarRating.jsx'
 import styles from './MovieDrawer.module.css'
 import { statusesFor, statusLabel, doneStatusFor, PROGRESS_UNIT } from '../../lib/media.js'
+import RawgCredit from '../layout/RawgCredit.jsx'
 import SeasonRatings from './SeasonRatings.jsx'
 
 
@@ -149,6 +150,24 @@ export default function MovieDrawer({ item, movie, open, onClose, onUpdateRating
             </div>
           )}
 
+          {/* Which platform this user plays it on - a different fact from the
+              platforms the game is released on, which live on the shared
+              catalogue row. Games only. */}
+          {type === 'game' && movie.platforms?.length > 0 && (
+            <div className={styles.section}>
+              <p className={styles.sectionLabel}>Platform</p>
+              <select
+                className={styles.platformSelect}
+                value={item.platform ?? ''}
+                onChange={(e) => onUpdateProgress(item.id, { platform: e.target.value || null })}
+                id="drawer-platform"
+              >
+                <option value="">Not set</option>
+                {movie.platforms.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+          )}
+
           {/* Per-season ratings. TV only. */}
           {type === 'tv' && movie.seasonCount > 0 && (
             <div className={styles.section}>
@@ -172,6 +191,10 @@ export default function MovieDrawer({ item, movie, open, onClose, onUpdateRating
               ))}
             </div>
           </div>
+
+          {/* RAWG requires an active hyperlink on every page showing their
+              data. The drawer is a page as far as that obligation goes. */}
+          {type === 'game' && <RawgCredit className={styles.credit} />}
 
           {/* Actions */}
           <div className={styles.actions}>

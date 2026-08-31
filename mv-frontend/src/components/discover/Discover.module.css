@@ -57,3 +57,7 @@
   .wrap { padding: 56px 18px; }
   .controls { gap: 10px; }
 }
+
+/* Attribution sits with the results it describes, not in a page footer -
+   RAWG requires the link on every page their data appears on. */
+.credit { margin-top: 28px; }

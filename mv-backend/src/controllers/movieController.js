@@ -2,6 +2,7 @@ import { eq, and, or, inArray, desc, lt } from 'drizzle-orm';
 import { db } from '../config/db.js';
 import { mediaItems } from '../db/schema.js';
 import * as tmdb from '../adapters/media/tmdb.ts';
+import { adapterForSource, adapterForType, search as searchMedia } from '../adapters/media/index.ts';
 import { cached } from '../utils/cache.js';
 
 // TMDB forbids caching their content beyond 6 months. We refresh well inside
@@ -30,11 +31,14 @@ const staleBefore = (item) =>
  * never be handed to the film adapter.
  */
 export const refreshIfStale = async (item) => {
-    if (item?.source !== tmdb.SOURCE || !item?.externalId) return item;
+    // Source-aware, not type-aware: a game row must go to RAWG even though the
+    // TMDB adapter would happily accept the call and return nonsense.
+    const adapter = adapterForSource(item?.source);
+    if (!adapter || !item?.externalId) return item;
     if (item.refreshedAt && item.refreshedAt > staleBefore(item)) return item;
 
     try {
-        const fresh = await tmdb.getDetails(item.type, item.externalId);
+        const fresh = await adapter.getDetails(item.type, item.externalId);
         const [updated] = await db
             .update(mediaItems)
             .set({ ...fresh, refreshedAt: new Date() })
@@ -42,7 +46,7 @@ export const refreshIfStale = async (item) => {
             .returning();
         return updated;
     } catch (err) {
-        console.error(`TMDB refresh failed for ${item.type}/${item.externalId}:`, err.message);
+        console.error(`${item.source} refresh failed for ${item.type}/${item.externalId}:`, err.message);
         return item;
     }
 };
@@ -59,15 +63,14 @@ export const searchTmdb = async (req, res) => {
         return res.status(200).json({ status: 'Success', results: 0, data: [] });
     }
 
-    const search =
-        type === 'tv' ? tmdb.searchTv : type === 'film' ? tmdb.searchFilms : tmdb.searchAll;
-
     // Five minutes. Long enough that a shared link or a repeated query costs
-    // TMDB nothing, short enough that a new release appears the same session.
+    // the upstream nothing, short enough that a new release appears the same
+    // session. RAWG's 20k/month cap makes this load-bearing, not an
+    // optimisation.
     const results = await cached(
         `search:${type ?? 'all'}:${query.toLowerCase()}`,
         5 * 60 * 1000,
-        () => search(query),
+        () => searchMedia(type, query),
     );
 
     return res.status(200).json({ status: 'Success', results: results.length, data: results });
@@ -89,12 +92,14 @@ export const trending = async (req, res) => {
 export const importFromTmdb = async (req, res) => {
     const { tmdbId, type = 'film' } = req.body;
     const externalId = String(tmdbId);
+    const adapter = adapterForType(type);
+    if (!adapter) return res.status(400).json({ error: 'Unknown media type' });
 
     const [existing] = await db
         .select()
         .from(mediaItems)
         .where(and(
-            eq(mediaItems.source, tmdb.SOURCE),
+            eq(mediaItems.source, adapter.SOURCE),
             eq(mediaItems.externalId, externalId),
             eq(mediaItems.type, type),
         ))
@@ -105,7 +110,7 @@ export const importFromTmdb = async (req, res) => {
         return res.status(200).json({ status: 'Success', data: { movie } });
     }
 
-    const details = await tmdb.getDetails(type, externalId);
+    const details = await adapter.getDetails(type, externalId);
 
     // onConflictDoUpdate rather than plain insert: two users adding the same
     // title simultaneously would otherwise race into a unique violation.
@@ -134,14 +139,13 @@ export const importFromTmdb = async (req, res) => {
 export const publicDetails = async (req, res) => {
     const { type, externalId } = req.params;
 
-    if (type !== 'film' && type !== 'tv') {
-        return res.status(400).json({ error: 'Unknown media type' });
-    }
+    const adapter = adapterForType(type);
+    if (!adapter) return res.status(400).json({ error: 'Unknown media type' });
 
     const item = await cached(
         `details:${type}:${externalId}`,
         60 * 60 * 1000,
-        () => tmdb.getDetailsWithCast(type, externalId),
+        () => adapter.getDetailsWithCast(type, externalId),
     );
 
     return res.status(200).json({ status: 'Success', data: { item } });

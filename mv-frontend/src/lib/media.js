@@ -54,7 +54,13 @@ export const PROGRESS_UNIT = {
   album: null,
 };
 
-/** "S2 E4 of 10", or "page 120 of 300". Null when there is nothing to show. */
+/** Sources that require visible attribution on any page showing their data. */
+export const ATTRIBUTION_BY_SOURCE = {
+  tmdb: 'tmdb',
+  rawg: 'rawg',
+}
+
+/** "S2 E4 of 10", "page 120 of 300", "hour 12 of 62". Null when nothing to show. */
 export const progressLabel = (type, item) => {
   const unit = PROGRESS_UNIT[type];
   if (!unit || item?.progressCurrent == null) return null;
@@ -63,6 +69,10 @@ export const progressLabel = (type, item) => {
   if (type === 'tv') {
     const season = item.progressSeason ? `S${item.progressSeason} ` : '';
     return `${season}E${item.progressCurrent}${of}`;
+  }
+  // Hours read better suffixed than prefixed: "12h of 62h", not "hour 12 of 62".
+  if (type === 'game') {
+    return `${item.progressCurrent}h${item.progressTotal ? ` of ${item.progressTotal}h` : ''}`;
   }
   return `${unit} ${item.progressCurrent}${of}`;
 };
