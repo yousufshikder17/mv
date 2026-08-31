@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import type { MediaItem, MediaSearchResult } from './types.ts';
+import { enrichBook, mergeBookMetadata } from './googlebooks.ts';
 
 // Open Library - book metadata.
 //
@@ -98,6 +99,54 @@ export const searchBooks = async (query: string): Promise<MediaSearchResult[]> =
         }));
 };
 
+/**
+ * Open Library "subjects" are not genres, and using them raw was a bug.
+ *
+ * A real response carried: form:novel, genre:fantasy, English literature,
+ * nyt:combined-print-and-e-book-fiction=2020-10-04, New York Times
+ * bestseller, Labyrinths, Fiction, Curiosities and wonders.
+ *
+ * These feed the recommender, so without cleaning it could genuinely say
+ * "Because you liked nyt:combined-print-and-e-book-fiction=2020-10-04".
+ *
+ * Rules: unwrap the two namespaces that carry real genre information, drop
+ * every other namespaced or key=value tag, and drop marketing noise. What
+ * survives is a plain subject heading, which is the closest thing their data
+ * model has to a genre.
+ */
+const NOISE = /^(new york times|nyt) |bestseller|award|winner|shortlist/i;
+
+export const cleanSubjects = (subjects: string[] = []): string[] => {
+    const out: string[] = [];
+
+    for (const raw of subjects) {
+        const subject = String(raw).trim();
+        if (!subject || subject.includes('=')) continue;
+
+        const namespaced = subject.match(/^([a-z_]+):(.+)$/i);
+        if (namespaced) {
+            const [, ns, value] = namespaced;
+            // genre: and form: are the only namespaces describing what a book
+            // IS. place:, time:, person: and nyt: describe something else.
+            if (!/^(genre|form)$/i.test(ns)) continue;
+            out.push(value.charAt(0).toUpperCase() + value.slice(1));
+            continue;
+        }
+
+        if (NOISE.test(subject)) continue;
+        out.push(subject);
+    }
+
+    // Case-insensitive dedupe: 'Fantasy' and 'genre:fantasy' both arrive.
+    const seen = new Set<string>();
+    return out.filter((g) => {
+        const key = g.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+};
+
 // Open Library returns description as either a string or { value }.
 const descriptionOf = (work: any): string | null => {
     const d = work?.description;
@@ -120,7 +169,7 @@ export const getBookDetails = async (externalId: string): Promise<MediaItem> => 
     });
     const doc = (found.docs ?? [])[0];
 
-    return {
+    const base: any = {
         type: 'book',
         source: SOURCE,
         externalId,
@@ -138,7 +187,7 @@ export const getBookDetails = async (externalId: string): Promise<MediaItem> => 
         overview: descriptionOf(work),
         releaseYear: doc?.first_publish_year ?? null,
         // Subjects are their genre equivalent, and there are often hundreds.
-        genres: (work.subjects ?? []).slice(0, 8),
+        genres: cleanSubjects(work.subjects ?? []).slice(0, 8),
         runtime: null,
         // Median across editions. A hint for progressTotal, never a promise -
         // editions genuinely differ in length.
@@ -147,7 +196,15 @@ export const getBookDetails = async (externalId: string): Promise<MediaItem> => 
         seasonCount: null,
         episodeCount: null,
         releaseStatus: null,
-    } as MediaItem;
+    };
+
+    // One best-effort call to Google Books, only here at add-time. It fills
+    // the two things Open Library is weakest at - an empty description, and
+    // library headings where a plain category would be clearer. If Google is
+    // down (about 40% of the time) the book imports unchanged, because
+    // enrichment that can fail an import is worse than no enrichment.
+    const extra = await enrichBook(base.title, doc?.author_name ?? []);
+    return mergeBookMetadata(base, extra) as MediaItem;
 };
 
 /** Matches the other adapters so the controller stays source-agnostic. */
