@@ -69,3 +69,19 @@
 .resultSub {
   font-size: 13px; color: var(--c-muted); margin: 4px 0 0;
 }
+
+/* Type filter */
+.typeTabs { display: flex; gap: 2px; margin-bottom: 14px; }
+.typeTab {
+  padding: 6px 14px; font-size: 13px; border-radius: 999px;
+  background: transparent; border: 0; color: var(--c-muted); cursor: pointer;
+  transition: all .15s;
+}
+.typeTab:hover  { color: var(--c-fg); background: var(--c-faint); }
+.typeTabOn      { color: var(--c-fg); background: var(--c-faint); }
+
+/* Distinguishes a film from a show when both are in one result list. */
+.typeBadge {
+  font-family: var(--ff-mono); font-size: 10px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--c-accent);
+}

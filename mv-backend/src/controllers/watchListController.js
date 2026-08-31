@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../config/db.js';
-import { mediaItems, trackingItems } from '../db/schema.js';
+import { mediaItems, trackingItems, seasonRatings } from '../db/schema.js';
 
 // No try/catch in here. Every handler is wrapped in catchAsync at the route,
 // which forwards to errorMiddleware — and that is where the Postgres SQLSTATE
@@ -153,4 +153,67 @@ export const updateWatchlistItem = async (req, res) => {
         status: "Success",
         data: { watchlistItem: result[0] },
     });
+};
+
+
+/**
+ * Loads a tracking row the caller actually owns, or null.
+ *
+ * The userId in the WHERE is what makes the season endpoints safe: a request
+ * for someone else's item matches no row and is indistinguishable from one
+ * that does not exist, so the response leaks nothing about other users' lists.
+ */
+const ownedItem = async (id, userId) => {
+    const [row] = await db
+        .select({ item: trackingItems, media: mediaItems })
+        .from(trackingItems)
+        .leftJoin(mediaItems, eq(trackingItems.mediaItemId, mediaItems.id))
+        .where(and(eq(trackingItems.id, id), eq(trackingItems.userId, userId)))
+        .limit(1);
+    return row ?? null;
+};
+
+/** GET /watchlist/:id/seasons - per-season ratings for one tracked show. */
+export const getSeasonRatings = async (req, res) => {
+    const row = await ownedItem(req.params.id, req.user.id);
+    if (!row) return res.status(404).json({ error: "Item not found or unauthorized" });
+
+    const seasons = await db
+        .select()
+        .from(seasonRatings)
+        .where(eq(seasonRatings.trackingItemId, req.params.id))
+        .orderBy(seasonRatings.seasonNumber);
+
+    return res.status(200).json({ status: "Success", results: seasons.length, data: { seasons } });
+};
+
+/**
+ * PUT /watchlist/:id/seasons/:n { rating, notes }
+ *
+ * Upsert rather than insert-or-update-by-hand: rating the same season twice is
+ * the normal case, and a read-then-write would race with itself.
+ *
+ * TV-only is enforced here rather than by a CHECK constraint, which would need
+ * a join to reach media_item.type.
+ */
+export const upsertSeasonRating = async (req, res) => {
+    const row = await ownedItem(req.params.id, req.user.id);
+    if (!row) return res.status(404).json({ error: "Item not found or unauthorized" });
+    if (row.media?.type !== 'tv') {
+        return res.status(400).json({ error: "Only TV shows have seasons" });
+    }
+
+    const seasonNumber = Number(req.params.n);
+    const { rating = null, notes = null } = req.body;
+
+    const [season] = await db
+        .insert(seasonRatings)
+        .values({ trackingItemId: req.params.id, seasonNumber, rating, notes })
+        .onConflictDoUpdate({
+            target: [seasonRatings.trackingItemId, seasonRatings.seasonNumber],
+            set: { rating, notes, updatedAt: new Date() },
+        })
+        .returning();
+
+    return res.status(200).json({ status: "Success", data: { season } });
 };

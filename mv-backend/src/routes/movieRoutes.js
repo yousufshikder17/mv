@@ -7,6 +7,7 @@ import {
     searchTmdb,
     trending,
     importFromTmdb,
+    getSeasonEpisodes,
     getAllMovies,
     getMovieById,
 } from "../controllers/movieController.js";
@@ -26,6 +27,9 @@ router.get("/trending", catchAsync(trending));
 router.post("/import", validateRequest(importMovieSchema), catchAsync(importFromTmdb));
 
 router.get("/", catchAsync(getAllMovies));
+
+// TV only - 400s for anything else.
+router.get("/:id/seasons/:n", catchAsync(getSeasonEpisodes));
 
 router.get("/:id", catchAsync(getMovieById));
 

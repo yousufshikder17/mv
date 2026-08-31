@@ -2,9 +2,8 @@ import { useEffect, useRef } from 'react'
 import Poster from '../ui/Poster.jsx'
 import StarRating from '../ui/StarRating.jsx'
 import styles from './MovieDrawer.module.css'
+import { statusesFor, statusLabel, doneStatusFor } from '../../lib/media.js'
 
-const STATUS_OPTIONS = ['PLANNED', 'WATCHING', 'COMPLETED', 'DROPPED']
-const STATUS_LABEL   = { PLANNED: 'Planned', WATCHING: 'Watching', COMPLETED: 'Completed', DROPPED: 'Dropped' }
 
 export default function MovieDrawer({ item, movie, open, onClose, onUpdateRating, onUpdateStatus, onRemove }) {
   const drawerRef = useRef(null)
@@ -18,6 +17,11 @@ export default function MovieDrawer({ item, movie, open, onClose, onUpdateRating
   }, [open, onClose])
 
   if (!item || !movie) return null
+
+  // Status vocabulary and labels are per media type: the backend stores
+  // IN_PROGRESS, and whether that reads "Watching" or "Reading" depends on
+  // what this is.
+  const type = movie.type ?? 'film'
 
   return (
     <>
@@ -93,14 +97,14 @@ export default function MovieDrawer({ item, movie, open, onClose, onUpdateRating
           <div className={styles.section}>
             <p className={styles.sectionLabel}>Status</p>
             <div className={styles.statusRow}>
-              {STATUS_OPTIONS.map((s) => (
+              {statusesFor(type).map((s) => (
                 <button
                   key={s}
                   className={`${styles.statusChip} ${item.status === s ? styles.statusActive : ''}`}
                   onClick={() => onUpdateStatus(item.id, s)}
                   id={`drawer-status-${s.toLowerCase()}`}
                 >
-                  {STATUS_LABEL[s]}
+                  {statusLabel(type, s)}
                 </button>
               ))}
             </div>
@@ -110,10 +114,10 @@ export default function MovieDrawer({ item, movie, open, onClose, onUpdateRating
           <div className={styles.actions}>
             <button
               className={`btn-primary ${styles.bigBtn}`}
-              onClick={() => onUpdateStatus(item.id, item.status === 'COMPLETED' ? 'PLANNED' : 'COMPLETED')}
+              onClick={() => onUpdateStatus(item.id, item.status === doneStatusFor(type) ? 'PLANNED' : doneStatusFor(type))}
               id="drawer-toggle-btn"
             >
-              {item.status === 'COMPLETED' ? '✓ Watched' : '+ Mark as Watched'}
+              {item.status === doneStatusFor(type) ? `✓ ${statusLabel(type, doneStatusFor(type))}` : `+ Mark as ${statusLabel(type, doneStatusFor(type))}`}
             </button>
             <button
               className={`btn-ghost ${styles.removeBtn}`}

@@ -8,8 +8,12 @@ export const removeFromWatch = (id)         => api.delete(`/watchlist/${id}`)
 // Movies — search hits TMDB via our backend proxy (the token never reaches
 // the browser). importMovie resolves a TMDB id to a row in our own catalogue
 // and hands back our uuid, which is what /watchlist accepts.
-export const searchMovies    = (query, config) => api.get('/movies/search', { params: { q: query }, ...config })
-export const importMovie     = (tmdbId)     => api.post('/movies/import', { tmdbId })
+// type is 'film' | 'tv', or omitted for both interleaved.
+export const searchMovies    = (query, type, config) => api.get('/movies/search', { params: { q: query, type }, ...config })
+export const importMovie     = (tmdbId, type = 'film') => api.post('/movies/import', { tmdbId, type })
+export const getSeasonRatings = (itemId)             => api.get(`/watchlist/${itemId}/seasons`)
+export const setSeasonRating  = (itemId, n, data)    => api.put(`/watchlist/${itemId}/seasons/${n}`, data)
+export const getSeasonEpisodes = (mediaId, n)        => api.get(`/movies/${mediaId}/seasons/${n}`)
 export const getTrending     = ()           => api.get('/movies/trending')
 export const getAllMovies    = ()           => api.get('/movies')
 export const getMovieById    = (id)         => api.get(`/movies/${id}`)

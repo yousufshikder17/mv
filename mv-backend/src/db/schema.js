@@ -66,9 +66,17 @@ export const mediaItems = pgTable('media_item', {
     // release_date, and we'd rather store those than reject them.
     releaseYear: integer('release_year'),
     genres: text('genres').array().notNull().default([]),
-    // Minutes for film/TV. Nullable and meaningless for books and albums.
+    // Minutes. Per episode for TV, and null for shows with variable episode
+    // lengths — TMDB's episode_run_time is often an empty array.
     runtime: integer('runtime'),
     posterUrl: text('poster_url'),
+    // TV only. Null for every other type.
+    seasonCount: integer('season_count'),
+    episodeCount: integer('episode_count'),
+    // The source's own production status: 'Returning Series', 'Ended',
+    // 'Released'. Drives a shorter cache TTL for shows still airing — a
+    // returning series gains episodes between refreshes; a film does not.
+    releaseStatus: text('release_status'),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').defaultNow(),
     refreshedAt: timestamp('refreshed_at').defaultNow(),
@@ -96,6 +104,10 @@ export const trackingItems = pgTable('tracking_item', {
     rating: numeric('rating', { precision: 3, scale: 1, mode: 'number' }),
     // User-editable, and meaningless for atomic media (a film is watched or
     // not). Unit is per type: 'episode', 'page', 'percent', 'hour'.
+    // TV needs three numbers, not two: "season 2, episode 4 of 10". Season is
+    // separate because progressTotal counts episodes within the current
+    // season, which is what a viewer actually tracks against.
+    progressSeason: integer('progress_season'),
     progressCurrent: integer('progress_current'),
     progressTotal: integer('progress_total'),
     progressUnit: text('progress_unit'),
@@ -108,7 +120,30 @@ export const trackingItems = pgTable('tracking_item', {
     unique().on(t.userId, t.mediaItemId),
 ]);
 
-// 5. Price Quote
+// 5. Season Rating
+//
+// Its own table rather than JSON on tracking_item: a per-season score is a
+// value you sort, average and compare across users later, and none of that
+// works through a JSON blob. One row per (tracking item, season).
+//
+// Only TV uses this. Nothing enforces that in the schema — a CHECK would need
+// a join — so it is enforced where the rating is set.
+export const seasonRatings = pgTable('season_rating', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    trackingItemId: uuid('tracking_item_id')
+        .references(() => trackingItems.id, { onDelete: 'cascade' })
+        .notNull(),
+    seasonNumber: integer('season_number').notNull(),
+    // Same scale and the same reasoning as tracking_item.rating.
+    rating: numeric('rating', { precision: 3, scale: 1, mode: 'number' }),
+    notes: text('notes'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (t) => [
+    unique().on(t.trackingItemId, t.seasonNumber),
+]);
+
+// 6. Price Quote
 // One row per (source, item, day). The normalized shape from SPEC §7 — the
 // price layer never learns which adapter produced a row.
 //

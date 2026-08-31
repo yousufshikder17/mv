@@ -1,11 +1,12 @@
 import Poster from '../ui/Poster.jsx'
 import StarRating from '../ui/StarRating.jsx'
 import styles from './WatchlistRow.module.css'
+import { statusLabel, doneStatusFor, progressLabel } from '../../lib/media.js'
 
-const STATUS_LABEL = { PLANNED: 'Planned', WATCHING: 'Watching', COMPLETED: 'Watched', DROPPED: 'Dropped' }
 
 export default function WatchlistRow({ item, movie, onOpen, onToggleWatched }) {
-  const isWatched = item.status === 'COMPLETED'
+  const type = movie?.type ?? 'film'
+  const isWatched = item.status === doneStatusFor(type)
 
   return (
     <article
@@ -45,7 +46,7 @@ export default function WatchlistRow({ item, movie, onOpen, onToggleWatched }) {
       {/* Status */}
       <div className={styles.statusCol}>
         <span className={`chip ${isWatched ? styles.chipWatched : ''}`}>
-          {STATUS_LABEL[item.status] ?? item.status}
+          {statusLabel(type, item.status)}{progressLabel(type, item) ? ` · ${progressLabel(type, item)}` : ''}
         </span>
       </div>
 

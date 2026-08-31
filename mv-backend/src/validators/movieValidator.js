@@ -20,4 +20,6 @@ export const updateMovieSchema = createMovieSchema.partial();
 // so there is nothing else for the client to get wrong.
 export const importMovieSchema = z.object({
     tmdbId: z.coerce.number().int().positive("A valid TMDB id is required"),
+    // Defaulted, so the pre-M2 contract (films only) keeps working unchanged.
+    type: z.enum(["film", "tv"]).default("film"),
 });

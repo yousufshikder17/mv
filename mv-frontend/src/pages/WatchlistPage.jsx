@@ -7,6 +7,7 @@ import AddMovieModal from '../components/watchlist/AddMovieModal.jsx'
 import TmdbCredit    from '../components/layout/TmdbCredit.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 import { ClapperIcon, SearchIcon } from '../components/ui/Icon.jsx'
+import { statusLabel, TYPE_LABEL } from '../lib/media.js'
 import styles from './WatchlistPage.module.css'
 
 const VIEWS   = ['grid', 'list']
@@ -20,7 +21,8 @@ export default function WatchlistPage({ showToast }) {
   const [view,        setView]        = useState('grid')
   const [density,     setDensity]     = useState('default')
   const [search,      setSearch]      = useState('')
-  const [activeFilter, setActiveFilter] = useState('all')  // all | planned | watching | completed | dropped
+  const [activeFilter, setActiveFilter] = useState('ALL')  // 'ALL' or a tracking status
+  const [typeFilter,   setTypeFilter]   = useState('ALL')  // 'ALL' or a media type
 
   // Drawer
   const [drawerOpen,  setDrawerOpen]  = useState(false)
@@ -58,16 +60,29 @@ export default function WatchlistPage({ showToast }) {
     const movie = getMovie(item)
     const matchesSearch = !search ||
       movie?.title?.toLowerCase().includes(search.toLowerCase())
-    const matchesFilter = activeFilter === 'all' || item.status?.toLowerCase() === activeFilter
-    return matchesSearch && matchesFilter
+    const matchesFilter = activeFilter === 'ALL' || item.status === activeFilter
+    const matchesType   = typeFilter === 'ALL' || (movie?.type ?? 'film') === typeFilter
+    return matchesSearch && matchesFilter && matchesType
   })
 
   // ── Stats for hero ───────────────────────────────────────────
-  const total     = items.length
-  const watched   = items.filter((i) => i.status === 'COMPLETED').length
-  const watching  = items.filter((i) => i.status === 'WATCHING').length
-  const avgRating = items.filter((i) => i.rating != null).length
-    ? (items.reduce((s, i) => s + (i.rating ?? 0), 0) / items.filter((i) => i.rating != null).length).toFixed(1)
+  //
+  // All of these are reads over rows already loaded — no extra request, and
+  // no new source. M1 is what made DROPPED and REVISITING expressible, so
+  // "% revisited" is a number that exists for the first time.
+  const total      = items.length
+  const countOf    = (status) => items.filter((i) => i.status === status).length
+  const completed  = countOf('COMPLETED') + countOf('COLLECTED')
+  const inProgress = countOf('IN_PROGRESS')
+  const dropped    = countOf('DROPPED')
+  const revisiting = countOf('REVISITING')
+
+  // Guarded: 0/0 is NaN, which renders as "NaN%" on an empty vault.
+  const pct = (n) => (total ? Math.round((n / total) * 100) : 0)
+
+  const rated     = items.filter((i) => i.rating != null)
+  const avgRating = rated.length
+    ? (rated.reduce((s, i) => s + i.rating, 0) / rated.length).toFixed(1)
     : '—'
 
   // ── Drawer handlers ──────────────────────────────────────────
@@ -123,10 +138,12 @@ export default function WatchlistPage({ showToast }) {
           </h1>
           <div className={styles.stats}>
             {[
-              [total,     'Films'],
-              [watched,   'Watched'],
-              [watching,  'Watching'],
-              [avgRating, 'Avg. Rating'],
+              [total,                  'Tracked'],
+              [`${pct(completed)}%`,   'Completed'],
+              [inProgress,             'In progress'],
+              [`${pct(dropped)}%`,     'Dropped'],
+              [`${pct(revisiting)}%`,  'Revisited'],
+              [avgRating,              'Avg. Rating'],
             ].map(([v, l]) => (
               <div key={l} className={styles.stat}>
                 <span className={styles.statVal}>{v}</span>
@@ -146,7 +163,7 @@ export default function WatchlistPage({ showToast }) {
             <input
               id="watchlist-search"
               className={styles.searchInput}
-              placeholder="Search films…"
+              placeholder="Search your vault…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -154,19 +171,40 @@ export default function WatchlistPage({ showToast }) {
 
           {/* Status filter tabs */}
           <div className={styles.filterTabs} role="tablist">
-            {['all', 'planned', 'watching', 'completed', 'dropped'].map((f) => (
+            {['ALL', 'PLANNED', 'IN_PROGRESS', 'COMPLETED', 'DROPPED', 'REVISITING'].map((f) => (
               <button
                 key={f}
                 role="tab"
                 aria-selected={activeFilter === f}
                 className={`${styles.filterTab} ${activeFilter === f ? styles.filterTabOn : ''}`}
                 onClick={() => setActiveFilter(f)}
-                id={`filter-${f}`}
+                id={`filter-${f.toLowerCase()}`}
               >
-                {f.charAt(0).toUpperCase() + f.slice(1)}
+                {/* Generic labels here on purpose: this filter spans types, so
+                    "Watching" would be wrong the moment a book is in the list. */}
+                {f === 'ALL' ? 'All' : statusLabel(null, f)}
               </button>
             ))}
           </div>
+
+          {/* Media type filter. Only shown once more than one type is tracked —
+              a films-only vault has nothing to filter. */}
+          {new Set(items.map((i) => getMovie(i)?.type ?? 'film')).size > 1 && (
+            <div className={styles.filterTabs} role="tablist">
+              {['ALL', 'film', 'tv'].map((t) => (
+                <button
+                  key={t}
+                  role="tab"
+                  aria-selected={typeFilter === t}
+                  className={`${styles.filterTab} ${typeFilter === t ? styles.filterTabOn : ''}`}
+                  onClick={() => setTypeFilter(t)}
+                  id={`type-filter-${t.toLowerCase()}`}
+                >
+                  {t === 'ALL' ? 'All types' : TYPE_LABEL[t]}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className={styles.toolbarRight}>
@@ -203,7 +241,7 @@ export default function WatchlistPage({ showToast }) {
             id="add-movie-open-btn"
             style={{ padding: '8px 16px', fontSize: '13.5px' }}
           >
-            + Add film
+            + Add
           </button>
         </div>
       </div>
@@ -224,7 +262,7 @@ export default function WatchlistPage({ showToast }) {
           <div className={styles.empty}>
             <ClapperIcon size={52} className={styles.emptyIcon} />
             <p className={styles.emptyMsg}>
-              {search ? `No films matching "${search}"` : 'Your vault is empty — add your first film!'}
+              {search ? `No films matching "${search}"` : 'Your vault is empty — add your first title!'}
             </p>
             {!search && (
               <button className="btn-primary" onClick={() => setAddOpen(true)} id="empty-add-btn">

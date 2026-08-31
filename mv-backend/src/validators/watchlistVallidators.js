@@ -103,4 +103,10 @@ const updateWatchlistSchema = z.object({
     progressTotal: z.union([z.null(), z.coerce.number().int().min(0)]).optional(),
 });
 
-export { addToWatchlistSchema, updateWatchlistSchema };
+// Same scale and the same NULL-means-unrated reasoning as the item rating.
+const seasonRatingSchema = z.object({
+    rating: z.union([z.null(), ratingValue]).optional(),
+    notes: z.union([z.null(), z.string()]).optional(),
+});
+
+export { addToWatchlistSchema, updateWatchlistSchema, seasonRatingSchema };

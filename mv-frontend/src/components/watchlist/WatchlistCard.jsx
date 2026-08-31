@@ -1,11 +1,12 @@
 import Poster from '../ui/Poster.jsx'
 import StarRating from '../ui/StarRating.jsx'
 import styles from './WatchlistCard.module.css'
+import { statusLabel, doneStatusFor, progressLabel } from '../../lib/media.js'
 
-const STATUS_LABEL = { PLANNED: 'Planned', WATCHING: 'Watching', COMPLETED: 'Watched', DROPPED: 'Dropped' }
 
 export default function WatchlistCard({ item, movie, onOpen, onToggleWatched }) {
-  const isWatched = item.status === 'COMPLETED'
+  const type = movie?.type ?? 'film'
+  const isWatched = item.status === doneStatusFor(type)
 
   return (
     <article className={`${styles.card} ${isWatched ? styles.watched : ''}`} id={`card-${item.id}`}>
@@ -52,7 +53,10 @@ export default function WatchlistCard({ item, movie, onOpen, onToggleWatched }) 
             <StarRating value={item.rating} size="sm" />
           </div>
         )}
-        <span className={styles.status}>{STATUS_LABEL[item.status] ?? item.status}</span>
+        <span className={styles.status}>{statusLabel(type, item.status)}</span>
+        {progressLabel(type, item) && (
+          <span className={styles.status}>{progressLabel(type, item)}</span>
+        )}
       </div>
     </article>
   )
