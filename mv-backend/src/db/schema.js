@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, date, integer, numeric, pgEnum, uuid, unique } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, date, integer, numeric, boolean, pgEnum, uuid, unique } from 'drizzle-orm/pg-core';
 
 // 1. Enums
 //
@@ -155,7 +155,39 @@ export const seasonRatings = pgTable('season_rating', {
     unique().on(t.trackingItemId, t.seasonNumber),
 ]);
 
-// 6. Price Quote
+// 6. Price Alert
+//
+// "Tell me when this drops below X." One row per (user, item) - a second
+// threshold on the same item is an edit, not another alert, which is what the
+// unique constraint enforces.
+//
+// SPEC §9: price alerts are ALWAYS private. There is no sharing story here and
+// no public read path, unlike lists.
+export const priceAlerts = pgTable('price_alert', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+        .references(() => users.id, { onDelete: 'cascade' })
+        .notNull(),
+    mediaItemId: uuid('media_item_id')
+        .references(() => mediaItems.id, { onDelete: 'cascade' })
+        .notNull(),
+    // Integer cents, same as price_quote. Fire when a quote lands at or below.
+    thresholdCents: integer('threshold_cents').notNull(),
+    currency: text('currency').notNull().default('USD'),
+    // Paused rather than deleted, so a threshold survives being switched off.
+    active: boolean('active').notNull().default(true),
+    // What stops a 4-week sale sending 28 identical emails. Null until it
+    // first fires.
+    lastNotifiedAt: timestamp('last_notified_at'),
+    // The price that triggered the last notification. A further drop should
+    // notify again; the same price should not.
+    lastNotifiedCents: integer('last_notified_cents'),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (t) => [
+    unique().on(t.userId, t.mediaItemId),
+]);
+
+// 7. Price Quote
 // One row per (source, item, day). The normalized shape from SPEC §7 — the
 // price layer never learns which adapter produced a row.
 //

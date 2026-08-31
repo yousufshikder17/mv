@@ -57,6 +57,13 @@
       "when": 1788199969473,
       "tag": "0007_m4_games",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788201159646,
+      "tag": "0008_m5_price_alerts",
+      "breakpoints": true
     }
   ]
 }
