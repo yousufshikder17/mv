@@ -74,6 +74,27 @@ export const searchMovies = async (query) => {
     }));
 };
 
+/**
+ * Trending this week. Same normalized shape as searchMovies, so the client can
+ * render both through one component.
+ *
+ * Shown to signed-in users only (the route sits behind authMiddleware, like
+ * search) — this is metadata a user browses in order to track something, not a
+ * public catalogue. SPEC §17 is explicit that the tracking layer is table
+ * stakes, not the product; this exists so a new vault is not a blank page.
+ */
+export const getTrending = async () => {
+    const data = await request('/trending/movie/week', { language: 'en-US' });
+
+    return (data.results ?? []).map((m) => ({
+        tmdbId: m.id,
+        title: m.title,
+        overview: m.overview || null,
+        releaseYear: releaseYear(m.release_date),
+        posterUrl: posterUrl(m.poster_path, 'w342'),
+    }));
+};
+
 /** Full detail fetch — the only call that yields runtime and genre names. */
 export const getMovieDetails = async (tmdbId) => {
     const m = await request(`/movie/${tmdbId}`, { language: 'en-US' });

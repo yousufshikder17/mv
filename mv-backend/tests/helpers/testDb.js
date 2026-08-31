@@ -40,7 +40,7 @@ export const createSchema = async () => {
 /** Empties every table between tests. CASCADE follows the FKs for us. */
 export const resetTables = async () => {
     await db.execute(
-        sql.raw('TRUNCATE TABLE watchlist_item, movie, "user" RESTART IDENTITY CASCADE'),
+        sql.raw('TRUNCATE TABLE price_quote, tracking_item, media_item, "user" RESTART IDENTITY CASCADE'),
     );
 };
 
@@ -73,17 +73,22 @@ export const registerUser = async (overrides = {}) => {
     };
 };
 
-/** Inserts a movie directly — the catalogue is not what these tests exercise. */
+/** Inserts a catalogue row directly — the catalogue is not what these tests exercise. */
 export const createMovie = async (overrides = {}) => {
     counter += 1;
-    const { movies } = await import('../../src/db/schema.js');
+    const { mediaItems } = await import('../../src/db/schema.js');
+    // tmdbId is accepted for readability at call sites and mapped to the
+    // generic (source, externalId) key the schema now uses.
+    const { tmdbId, ...rest } = overrides;
     const [movie] = await db
-        .insert(movies)
+        .insert(mediaItems)
         .values({
             title: `Movie ${counter}`,
             releaseYear: 2020,
-            tmdbId: 900000 + counter,
-            ...overrides,
+            type: 'film',
+            source: 'tmdb',
+            externalId: tmdbId === null ? null : String(tmdbId ?? 900000 + counter),
+            ...rest,
         })
         .returning();
     return movie;

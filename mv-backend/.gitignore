@@ -1,5 +1,8 @@
 node_modules/
-.env
+
+# SPEC §2: every secret lives in .env; only the placeholder file is tracked.
+.env*
+!.env.example
 
 # Build outputs
 dist/
@@ -13,3 +16,7 @@ npm-debug.log*
 # If you save backups in a specific folder, list that here instead
 backup_*.sql
 *.bak
+
+# Database dumps and poller output — never committed
+backups/
+logs/

@@ -5,6 +5,7 @@ import { validateRequest } from '../middleware/validateMiddleware.js';
 import { importMovieSchema } from '../validators/movieValidator.js';
 import {
     searchTmdb,
+    trending,
     importFromTmdb,
     getAllMovies,
     getMovieById,
@@ -18,6 +19,9 @@ router.use(authMiddleware);
 
 // Must precede "/:id" or Express matches "search" as a uuid param.
 router.get("/search", catchAsync(searchTmdb));
+
+// Also before "/:id" — same reason.
+router.get("/trending", catchAsync(trending));
 
 router.post("/import", validateRequest(importMovieSchema), catchAsync(importFromTmdb));
 

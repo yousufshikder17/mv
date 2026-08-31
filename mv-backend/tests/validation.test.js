@@ -5,7 +5,7 @@ import {
     createSchema,
     registerUser,
     resetTables,
-} from './helpers/harness.js';
+} from './helpers/testDb.js';
 
 beforeAll(createSchema);
 beforeEach(resetTables);
@@ -97,7 +97,7 @@ describe('add-to-watchlist schema', () => {
         ['zero', 0],
         ['eleven', 11],
         ['negative', -3],
-        ['fractional', 2.5],
+        ['off the 0.5 step', 7.3],
     ])('rejects a rating of %s', async (_label, rating) => {
         const res = await post({ movieId: crypto.randomUUID(), rating });
         expect(res.status).toBe(400);
@@ -131,7 +131,7 @@ describe('update-watchlist schema', () => {
     it.each([
         ['a rating above 10', { rating: 999 }],
         ['a rating of zero', { rating: 0 }],
-        ['a fractional rating', { rating: 4.5 }],
+        ['a rating off the 0.5 step', { rating: 4.3 }],
         ['a status outside the enum', { status: 'ABANDONED' }],
     ])('rejects %s', async (_label, body) => {
         const { user, itemId } = await owned();

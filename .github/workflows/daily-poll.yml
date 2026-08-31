@@ -1,0 +1,48 @@
+# Daily price poll (roadmap M0).
+#
+# GitHub Actions rather than node-cron: cron is built in, it is free, and it
+# needs no server running 24/7. The job is a single script that runs once and
+# exits, so nothing here is Actions-specific — the same `npm run poll` works
+# under any scheduler if this ever moves.
+#
+# REQUIRES a database reachable from GitHub's runners. A localhost Postgres is
+# not; set DATABASE_URL to a hosted instance before enabling this.
+name: Daily price poll
+
+on:
+  schedule:
+    # 09:15 UTC. Off the hour deliberately — Actions delays jobs scheduled on
+    # the hour, when everyone else's cron fires at once.
+    - cron: '15 9 * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  # A slow run must not overlap the next day's. Quotes would still dedupe on
+  # the unique constraint, but two concurrent TMDB refresh sweeps would burn
+  # rate limit for nothing.
+  group: daily-poll
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mv-backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mv-backend/package-lock.json
+
+      - run: npm ci
+
+      - run: npm run poll
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+          KINDLE_RSS_URL: ${{ secrets.KINDLE_RSS_URL }}

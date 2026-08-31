@@ -5,7 +5,7 @@ import {
     createSchema,
     registerUser,
     resetTables,
-} from './helpers/harness.js';
+} from './helpers/testDb.js';
 
 beforeAll(createSchema);
 beforeEach(resetTables);
@@ -20,7 +20,7 @@ const twoUsersWithItems = async () => {
         .send({ movieId: filmA.id, status: 'PLANNED', notes: 'alice note' });
     const bobItem = await bob
         .auth(api().post('/watchlist'))
-        .send({ movieId: filmB.id, status: 'WATCHING', notes: 'bob note' });
+        .send({ movieId: filmB.id, status: 'IN_PROGRESS', notes: 'bob note' });
 
     return {
         alice,
@@ -96,7 +96,7 @@ describe('updating someone else’s item', () => {
         const after = await bob.auth(api().get('/watchlist'));
         const item = after.body.data.watchlist.find((i) => i.id === bobItemId);
 
-        expect(item.status).toBe('WATCHING');
+        expect(item.status).toBe('IN_PROGRESS');
         expect(item.notes).toBe('bob note');
         expect(item.rating).toBeNull();
     });

@@ -22,6 +22,20 @@
       "when": 1785609570851,
       "tag": "0002_melodic_starfox",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788176793943,
+      "tag": "0003_price_quote",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788185013071,
+      "tag": "0004_m1_generalize",
+      "breakpoints": true
     }
   ]
 }

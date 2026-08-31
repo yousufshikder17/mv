@@ -1,6 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import jwt from 'jsonwebtoken';
-import { api, createSchema, registerUser, resetTables } from './helpers/harness.js';
+import { api, createSchema, registerUser, resetTables } from './helpers/testDb.js';
 
 beforeAll(createSchema);
 beforeEach(resetTables);

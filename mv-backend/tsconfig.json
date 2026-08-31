@@ -1,0 +1,26 @@
+{
+  // Incremental TypeScript, per SPEC §10: "Migrate to TypeScript incrementally
+  // (allowJs, convert per file). Do not stop-the-world."
+  //
+  // noEmit + allowJs means this is a type-checking config, not a build step:
+  // Node runs the .js directly and strips types from any .ts natively, so
+  // nothing is compiled and no bundler enters the stack.
+  //
+  // checkJs is off deliberately. Turning it on would flag the entire existing
+  // codebase at once, which is the stop-the-world migration this is meant to
+  // avoid. Add // @ts-check per file when you want a file checked.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"]
+  },
+  "include": ["src/**/*", "tests/**/*", "drizzle/**/*"]
+}

@@ -7,6 +7,9 @@
     "test": "vitest run",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "poll": "node src/jobs/dailyPoll.js",
+    "backup": "node scripts/backup.mjs",
+    "dev:poll": "npm run poll && npm run dev",
     "test:watch": "vitest"
   },
   "keywords": [],

@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../config/db.js';
-import { movies as moviesTable, watchlistItems } from '../db/schema.js';
+import { mediaItems, trackingItems } from '../db/schema.js';
 
 // No try/catch in here. Every handler is wrapped in catchAsync at the route,
 // which forwards to errorMiddleware — and that is where the Postgres SQLSTATE
@@ -16,12 +16,12 @@ export const getUserWatchlist = async (req, res) => {
 
     const rows = await db
         .select({
-            item: watchlistItems,
-            movie: moviesTable,
+            item: trackingItems,
+            movie: mediaItems,
         })
-        .from(watchlistItems)
-        .leftJoin(moviesTable, eq(watchlistItems.movieId, moviesTable.id))
-        .where(eq(watchlistItems.userId, userId));
+        .from(trackingItems)
+        .leftJoin(mediaItems, eq(trackingItems.mediaItemId, mediaItems.id))
+        .where(eq(trackingItems.userId, userId));
 
     const watchlist = rows.map(({ item, movie }) => ({ ...item, movie }));
 
@@ -43,8 +43,8 @@ export const addToWatchlist = async (req, res) => {
     // 1. Verify Movie Exists
     const [movie] = await db
         .select()
-        .from(moviesTable)
-        .where(eq(moviesTable.id, movieId))
+        .from(mediaItems)
+        .where(eq(mediaItems.id, movieId))
         .limit(1);
 
     if (!movie) {
@@ -57,11 +57,11 @@ export const addToWatchlist = async (req, res) => {
     // 23505 now reaches errorMiddleware, which answers 400 either way.
     const [exists] = await db
         .select()
-        .from(watchlistItems)
+        .from(trackingItems)
         .where(
             and(
-                eq(watchlistItems.userId, userId),
-                eq(watchlistItems.movieId, movieId)
+                eq(trackingItems.userId, userId),
+                eq(trackingItems.mediaItemId, movieId)
             )
         )
         .limit(1);
@@ -72,12 +72,16 @@ export const addToWatchlist = async (req, res) => {
 
     // 3. Insert using the secure userId
     const [newItem] = await db
-        .insert(watchlistItems)
+        .insert(trackingItems)
         .values({
             userId,
-            movieId,
+            // The request field stays `movieId` through M1: this milestone
+            // changes the schema, not the API. It becomes `mediaItemId` in M2
+            // alongside the "Add film" -> "Add" rename, so the contract moves
+            // once rather than twice.
+            mediaItemId: movieId,
             status: status || 'PLANNED',
-            rating: rating || null,
+            rating: rating ?? null,
             notes: notes || null
         })
         .returning();
@@ -96,11 +100,11 @@ export const removeFromWatchlist = async (req, res) => {
     // else's item matches no row and is indistinguishable from one that does
     // not exist, so the response leaks nothing about other users' lists.
     const result = await db
-        .delete(watchlistItems)
+        .delete(trackingItems)
         .where(
             and(
-                eq(watchlistItems.id, id),
-                eq(watchlistItems.userId, userId)
+                eq(trackingItems.id, id),
+                eq(trackingItems.userId, userId)
             )
         )
         .returning();
@@ -122,7 +126,7 @@ export const updateWatchlistItem = async (req, res) => {
     const userId = req.user.id; // From authMiddleware
 
     const result = await db
-        .update(watchlistItems)
+        .update(trackingItems)
         .set({
             // Only update fields that are provided in the request.
             // Tested against `undefined`, not truthiness: `notes: ""` is a
@@ -135,8 +139,8 @@ export const updateWatchlistItem = async (req, res) => {
         })
         .where(
             and(
-                eq(watchlistItems.id, id),
-                eq(watchlistItems.userId, userId)
+                eq(trackingItems.id, id),
+                eq(trackingItems.userId, userId)
             )
         )
         .returning();

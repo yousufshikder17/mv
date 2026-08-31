@@ -2,13 +2,18 @@
 import { db } from '../src/config/db.js';
 
 // Go UP one level (..), then into src/db/
-import { movies as moviesTable } from '../src/db/schema.js';
+import { mediaItems } from '../src/db/schema.js';
 
-const userId = "cd025b37-edf2-45c7-8bb9-74d28e28215e";
+// Null rather than a hardcoded uuid: the previous value pointed at a user
+// that no longer exists, so every run failed the foreign key.
+const userId = null;
 
 const movies = [
     {
         title: "The Matrix",
+        type: "film",
+        source: "seed",
+        externalId: "The Matrix".toLowerCase().replace(/\s+/g, "-"),
         overview: "A computer hacker learns about the true nature of reality.",
         releaseYear: 1999,
         genres: ["Action", "Sci-Fi"],
@@ -18,6 +23,9 @@ const movies = [
     },
     {
         title: "Inception",
+        type: "film",
+        source: "seed",
+        externalId: "Inception".toLowerCase().replace(/\s+/g, "-"),
         overview:
             "A thief who steals corporate secrets through dream-sharing technology.",
         releaseYear: 2010,
@@ -28,6 +36,9 @@ const movies = [
     },
     {
         title: "The Dark Knight",
+        type: "film",
+        source: "seed",
+        externalId: "The Dark Knight".toLowerCase().replace(/\s+/g, "-"),
         overview: "Batman faces the Joker in a battle for Gotham's soul.",
         releaseYear: 2008,
         genres: ["Action", "Crime", "Drama"],
@@ -37,6 +48,9 @@ const movies = [
     },
     {
         title: "Pulp Fiction",
+        type: "film",
+        source: "seed",
+        externalId: "Pulp Fiction".toLowerCase().replace(/\s+/g, "-"),
         overview: "The lives of two mob hitmen, a boxer, and others intertwine.",
         releaseYear: 1994,
         genres: ["Crime", "Drama"],
@@ -46,6 +60,9 @@ const movies = [
     },
     {
         title: "Interstellar",
+        type: "film",
+        source: "seed",
+        externalId: "Interstellar".toLowerCase().replace(/\s+/g, "-"),
         overview: "A team of explorers travel through a wormhole in space.",
         releaseYear: 2014,
         genres: ["Adventure", "Drama", "Sci-Fi"],
@@ -55,6 +72,9 @@ const movies = [
     },
     {
         title: "The Shawshank Redemption",
+        type: "film",
+        source: "seed",
+        externalId: "The Shawshank Redemption".toLowerCase().replace(/\s+/g, "-"),
         overview: "Two imprisoned men bond over a number of years.",
         releaseYear: 1994,
         genres: ["Drama"],
@@ -64,6 +84,9 @@ const movies = [
     },
     {
         title: "Fight Club",
+        type: "film",
+        source: "seed",
+        externalId: "Fight Club".toLowerCase().replace(/\s+/g, "-"),
         overview:
             "An insomniac office worker and a devil-may-care soapmaker form an underground fight club.",
         releaseYear: 1999,
@@ -74,6 +97,9 @@ const movies = [
     },
     {
         title: "Forrest Gump",
+        type: "film",
+        source: "seed",
+        externalId: "Forrest Gump".toLowerCase().replace(/\s+/g, "-"),
         overview:
             "The presidencies of Kennedy and Johnson unfold through the perspective of an Alabama man.",
         releaseYear: 1994,
@@ -84,6 +110,9 @@ const movies = [
     },
     {
         title: "The Godfather",
+        type: "film",
+        source: "seed",
+        externalId: "The Godfather".toLowerCase().replace(/\s+/g, "-"),
         overview:
             "The aging patriarch of an organized crime dynasty transfers control to his son.",
         releaseYear: 1972,
@@ -94,6 +123,9 @@ const movies = [
     },
     {
         title: "Goodfellas",
+        type: "film",
+        source: "seed",
+        externalId: "Goodfellas".toLowerCase().replace(/\s+/g, "-"),
         overview: "The story of Henry Hill and his life in the mob.",
         releaseYear: 1990,
         genres: ["Biography", "Crime", "Drama"],
@@ -108,7 +140,7 @@ const main = async () => {
 
     try {
         // Optimization: Drizzle allows batch insertion, which is much faster than a loop
-        await db.insert(moviesTable).values(movies);
+        await db.insert(mediaItems).values(movies);
 
         console.log(`Successfully seeded ${movies.length} movies!`);
     } catch (error) {
