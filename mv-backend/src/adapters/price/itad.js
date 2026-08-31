@@ -87,6 +87,24 @@ const request = async (path, { params = {}, body = null, method = 'GET' } = {}) 
     return res.json();
 };
 
+/**
+ * Free-text game search.
+ *
+ * Lets the deal feed answer for titles nobody has tracked. Without it, search
+ * only ever finds the seeded set - someone looking for Halo would be told
+ * there are no deals, when what we actually mean is that we have never priced
+ * it.
+ *
+ * `type: 'game'` filters out packages, bundles and art books, which otherwise
+ * outrank the game itself for a plain title.
+ */
+export const searchGames = async (title, limit = 8) => {
+    const results = await request('/games/search/v1', { params: { title, results: limit } });
+    return (results ?? [])
+        .filter((g) => g?.id && g.type === 'game')
+        .map((g) => ({ id: g.id, title: g.title }));
+};
+
 /** Resolves a title to ITAD's own game id. Null when they do not have it. */
 export const lookupGameId = async (title) => {
     const data = await request('/games/lookup/v1', { params: { title } });
@@ -144,7 +162,23 @@ export const fetchPrices = async (itadIds, { country = 'US' } = {}) => {
     if (!itadIds.length) return [];
     return request('/games/prices/v3', {
         method: 'POST',
-        params: { country, deals: 'true' },
+        // deals=false means ALL current prices, not only discounted ones.
+        //
+        // It was 'true', and that was quietly wrong. ITAD returns NOTHING for
+        // a game that is not on sale, so Hades at its normal $24.99 came back
+        // as zero entries. Three consequences, none of them obvious:
+        //
+        //   1. Price history recorded only sale prices. A chart of what we
+        //      observed could never show the normal price, which is the thing
+        //      a sale is supposed to be compared against.
+        //   2. A permanent price cut carrying no discount flag was invisible,
+        //      so an alert on it would never fire.
+        //   3. Searching a game at full price returned "no deals", when the
+        //      truth was that we simply had no price for it.
+        //
+        // What counts as a deal is our judgement, made in dealService against
+        // ITAD's historical lows - not a flag on their query string.
+        params: { country, deals: 'false' },
         body: itadIds,
     });
 };

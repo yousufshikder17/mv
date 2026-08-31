@@ -12,12 +12,18 @@ const today = new Date().toISOString().slice(0, 10);
 
 // Store names are real ones ITAD returned for this game. Fixtures that
 // contradict reality mislead whoever reads the test next.
+// Defaults to an actual DEAL, not merely a price. Since the poller collects
+// every current price rather than only discounted ones, a 0% quote with no
+// historical low is correctly not a deal - so a fixture without a discount
+// would be testing the wrong thing.
 const quote = (mediaItemId, over = {}) => db.insert(priceQuotes).values({
     mediaItemId,
     source: 'itad',
     externalId: 'q' + Math.random().toString(36).slice(2, 9),
     platform: 'GameBillet',
     priceCents: 2995,
+    originalPriceCents: 5999,
+    discountPercent: 50,
     currency: 'USD',
     url: 'https://store.test/x',
     quoteDate: today,
@@ -82,6 +88,23 @@ describe('the feed', () => {
         const game = await createMovie({ type: 'game', source: 'rawg' });
         await quote(game.id, { quoteDate: '2020-01-01' });
         expect(await listDeals()).toHaveLength(0);
+    });
+
+    it('excludes a full-price item with no historical low', async () => {
+        // The poller now collects every current price, not only discounted
+        // ones, so the feed decides what a deal is. A normal price is not one.
+        const game = await createMovie({ type: 'game', source: 'rawg' });
+        await quote(game.id, { discountPercent: 0, originalPriceCents: null });
+        expect(await listDeals()).toHaveLength(0);
+    });
+
+    it('includes a full-price item sitting at its all-time low', async () => {
+        // 0% off but nothing has ever been cheaper is a genuine deal.
+        const game = await createMovie({ type: 'game', source: 'rawg', historyLowCents: 2995 });
+        await quote(game.id, { priceCents: 2995, discountPercent: 0, originalPriceCents: null });
+
+        const [deal] = await listDeals();
+        expect(deal.reason).toBe('Lowest price ever');
     });
 
     it('excludes quotes with no catalogue row', async () => {

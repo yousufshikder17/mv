@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import { db } from '../config/db.js';
 import { mediaItems, dealVotes } from '../db/schema.js';
-import { listDeals, dealPlatforms } from '../services/dealService.js';
+import { listDeals, dealPlatforms, liveDealsFor } from '../services/dealService.js';
 import { buildDealFeed } from '../services/dealFeed.js';
 
 const intOrNull = (v) => {
@@ -34,7 +34,24 @@ export const getDeals = async (req, res) => {
         sort: sort || 'score',
     });
 
-    return res.status(200).json({ status: 'Success', results: deals.length, data: { deals } });
+    // A search that matches nothing locally falls through to ITAD.
+    //
+    // Otherwise searching "halo" reports no deals, when what we actually mean
+    // is that we have never priced it. Only on a miss, and only when a query
+    // was given - browsing the feed must never trigger an upstream call.
+    let live = [];
+    if (q && deals.length === 0) {
+        live = await liveDealsFor(q);
+    }
+
+    return res.status(200).json({
+        status: 'Success',
+        results: deals.length + live.length,
+        // Flagged so the client can say these are looked up rather than
+        // tracked, and offer to add them.
+        live: live.length > 0,
+        data: { deals: deals.length ? deals : live },
+    });
 };
 
 /** GET /deals/platforms - the stores currently represented, for the filter. */
