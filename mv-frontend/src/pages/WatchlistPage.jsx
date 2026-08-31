@@ -109,6 +109,26 @@ export default function WatchlistPage({ showToast }) {
     } catch { showToast('Could not update status.', 'error') }
   }
 
+  /**
+   * Progress: which episode / page / hour you are on.
+   *
+   * Optimistic, like rating and status above - the value came from a control
+   * the user just moved, so echoing it back after a round trip only makes the
+   * UI feel slow. A failure reverts by refetching.
+   */
+  const handleUpdateProgress = async (id, patch) => {
+    const before = items.find((i) => i.id === id)
+    setItems((prev) => prev.map((i) => i.id === id ? { ...i, ...patch } : i))
+    if (drawerItem?.id === id) setDrawerItem((d) => ({ ...d, ...patch }))
+    try {
+      await updateWatchItem(id, patch)
+    } catch {
+      showToast('Could not update progress.', 'error')
+      setItems((prev) => prev.map((i) => i.id === id ? before : i))
+      if (drawerItem?.id === id) setDrawerItem(before)
+    }
+  }
+
   const handleRemove = async (id) => {
     try {
       await removeFromWatch(id)
@@ -312,6 +332,8 @@ export default function WatchlistPage({ showToast }) {
         onClose={closeDrawer}
         onUpdateRating={handleUpdateRating}
         onUpdateStatus={handleUpdateStatus}
+        onUpdateProgress={handleUpdateProgress}
+        showToast={showToast}
         onRemove={handleRemove}
       />
 

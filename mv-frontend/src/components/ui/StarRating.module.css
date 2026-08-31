@@ -18,3 +18,15 @@
 /* sizes */
 .sm .star { font-size: 13px; }
 .lg .star { font-size: 22px; }
+
+/* Half stars: a clipped copy of the glyph laid over a dim one. Overflow
+   hidden on a fixed-width overlay is what makes an exact 50% possible - a
+   different glyph would only ever approximate it. */
+.star { position: relative; display: inline-block; }
+.star .empty { color: var(--c-line); }
+.star .fill {
+  position: absolute; inset: 0; overflow: hidden;
+  color: var(--c-accent); white-space: nowrap;
+  transition: width .12s ease;
+}
+.star:disabled { cursor: default; }
