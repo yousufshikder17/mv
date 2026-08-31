@@ -93,6 +93,49 @@ const artistsOf = (rg: any): string[] =>
 export const coverUrl = (releaseGroupId: string, size = 'front-500') =>
     releaseGroupId ? COVER_ART + '/release-group/' + releaseGroupId + '/' + size : null;
 
+// Ranking hints, for the one part of this that IS fixable.
+//
+// MusicBrainz is a catalogue, not a chart: it has no popularity data at all,
+// and 330 release groups are called "Thriller". Every exact title match scores
+// 100, so the original and a karaoke cover are indistinguishable to it - the
+// Michael Jackson album sits at position 71 for a bare search.
+//
+// Nothing below fixes that; no signal in their data can. What it does fix is
+// the ordering WITHIN a set of results, so that when a search is specific
+// enough to find the right artist, the album outranks the single and the
+// karaoke version.
+
+const TYPE_RANK: Record<string, number> = {
+    Album: 3,
+    EP: 2,
+    Single: 1,
+    Broadcast: 0,
+    Other: 0,
+};
+
+// Derivative releases. Real, worth keeping, and rarely what someone searching
+// a title actually meant.
+const SECONDARY_PENALTY: Record<string, number> = {
+    Compilation: 2,
+    Live: 2,
+    Remix: 3,
+    Soundtrack: 1,
+    Demo: 3,
+    Mixtape: 2,
+    'DJ-mix': 3,
+    Interview: 4,
+    Audiobook: 4,
+};
+
+const rank = (rg: any): number => {
+    let score = (rg.score ?? 0) / 10;
+    score += TYPE_RANK[rg['primary-type']] ?? 0;
+    for (const secondary of rg['secondary-types'] ?? []) {
+        score -= SECONDARY_PENALTY[secondary] ?? 1;
+    }
+    return score;
+};
+
 /**
  * Search release groups - the album-level entity.
  *
@@ -104,11 +147,11 @@ export const searchAlbums = async (query: string): Promise<MediaSearchResult[]> 
     const data = await request('/release-group', { query, limit: 25 });
 
     return (data['release-groups'] ?? [])
-        // MusicBrainz returns a relevance score and does NOT sort by it. A
-        // plain search for "in rainbows radiohead" put a release group titled
-        // "Radiohead" by an artist called "In Rainbows" first, and its genres
-        // were nonsense as a result.
-        .sort((a: any, b: any) => (b.score ?? 0) - (a.score ?? 0))
+        // MusicBrainz returns a relevance score and does NOT sort by it, and
+        // ties on that score are extremely common - every exact title match
+        // gets 100. `rank` breaks those ties with the only real signals their
+        // data has: an Album beats a Single, and neither is a karaoke remix.
+        .sort((a: any, b: any) => rank(b) - rank(a))
         .slice(0, 20)
         .map((rg: any) => ({
             type: 'album' as const,
