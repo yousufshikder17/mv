@@ -1,4 +1,13 @@
-.page { min-height: 100vh; }
+.page { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* Holds hero + toolbar + count + feed. One viewport tall at minimum, so the
+   footer starts below the fold and is reached by scrolling, not on arrival.
+   svh, not vh: on mobile browsers vh counts the space behind the retracting
+   address bar, which would push the footer a chrome-height too far down. */
+.main {
+  min-height: 100svh;
+  display: flex; flex-direction: column;
+}
 
 /* ── Hero ─────────────────────────────────────────────────────── */
 .hero {
@@ -47,7 +56,7 @@
   display: flex; align-items: center;
 }
 .searchIcon {
-  position: absolute; left: 10px; font-size: 13px; pointer-events: none;
+  position: absolute; left: 10px; pointer-events: none; color: var(--c-muted);
 }
 .searchInput {
   padding: 8px 12px 8px 32px; border-radius: 999px;
@@ -101,17 +110,19 @@
 
 /* ── Feed ────────────────────────────────────────────────────── */
 .feed {
-  padding: 14px 32px 80px;
+  padding: 14px clamp(18px, 3vw, 48px) 80px;
   max-width: 1480px; margin: 0 auto;
+  width: 100%;
+  flex: 1;
 }
 
 /* Grid */
 .grid {
   display: grid; gap: 28px 20px;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(clamp(160px, 17vw, 240px), 1fr));
 }
-.grid.compact { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px 14px; }
-.grid.comfy   { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 36px 28px; }
+.grid.compact { grid-template-columns: repeat(auto-fill, minmax(clamp(130px, 12vw, 180px), 1fr)); gap: 22px 16px; }
+.grid.comfy   { grid-template-columns: repeat(auto-fill, minmax(clamp(200px, 22vw, 320px), 1fr)); gap: 40px 30px; }
 
 /* List */
 .list { display: flex; flex-direction: column; }
@@ -125,9 +136,9 @@
 }
 .empty {
   display: flex; flex-direction: column; align-items: center;
-  padding: 80px 20px; text-align: center; gap: 14px;
+  padding: 64px 20px 40px; text-align: center; gap: 14px;
 }
-.emptyIcon { font-size: 52px; opacity: .35; margin: 0; }
+.emptyIcon { color: var(--c-muted); margin: 0 auto; }
 .emptyMsg  { font-family: var(--ff-display); font-size: 20px; color: var(--c-muted); margin: 0; }
 
 .attribution {

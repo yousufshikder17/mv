@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { addToWatchlist, searchMovies, importMovie } from '../../services/watchlistService.js'
 import styles from './AddMovieModal.module.css'
+import { SearchIcon } from '../ui/Icon.jsx'
 
 const DEBOUNCE_MS = 350
 
@@ -95,7 +96,7 @@ export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
 
   return (
     <div className="modal-overlay" id="add-movie-overlay" onClick={handleClose}>
-      <div className="modal-card" id="add-movie-modal" onClick={(e) => e.stopPropagation()}>
+      <div className={`modal-card ${styles.card}`} id="add-movie-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className={styles.header}>
           <h3 className={styles.heading}>Add to Watchlist</h3>
@@ -104,7 +105,7 @@ export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
 
         {/* Search */}
         <div className={styles.searchWrap}>
-          <span className={styles.searchIcon}>🔍</span>
+          <SearchIcon size={16} className={styles.searchIcon} />
           <input
             className="form-input"
             style={{ paddingLeft: '36px' }}

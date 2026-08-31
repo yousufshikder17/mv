@@ -10,5 +10,6 @@ export const removeFromWatch = (id)         => api.delete(`/watchlist/${id}`)
 // and hands back our uuid, which is what /watchlist accepts.
 export const searchMovies    = (query, config) => api.get('/movies/search', { params: { q: query }, ...config })
 export const importMovie     = (tmdbId)     => api.post('/movies/import', { tmdbId })
+export const getTrending     = ()           => api.get('/movies/trending')
 export const getAllMovies    = ()           => api.get('/movies')
 export const getMovieById    = (id)         => api.get(`/movies/${id}`)

@@ -192,6 +192,27 @@ input, textarea { font-family: inherit; }
   box-shadow: var(--shadow-lg);
   animation: slideUp .25s cubic-bezier(.3,.7,.4,1);
 }
+/* ── Scrollbars ──────────────────────────────────────────────────
+   The default OS scrollbar lands as a bright opaque slab on a dark
+   surface. These use the same tokens as borders, so the bar reads as
+   part of the panel and follows the theme without a second rule.
+   Track stays transparent; the thumb is inset with a transparent
+   border + background-clip so it floats rather than filling a gutter. */
+* {
+  scrollbar-width: thin;                          /* Firefox */
+  scrollbar-color: var(--c-line) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--c-line);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--c-muted); background-clip: content-box; }
+::-webkit-scrollbar-corner { background: transparent; }
+
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 

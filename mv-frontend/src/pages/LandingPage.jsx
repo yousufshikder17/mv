@@ -1,10 +1,27 @@
 import { Link } from 'react-router-dom'
 import TmdbCredit from '../components/layout/TmdbCredit.jsx'
+import { ClapperIcon } from '../components/ui/Icon.jsx'
 import styles from './LandingPage.module.css'
+
+// Decorative only — nine posters served from TMDB's CDN, hardcoded rather than
+// fetched: a hero that waits on an API call before it paints is slower and can
+// fail, and this is scenery, not data. Attribution lives in <TmdbCredit /> in
+// the footer, which TMDB's terms require wherever their images appear.
+const POSTERS = [
+  { path: '/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg', title: 'Blade Runner 2049' },
+  { path: '/iYypPT4bhqXfq1b6EnmxvRt6b2Y.jpg', title: 'In the Mood for Love' },
+  { path: '/v1tRXZ4JtD2Iv6fjkPvT4GiwslV.jpg', title: 'Dune' },
+  { path: '/602vevIURmpDfzbnv5Ubi6wIkQm.jpg', title: 'Drive' },
+  { path: '/pEzNVQfdzYDzVK0XqxERIw2x2se.jpg', title: 'Arrival' },
+  { path: '/fa0RDkAlCec0STeMNAhPaF89q6U.jpg', title: 'There Will Be Blood' },
+  { path: '/7fn624j5lj3xTme2SgiLCeuedmO.jpg', title: 'Whiplash' },
+  { path: '/eCOtqtfvn7mxGl6nfmq4b1exJRc.jpg', title: 'Her' },
+  { path: '/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg', title: 'Parasite' },
+]
 
 const FEATURES = [
   {
-    icon: '🎬',
+    icon: <ClapperIcon size={26} />,
     title: 'Track Everything',
     body: 'Log every film you\'ve watched, are watching, or plan to watch. Your complete personal cinema history.',
   },
@@ -65,8 +82,16 @@ export default function LandingPage() {
 
         {/* Decorative film grid */}
         <div className={styles.heroArt} aria-hidden="true">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className={styles.artCell} style={{ animationDelay: `${i * .12}s` }} />
+          {POSTERS.map((p, i) => (
+            <div key={p.path} className={styles.artCell} style={{ animationDelay: `${i * .12}s` }}>
+              <img
+                src={`https://image.tmdb.org/t/p/w342${p.path}`}
+                alt=""
+                loading={i < 6 ? 'eager' : 'lazy'}
+                decoding="async"
+                draggable="false"
+              />
+            </div>
           ))}
         </div>
       </section>
@@ -117,7 +142,10 @@ export default function LandingPage() {
             <Link to="/register" className="btn-accent" id="cta-register-btn">
               Create your vault →
             </Link>
-            {/* Affiliate slot */}
+            {/* Affiliate slot — hidden until an account is approved. The tag
+                then lives in .env, never here: SPEC §1/§2, a committed tag on
+                a forked public repo is what gets an Associates account banned
+                permanently. Un-comment when there is a real URL to point at.
             <a
               href="#"
               className="btn-ghost"
@@ -127,6 +155,7 @@ export default function LandingPage() {
             >
               Explore film gear ↗
             </a>
+            */}
           </div>
         </div>
       </section>
@@ -137,10 +166,14 @@ export default function LandingPage() {
           <span className={styles.footerLogo}>◆ <em>mv</em></span>
           <p className={styles.footerNote}>Personal film ledger — built for cinephiles.</p>
           <TmdbCredit />
-          {/* Ad slot placeholder */}
+          {/* Ad slot — SPEC §1: NOT BUILT. Ads would make the project
+              commercial under TMDB's terms and trigger the $149/mo tier, on a
+              page that is serving TMDB posters. Do not un-comment without
+              resolving §3 first.
           <div className={styles.adSlot} id="footer-ad-slot" data-slot="ad">
             <span>Ad slot</span>
           </div>
+          */}
         </div>
       </footer>
     </main>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import styles from './Poster.module.css'
+import { ClapperIcon } from './Icon.jsx'
 
 /**
  * Poster — movie poster image with shimmer loader and fallback
@@ -29,7 +30,7 @@ export default function Poster({ url, title = '', aspectRatio = '2/3', className
       ) : (
         /* Fallback placeholder */
         <div className={styles.fallback} aria-label={title || 'No poster'}>
-          <span className={styles.fallbackIcon}>🎬</span>
+          <ClapperIcon size={30} className={styles.fallbackIcon} />
           {title && <span className={styles.fallbackTitle}>{title.slice(0, 2).toUpperCase()}</span>}
         </div>
       )}

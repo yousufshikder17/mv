@@ -30,7 +30,7 @@
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 8px; background: var(--c-faint);
 }
-.fallbackIcon { font-size: 28px; opacity: .4; }
+.fallbackIcon { color: var(--c-muted); }
 .fallbackTitle {
   font-family: var(--ff-display); font-size: 20px;
   font-weight: 500; color: var(--c-muted); letter-spacing: .05em;

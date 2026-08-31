@@ -6,7 +6,7 @@
   position: relative; overflow: hidden;
   min-height: 90vh;
   display: grid; grid-template-columns: 1fr 1fr; align-items: center;
-  padding: 80px 64px 80px; gap: 64px;
+  padding: 80px 88px 80px 64px; gap: 64px;
   max-width: 1480px; margin: 0 auto;
 }
 
@@ -58,19 +58,41 @@
 /* Art grid */
 .heroArt {
   display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 10px; position: relative; z-index: 1;
+  gap: 14px; position: relative; z-index: 1;
+  /* Reads as a wall continuing past the frame rather than nine cropped boxes.
+     Bottom fade also hides the row the viewport cuts off. */
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 0 55%, transparent 100%),
+    linear-gradient(to right, #000 0 70%, transparent 100%);
+  -webkit-mask-composite: source-in;
+          mask-image:
+    linear-gradient(to bottom, #000 0 55%, transparent 100%),
+    linear-gradient(to right, #000 0 70%, transparent 100%);
+          mask-composite: intersect;
 }
 .artCell {
-  aspect-ratio: 2/3; border-radius: 10px;
+  aspect-ratio: 2/3; border-radius: 10px; overflow: hidden;
   background: var(--c-faint); border: 1px solid var(--c-line);
   animation: cell-fade 4s ease-in-out infinite alternate;
 }
-.artCell:nth-child(2) { transform: translateY(16px); }
-.artCell:nth-child(5) { transform: translateY(-12px); background: rgba(212,168,83,.08); }
-.artCell:nth-child(8) { transform: translateY(20px); }
+.artCell img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  /* The headline is the hero. Posters at full saturation fight the
+     cream-and-gold palette and steal the eye, so they sit well back. */
+  filter: grayscale(.45) brightness(.5) contrast(1.05);
+}
+/* Column offsets big enough to read as intent, not as misalignment. */
+.artCell:nth-child(3n+2) { transform: translateY(72px); }
+.artCell:nth-child(3n)   { transform: translateY(34px); }
+/* Two accents carry colour so the wall isn't uniformly grey. */
+.artCell:nth-child(2) img,
+.artCell:nth-child(6) img { filter: grayscale(0) brightness(.72) contrast(1.05); }
 @keyframes cell-fade {
-  from { opacity: .3; }
-  to   { opacity: .8; }
+  from { opacity: .55; }
+  to   { opacity: .9;  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .artCell { animation: none; opacity: .8; }
 }
 
 /* ── Sections ─────────────────────────────────────────────────── */
@@ -102,7 +124,13 @@
 }
 .featureCard:hover { border-color: var(--c-accent); transform: translateY(-4px); }
 
-.featureIcon { font-size: 28px; display: block; margin-bottom: 16px; }
+.featureIcon {
+  font-size: 28px; display: block; margin-bottom: 16px;
+  /* Matches the cap-height the ★ and ◎ text glyphs render at, so the drawn
+     clapperboard lines up with them rather than sitting proud. */
+  line-height: 1;
+}
+.featureIcon svg { width: 26px; height: 26px; display: block; }
 .featureTitle {
   font-family: var(--ff-display); font-size: 20px; font-weight: 500;
   letter-spacing: -.02em; margin: 0 0 10px;

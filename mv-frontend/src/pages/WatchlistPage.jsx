@@ -6,6 +6,7 @@ import MovieDrawer   from '../components/watchlist/MovieDrawer.jsx'
 import AddMovieModal from '../components/watchlist/AddMovieModal.jsx'
 import TmdbCredit    from '../components/layout/TmdbCredit.jsx'
 import { useAuth } from '../hooks/useAuth.js'
+import { ClapperIcon, SearchIcon } from '../components/ui/Icon.jsx'
 import styles from './WatchlistPage.module.css'
 
 const VIEWS   = ['grid', 'list']
@@ -108,6 +109,10 @@ export default function WatchlistPage({ showToast }) {
 
   return (
     <div className={styles.page} id="watchlist-page">
+      {/* Everything above the footer fills at least one screen, so the
+          attribution sits just below the fold rather than intruding on the
+          first view of a short list. */}
+      <div className={styles.main}>
       {/* ── Hero / Stats ─────────────────────────────────────── */}
       <section className={styles.hero}>
         <div className={styles.heroInner}>
@@ -137,7 +142,7 @@ export default function WatchlistPage({ showToast }) {
         <div className={styles.toolbarLeft}>
           {/* Search */}
           <div className={styles.searchWrap}>
-            <span className={styles.searchIcon}>🔍</span>
+            <SearchIcon size={15} className={styles.searchIcon} />
             <input
               id="watchlist-search"
               className={styles.searchInput}
@@ -217,7 +222,7 @@ export default function WatchlistPage({ showToast }) {
           </div>
         ) : filtered.length === 0 ? (
           <div className={styles.empty}>
-            <p className={styles.emptyIcon}>🎬</p>
+            <ClapperIcon size={52} className={styles.emptyIcon} />
             <p className={styles.emptyMsg}>
               {search ? `No films matching "${search}"` : 'Your vault is empty — add your first film!'}
             </p>
@@ -226,6 +231,11 @@ export default function WatchlistPage({ showToast }) {
                 + Add a film
               </button>
             )}
+            {/* Parked. TrendingStrip + GET /movies/trending stay in the tree —
+                discovery is moving to a public home page, where this belongs
+                instead of inside the gated vault.
+            {!search && <TrendingStrip onAdded={fetchWatchlist} showToast={showToast} />}
+            */}
           </div>
         ) : view === 'grid' ? (
           <div className={`${styles.grid} ${styles[density]}`}>
@@ -252,6 +262,8 @@ export default function WatchlistPage({ showToast }) {
             ))}
           </div>
         )}
+      </div>
+
       </div>
 
       {/* ── Drawer ───────────────────────────────────────────── */}
