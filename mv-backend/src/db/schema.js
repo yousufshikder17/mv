@@ -83,6 +83,9 @@ export const mediaItems = pgTable('media_item', {
     // given user actually plays it on lives on tracking_item, because those
     // are different facts - the catalogue row is shared between users.
     platforms: text('platforms').array().notNull().default([]),
+    // Books only. Median across editions - editions genuinely differ in
+    // length, so this seeds progressTotal rather than dictating it.
+    pageCount: integer('page_count'),
     // TV only. Null for every other type.
     seasonCount: integer('season_count'),
     episodeCount: integer('episode_count'),

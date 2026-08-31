@@ -22,12 +22,18 @@ export const importMovieSchema = z.object({
     // Named tmdbId for the original films-only contract; it now carries the
     // source's own id, whichever source that is. Renamed with the rest of the
     // contract when a caller other than our own frontend exists.
-    tmdbId: z.coerce.number().int().positive("A valid source id is required"),
+    // Was a number, because films-only meant TMDB-only. Open Library work ids
+    // are strings like OL20893680W, so this is now the source's id whatever
+    // shape that source uses. Numeric ids still coerce fine.
+    tmdbId: z.union([
+        z.coerce.number().int().positive(),
+        z.string().min(1).max(64),
+    ], { message: "A valid source id is required" }),
     // Defaulted, so the pre-M2 contract (films only) keeps working unchanged.
     //
     // This list has to grow with the adapter registry. It did not when games
     // landed, so every game import was rejected by validation before the
     // controller ever saw it - a 400 that looked like a bad request rather
     // than a missing case.
-    type: z.enum(["film", "tv", "game"]).default("film"),
+    type: z.enum(["film", "tv", "game", "book"]).default("film"),
 });

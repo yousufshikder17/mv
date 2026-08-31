@@ -142,6 +142,11 @@ export default function MovieDrawer({ item, movie, open, onClose, onUpdateRating
                   />
                 </label>
               </div>
+              {movie.pageCount != null && type === 'book' && (
+                <p className={styles.progressHint}>
+                  Around {movie.pageCount} pages, though editions differ
+                </p>
+              )}
               {movie.episodeCount != null && (
                 <p className={styles.progressHint}>
                   {movie.seasonCount} season{movie.seasonCount === 1 ? '' : 's'}, {movie.episodeCount} episodes

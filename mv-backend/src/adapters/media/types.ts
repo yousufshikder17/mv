@@ -24,6 +24,8 @@ export type MediaItem = {
     /** Minutes. Per episode for TV; meaningless for books and albums. */
     runtime?: number | null;
     posterUrl?: string | null;
+    /** Books only. Median across editions, so a hint rather than a promise. */
+    pageCount?: number | null;
     /** TV only. Null elsewhere. */
     seasonCount?: number | null;
     episodeCount?: number | null;

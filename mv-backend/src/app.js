@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import recommendRoutes from "./routes/recommendRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 import { mountSpa } from "./middleware/spa.js";
 
@@ -48,6 +49,7 @@ export const createApp = () => {
     app.use("/watchlist", watchlistRoutes);
     app.use("/alerts", alertRoutes);
     app.use("/notifications", notificationRoutes);
+    app.use("/recommendations", recommendRoutes);
 
     // Serves the built frontend when one exists, with per-item meta tags so
     // shared links preview correctly. No-op in development, where Vite serves

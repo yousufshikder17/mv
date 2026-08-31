@@ -175,12 +175,20 @@ describe('movie import schema', () => {
     };
 
     it.each([
-        ['a non-numeric tmdbId', { tmdbId: 'abc' }],
         ['a negative tmdbId', { tmdbId: -1 }],
+        ['an empty source id', { tmdbId: '' }],
         ['a missing tmdbId', {}],
     ])('rejects %s', async (_label, body) => {
         const res = await post(body);
         expect(res.status).toBe(400);
+    });
+
+    it('accepts a non-numeric source id, because not every source uses numbers', async () => {
+        // Open Library work ids look like OL20893680W. `tmdbId` has been a
+        // misnomer since games landed; with books it became a type error too,
+        // and every book import was rejected before the controller saw it.
+        const res = await post({ tmdbId: 'OL20893680W', type: 'book' });
+        expect(res.status).not.toBe(400);
     });
 });
 

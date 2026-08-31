@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, beforeEach, vi, afterEach } from 'vitest';
 import { api, createSchema, resetTables, registerUser, createMovie } from './helpers/testDb.js';
 import { clearCache, cacheStats, cacheSize } from '../src/utils/cache.js';
+import { SEARCHABLE_TYPES } from '../src/adapters/media/index.ts';
 
 beforeAll(createSchema);
 beforeEach(async () => { await resetTables(); clearCache(); vi.unstubAllGlobals(); });
@@ -57,12 +58,12 @@ describe('quota defence that replaced the auth gate', () => {
     });
 
     it('caches the untyped search too, which costs one call per source', async () => {
-        // No type means searchAll across film, tv and game - three upstream
-        // calls for one request, and none at all for the second.
+        // No type means searchAll across every searchable type - one upstream
+        // call each for the first request, and none at all for the second.
         const spy = stubTmdb();
         await api().get('/movies/search?q=dune');
         await api().get('/movies/search?q=dune');
-        expect(spy).toHaveBeenCalledTimes(3);
+        expect(spy).toHaveBeenCalledTimes(SEARCHABLE_TYPES.length);
     });
 
     it('returns the sources that worked when one is down', async () => {
@@ -184,9 +185,11 @@ describe('RAWG quota protection', () => {
 });
 
 describe('public details', () => {
-    it('rejects an unknown media type instead of guessing', async () => {
+    it('rejects a media type no adapter owns, instead of guessing', async () => {
+        // 'album' until Spotify lands. Using a type that later becomes valid
+        // is how this test quietly stopped testing anything when books landed.
         stubTmdb();
-        const res = await api().get('/movies/details/book/123');
+        const res = await api().get('/movies/details/album/123');
         expect(res.status).toBe(400);
     });
 
