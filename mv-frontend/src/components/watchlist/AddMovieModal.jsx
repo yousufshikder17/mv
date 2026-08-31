@@ -3,6 +3,7 @@ import { addToWatchlist, searchMovies, importMovie } from '../../services/watchl
 import styles from './AddMovieModal.module.css'
 import { SearchIcon } from '../ui/Icon.jsx'
 import { TYPE_LABEL } from '../../lib/media.js'
+import RawgCredit from '../layout/RawgCredit.jsx'
 
 const DEBOUNCE_MS = 350
 
@@ -179,6 +180,10 @@ export default function AddMovieModal({ open, onClose, onAdded, showToast }) {
             </div>
           ))}
         </div>
+
+        {/* RAWG requires the credit wherever their data is shown, including a
+            dialog. Only rendered when a game is actually in the results. */}
+        {results.some((r) => r.type === 'game') && <RawgCredit className={styles.credit} />}
       </div>
     </div>
   )

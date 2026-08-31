@@ -159,6 +159,30 @@ describe('the stricter public limiter is mounted, not merely defined', () => {
     });
 });
 
+// RAWG allows 20,000 requests a MONTH, about 650 a day, and an untyped public
+// search costs one RAWG call per distinct query. The cache is the only thing
+// standing between anonymous traffic and an exhausted month, so these assert
+// it rather than trusting it.
+describe('RAWG quota protection', () => {
+    it('does not call RAWG again for a repeated untyped search', async () => {
+        const spy = stubTmdb();
+        await api().get('/movies/search?q=elden');
+        await api().get('/movies/search?q=elden');
+        await api().get('/movies/search?q=elden');
+
+        const rawgCalls = spy.mock.calls.filter(([u]) => String(u).includes('rawg.io')).length;
+        expect(rawgCalls).toBe(1);
+    });
+
+    it('never puts the RAWG key in a response', async () => {
+        // It travels as a query parameter rather than a header, so it is one
+        // careless passthrough away from a log or a referrer.
+        stubTmdb();
+        const res = await api().get('/movies/search?q=elden&type=game');
+        expect(JSON.stringify(res.body)).not.toMatch(/key=/);
+    });
+});
+
 describe('public details', () => {
     it('rejects an unknown media type instead of guessing', async () => {
         stubTmdb();

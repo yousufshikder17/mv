@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth.js'
 import { ClapperIcon, SearchIcon } from '../components/ui/Icon.jsx'
 import { statusLabel, TYPE_LABEL } from '../lib/media.js'
 import styles from './WatchlistPage.module.css'
+import RawgCredit    from '../components/layout/RawgCredit.jsx'
 
 const VIEWS   = ['grid', 'list']
 const DENSITY = ['compact', 'default', 'comfy']
@@ -349,9 +350,12 @@ export default function WatchlistPage({ showToast }) {
         showToast={showToast}
       />
 
-      {/* Required TMDB attribution — this page renders their data. */}
+      {/* Attribution for whichever sources are actually on screen. RAWG's
+          terms require an active hyperlink on every page displaying their
+          data, and this page shows game covers as soon as one is tracked. */}
       <footer className={styles.attribution}>
         <TmdbCredit />
+        {items.some((i) => getMovie(i)?.source === 'rawg') && <RawgCredit />}
       </footer>
     </div>
   )

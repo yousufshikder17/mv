@@ -63,13 +63,19 @@ export const searchTmdb = async (req, res) => {
         return res.status(200).json({ status: 'Success', results: 0, data: [] });
     }
 
-    // Five minutes. Long enough that a shared link or a repeated query costs
-    // the upstream nothing, short enough that a new release appears the same
-    // session. RAWG's 20k/month cap makes this load-bearing, not an
-    // optimisation.
+    // Thirty minutes, raised from five once games joined.
+    //
+    // RAWG allows 20,000 requests a MONTH - about 650 a day - and an untyped
+    // public search costs one RAWG call per distinct query. Five minutes was
+    // sized for TMDB, whose quota is generous; against RAWG it left the month
+    // exhaustible by a few hundred searches a day from anyone at all.
+    //
+    // Half an hour is safe because search results for a term are stable: a new
+    // release appears within the hour, and nothing else about the result set
+    // moves. This is a compliance control, not an optimisation.
     const results = await cached(
         `search:${type ?? 'all'}:${query.toLowerCase()}`,
-        5 * 60 * 1000,
+        30 * 60 * 1000,
         () => searchMedia(type, query),
     );
 

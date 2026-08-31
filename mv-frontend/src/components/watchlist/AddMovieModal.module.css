@@ -85,3 +85,4 @@
   font-family: var(--ff-mono); font-size: 10px; letter-spacing: .08em;
   text-transform: uppercase; color: var(--c-accent);
 }
+.credit { margin-top: 16px; }
