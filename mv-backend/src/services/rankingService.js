@@ -59,7 +59,11 @@ const VARIANT_PENALTY = {
 // point this needs re-measuring, not assuming.
 const WEIGHTS = {
     relevance: 0.15,
-    popularity: 0.30,
+    // Raised from 0.30 once ListenBrainz supplied real numbers. For a bare
+    // title query it is the ONLY signal that separates an album from a band
+    // named after it - local heuristics see two identical exact matches, and
+    // measured listen counts differ by two orders of magnitude.
+    popularity: 0.50,
     releaseQuality: 0.25,
     confidence: 0.60,
 };
@@ -96,19 +100,32 @@ export const matchConfidence = (query, result) => {
     const found = words.filter((w) => title.includes(w));
     score += (found.length / words.length) * 6;
 
-    // The query names the artist explicitly.
-    if (artist && words.some((w) => artist.includes(w) && w.length > 2)) score += 4;
-
-    // Words in the title that were NOT asked for.
+    // The query names the artist explicitly - but only credit a word that is
+    // not already the album title.
     //
-    // This is the signal that separates the album from everything named after
-    // it. "Thriller by Michael Jackson" has no extra words; "Michael Jackson -
-    // Thriller by Kent Nishimura" has two, and "Back to Black (Amy Winehouse
-    // cover) by Oscar" has three. Before this, all three matched every query
-    // word equally and the extras were free.
+    // Otherwise a band named after its own album collects the bonus twice:
+    // on a bare "thriller" query, "Thriller by Thriller" scored the artist
+    // match that "Thriller by Michael Jackson" could not, and outranked it.
+    const albumWords = new Set(album.split(' ').filter(Boolean));
+    if (artist && words.some((w) => w.length > 2 && artist.includes(w) && !albumWords.has(w))) {
+        score += 4;
+    }
+
+    // Words in the TITLE that were not asked for.
+    //
+    // Scoped to the album portion, never the artist. Music titles are
+    // formatted "Album by Artist" for display, so counting the whole string
+    // penalised "Thriller by Michael Jackson" two words for naming its own
+    // artist - on a bare "thriller" query that put it behind a band literally
+    // called Thriller, and popularity could not close the gap.
+    //
+    // Judged on the album alone, it is exact. What still gets penalised is the
+    // thing this is for: "Michael Jackson - Thriller" (a book), "Back to Black
+    // (Amy Winehouse cover)", "Vitamin String Quartet performs...".
     const queryWords = new Set(words);
-    const extra = title.split(' ').filter((w) => w && w !== 'by' && !queryWords.has(w));
-    score -= Math.min(extra.length * 1.5, 9);
+    const compared = album || title;
+    const extra = compared.split(' ').filter((w) => w && !queryWords.has(w));
+    score -= Math.min(extra.length * 2, 10);
 
     return score;
 };

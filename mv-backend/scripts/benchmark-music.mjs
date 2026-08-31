@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { searchAlbums } from '../src/adapters/media/musicbrainz.ts';
-import { rankResults, scoreResult, RANKING_WEIGHTS } from '../src/services/rankingService.js';
+import { rankResults, RANKING_WEIGHTS } from '../src/services/rankingService.js';
+import { enrich, enrichmentStats } from '../src/adapters/enrichment/listenbrainz.js';
 
 /**
  * Music search quality benchmark.
@@ -72,39 +73,63 @@ const run = async () => {
         }
         if (!raw) continue;
 
+        // The three configurations Phase 7 asks to be compared. Measuring the
+        // middle one separately is what caught a benchmark that was silently
+        // skipping enrichment entirely.
         const ranked = rankResults(bench.query, raw);
+        const enriched = rankResults(bench.query, await enrich(raw));
 
         const before = rankOf(raw, bench.expect);
         const after = rankOf(ranked, bench.expect);
-        rows.push({ ...bench, before, after, top: ranked[0]?.title ?? '(none)' });
+        const final = rankOf(enriched, bench.expect);
 
-        const arrow = before === after ? '=' : after < before || before === 0 ? 'up' : 'DOWN';
+        rows.push({ ...bench, before, after, final, top: enriched[0]?.title ?? '(none)' });
+
+        const arrow = final === after ? '  ' : final < after || after === 0 ? '+' : '-';
         console.log(
-            (bench.hard ? '[hard] ' : '       ') + bench.query.padEnd(32),
-            'provider:' + String(before || '-').padStart(3),
-            '-> ranked:' + String(after || '-').padStart(3),
-            arrow.padEnd(5),
-            '| top: ' + rows[rows.length - 1].top.slice(0, 44),
+            (bench.hard ? '[hard] ' : '       ') + bench.query.padEnd(30),
+            'raw:' + String(before || '-').padStart(3),
+            'ranked:' + String(after || '-').padStart(3),
+            'enriched:' + String(final || '-').padStart(3),
+            arrow,
+            '| ' + rows[rows.length - 1].top.slice(0, 36),
         );
     }
 
-    const scored = rows.filter((r) => r.after > 0);
     const inTop = (n, key) => rows.filter((r) => r[key] > 0 && r[key] <= n).length;
+    const mean = (key) => {
+        const found = rows.filter((r) => r[key] > 0);
+        return (found.reduce((s, r) => s + r[key], 0) / (found.length || 1)).toFixed(1);
+    };
 
     console.log('');
-    console.log('                  provider order   after ranking');
+    console.log('                   MusicBrainz    + ranking    + ListenBrainz');
     for (const n of [1, 3, 5]) {
         console.log(
             ('top-' + n + ' accuracy').padEnd(18),
-            pct(inTop(n, 'before'), rows.length).padStart(8),
-            pct(inTop(n, 'after'), rows.length).padStart(15),
+            pct(inTop(n, 'before'), rows.length).padStart(9),
+            pct(inTop(n, 'after'), rows.length).padStart(12),
+            pct(inTop(n, 'final'), rows.length).padStart(15),
         );
     }
-    const meanAfter = scored.reduce((s, r) => s + r.after, 0) / (scored.length || 1);
-    console.log('mean rank'.padEnd(18), ''.padStart(8), meanAfter.toFixed(1).padStart(15));
-    console.log('not found'.padEnd(18),
-        String(rows.filter((r) => !r.before).length).padStart(8),
-        String(rows.filter((r) => !r.after).length).padStart(15));
+    console.log('mean rank'.padEnd(18),
+        mean('before').padStart(9), mean('after').padStart(12), mean('final').padStart(15));
+
+    // Does enrichment actually help? The plan is explicit that more provider
+    // data must not simply be assumed to improve ranking.
+    const changed = rows.filter((r) => r.final !== r.after);
+    const improved = rows.filter((r) => r.after > 0 && r.final > 0 && r.final < r.after)
+        .concat(rows.filter((r) => !r.after && r.final));
+    const hurt = rows.filter((r) => r.after > 0 && (r.final === 0 || r.final > r.after));
+
+    console.log('');
+    console.log('enrichment changed ' + changed.length + '/' + rows.length + ' queries: '
+        + improved.length + ' improved, ' + hurt.length + ' worsened');
+    console.log('listenbrainz calls: ' + enrichmentStats.calls
+        + ', failures: ' + enrichmentStats.failures
+        + ', rows enriched: ' + enrichmentStats.enriched);
+    for (const r of improved) console.log('   + ' + r.query + ': ' + (r.after || '-') + ' -> ' + r.final);
+    for (const r of hurt) console.log('   - ' + r.query + ': ' + r.after + ' -> ' + (r.final || 'lost'));
 
     if (failures.length) {
         console.log('');
@@ -112,12 +137,7 @@ const run = async () => {
         for (const f of failures) console.log('   ' + f);
     }
 
-    const worsened = rows.filter((r) => r.before > 0 && r.after > r.before);
-    if (worsened.length) {
-        console.log('');
-        console.log('WORSENED by ranking:');
-        for (const r of worsened) console.log('   ' + r.query + ': ' + r.before + ' -> ' + r.after);
-    }
+
 };
 
 await run();

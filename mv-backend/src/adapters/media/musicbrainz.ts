@@ -127,13 +127,22 @@ const signalsFor = (rg: any) => ({
  * Nobody tracks a pressing; they track the album.
  */
 export const searchAlbums = async (query: string): Promise<MediaSearchResult[]> => {
-    const data = await request('/release-group', { query, limit: 25 });
+    // 100, not 25, and this is load-bearing rather than generous.
+    //
+    // Measured: a bare search for "thriller" puts Michael Jackson's album at
+    // position 71. At limit 25 or 50 it is simply not in the candidate set,
+    // so no amount of re-ranking or popularity enrichment can rescue it -
+    // enrichment can only reorder what the provider returned. At 100 it is
+    // present, and its 529,156 listens against 3,916 for the next candidate
+    // settle it instantly.
+    //
+    // Costs one request either way. MusicBrainz caps a page at 100.
+    const data = await request('/release-group', { query, limit: 100 });
 
     // Returned unsorted, on purpose. Ordering happens once, centrally, in the
     // ranking service - provider order is a suggestion and MusicBrainz's is
     // barely that.
     return (data['release-groups'] ?? [])
-        .slice(0, 25)
         .map((rg: any) => ({
             type: 'album' as const,
             source: SOURCE,

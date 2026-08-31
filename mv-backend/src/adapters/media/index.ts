@@ -4,6 +4,7 @@ import * as openlibrary from './openlibrary.ts';
 import * as musicbrainz from './musicbrainz.ts';
 import type { MediaSearchResult, MediaType } from './types.ts';
 import { rankResults } from '../../services/rankingService.js';
+import { enrich as enrichMusic } from '../enrichment/listenbrainz.js';
 
 /**
  * Which adapter owns which source and which media type.
@@ -59,8 +60,33 @@ const searchOne = (type: string, query: string): Promise<MediaSearchResult[]> =>
  */
 export const search = async (type: string | undefined, query: string) => {
     const results = type ? await searchOne(type, query) : await searchAll(query);
-    return rankResults(query, results);
+
+    // Rank first, enrich, re-rank.
+    //
+    // The first pass narrows a hundred candidates to the handful worth paying
+    // for. Enrichment then adds the one signal MusicBrainz has no equivalent
+    // for, and the second pass is what actually uses it.
+    //
+    // Enriching before ranking would mean paying for candidates local signals
+    // had already eliminated; enriching without re-ranking would fetch a
+    // popularity figure and then ignore it.
+    const ranked = rankResults(query, results);
+
+    const music = ranked.filter((r) => r.type === 'album');
+    if (!music.length) return ranked;
+
+    // One batched request covers every music candidate, so this is not an N+1
+    // even at a hundred. Returns the input unchanged on any failure.
+    const enriched = await enrichMusic(music.slice(0, ENRICH_LIMIT));
+    if (enriched === music) return ranked;
+
+    const byId = new Map(enriched.map((r) => [r.externalId, r]));
+    return rankResults(query, ranked.map((r) => byId.get(r.externalId) ?? r));
 };
+
+// Beyond this, popularity cannot plausibly rescue a candidate local ranking
+// has already buried, and the request grows for nothing.
+const ENRICH_LIMIT = 100;
 
 /**
  * Every type at once, interleaved.
