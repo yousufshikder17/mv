@@ -71,6 +71,13 @@
       "when": 1788202082896,
       "tag": "0009_m5_itad_id",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788202557354,
+      "tag": "0010_m5_notifications",
+      "breakpoints": true
     }
   ]
 }

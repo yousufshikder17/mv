@@ -7,7 +7,8 @@ import { priceQuotes } from '../db/schema.js';
 import { fetchKindleDeals } from '../adapters/price/kindle.js';
 import { fetchBookPrices } from '../adapters/price/googlebooks.js';
 import { pollGamePrices } from '../services/pricePoller.js';
-import { evaluateAlerts } from '../services/alertService.js';
+import { evaluateAlerts, markNotified } from '../services/alertService.js';
+import { notify } from '../services/notifier.js';
 import { refreshStaleMovies } from '../controllers/movieController.js';
 
 // SPEC §7: raw quotes keep 90 days in Postgres. Neon's free tier is 0.5 GB and
@@ -52,7 +53,7 @@ export const pruneOldQuotes = async (now = new Date()) => {
  * thing in this system that cannot be backfilled (SPEC §7).
  */
 export const runDailyPoll = async () => {
-    const summary = { fetched: 0, inserted: 0, gamesPolled: 0, alertsDue: 0, pruned: 0, refreshed: 0, skipped: [], errors: [] };
+    const summary = { fetched: 0, inserted: 0, gamesPolled: 0, alertsDue: 0, alertsSent: 0, pruned: 0, refreshed: 0, skipped: [], errors: [] };
 
     // An adapter with no configuration is not a failure, it is a source that
     // is not turned on yet. Keeping the two apart matters: the exit code gates
@@ -115,7 +116,20 @@ export const runDailyPoll = async () => {
     // minutes ago. Returns who to tell; delivery is deliberately separate, so
     // a missing mail server cannot cost the day's price history.
     try {
-        summary.alertsDue = (await evaluateAlerts()).length;
+        const due = await evaluateAlerts();
+        summary.alertsDue = due.length;
+
+        for (const alert of due) {
+            try {
+                await notify(alert);
+                // Marked only after delivery. Marking first would silently
+                // swallow the one message the feature exists to send.
+                await markNotified(alert.alertId, alert.priceCents);
+                summary.alertsSent += 1;
+            } catch (err) {
+                summary.errors.push(`notify ${alert.alertId}: ${err.message}`);
+            }
+        }
     } catch (err) {
         summary.errors.push(`alerts: ${err.message}`);
     }

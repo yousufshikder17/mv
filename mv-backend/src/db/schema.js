@@ -196,7 +196,50 @@ export const priceAlerts = pgTable('price_alert', {
     unique().on(t.userId, t.mediaItemId),
 ]);
 
-// 7. Price Quote
+// 7. Notification
+//
+// The in-app inbox, and the record that a thing was announced at all. Written
+// for EVERY alert regardless of channel, so email and push are decorations on
+// a row that already exists - if the mail server is down or nobody has granted
+// push permission, the news is still waiting in the app.
+export const notifications = pgTable('notification', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+        .references(() => users.id, { onDelete: 'cascade' })
+        .notNull(),
+    // 'price_drop' today. A string rather than an enum because the reasons to
+    // notify someone will grow faster than a Postgres enum wants to.
+    type: text('type').notNull(),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    // Where clicking it should go.
+    url: text('url'),
+    mediaItemId: uuid('media_item_id').references(() => mediaItems.id, { onDelete: 'cascade' }),
+    readAt: timestamp('read_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// 8. Push Subscription
+//
+// One row per browser that granted permission - a person with a laptop and a
+// phone has two, and both should buzz.
+//
+// Web Push needs no third-party service: VAPID keys are generated locally, so
+// this channel depends on nothing we have to sign up for, unlike email.
+export const pushSubscriptions = pgTable('push_subscription', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+        .references(() => users.id, { onDelete: 'cascade' })
+        .notNull(),
+    // The push service URL. Unique because re-subscribing the same browser
+    // must update the row rather than accumulate duplicates that all buzz.
+    endpoint: text('endpoint').notNull().unique(),
+    p256dh: text('p256dh').notNull(),
+    auth: text('auth').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// 9. Price Quote
 // One row per (source, item, day). The normalized shape from SPEC §7 — the
 // price layer never learns which adapter produced a row.
 //
