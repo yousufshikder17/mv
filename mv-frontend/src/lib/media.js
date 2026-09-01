@@ -119,14 +119,21 @@ const OL_ART = (id) => 'https://covers.openlibrary.org/b/id/' + id + '-M.jpg';
 export const HOME_ART = [
   TMDB_ART('/lxM6kqilAdpdhqUl2biYp5frUxE.jpg'),          // Jaws
   TMDB_ART('/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg'),          // Game of Thrones
-  RAWG_ART('cc1/cc196a5ad763955d6532cdba236f730c.jpg'),  // Breath of the Wild
+  RAWG_ART('da1/da1b267764d77221f07a4386b6548e5a.jpg'),  // Dark Souls III
   OL_ART('15155833'),                                    // Harry Potter and the Philosopher's Stone
-  CAA_ART('f32fab67-77dd-3937-addc-9062e28e4c37'),       // Thriller - Michael Jackson
+  CAA_ART('08aa7a6c-3e43-4459-87b2-e47faf3a088a'),       // Currents - Tame Impala
   TMDB_ART('/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg'),          // The Shawshank Redemption
   TMDB_ART('/uOOtwVbSr4QDjAGIifLDwpb2Pdl.jpg'),          // Stranger Things
-  RAWG_ART('b4e/b4e4c73d5aa4ec66bbf75375c4847a2b.jpg'),  // Minecraft
-  OL_ART('14627509'),                                    // The Hobbit
+  RAWG_ART('8cd/8cd179c85bd3de8f79bef245b15075fb.jpg'),  // Machinarium
+  RAWG_ART('47b/47b50d880be8453bf9cda6e5c007bc26.jpg'),  // DOOM (1993)
 ];
+
+// Swaps that were considered and are one line each, kept here so the choice
+// is visible rather than forgotten:
+//   Machinarium  <-> ICO                RAWG_ART('3ef/3ef0dc5bda761da51de4dcb170dcf32a.jpg')
+//   Currents     <-> Dark Side of the Moon
+//                    CAA_ART('f5093c06-23e3-404f-aeaa-40f72885ee3a')
+//   The Hobbit   OL_ART('14627509') - dropped to make room for a third game
 
 export const BROWSE_COPY = {
   film: {
