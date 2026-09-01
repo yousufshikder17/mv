@@ -93,6 +93,22 @@ const artistsOf = (rg: any): string[] =>
 export const coverUrl = (releaseGroupId: string, size = 'front-500') =>
     releaseGroupId ? COVER_ART + '/release-group/' + releaseGroupId + '/' + size : null;
 
+/**
+ * The same cover, via our own resolver.
+ *
+ * The archive answers 400 for a release group with no artwork, and search
+ * cannot tell in advance which those are - so pointing an <img> at the archive
+ * directly meant a failed request per coverless album. This resolves once and
+ * remembers; see controllers/coverController.js.
+ *
+ * Absolute, because in development the frontend is served by Vite on another
+ * port and a relative path would resolve against that instead.
+ */
+export const resolvedCoverUrl = (releaseGroupId: string) =>
+    releaseGroupId
+        ? (process.env.PUBLIC_URL ?? '') + '/covers/album/' + releaseGroupId
+        : null;
+
 // MusicBrainz vocabulary -> the shared RankingSignals shape.
 //
 // The adapter's job is translation, not ordering. It knows what a release
@@ -153,7 +169,7 @@ export const searchAlbums = async (query: string): Promise<MediaSearchResult[]> 
             // Rainbows" - with a dash, the two are indistinguishable in a list.
             title: artistsOf(rg).length ? rg.title + ' by ' + artistsOf(rg).join(', ') : rg.title,
             releaseYear: year(rg['first-release-date']),
-            posterUrl: coverUrl(rg.id, 'front-250'),
+            posterUrl: resolvedCoverUrl(rg.id),
             overview: null,
             ranking: signalsFor(rg),
         }));

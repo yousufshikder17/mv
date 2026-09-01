@@ -9,6 +9,8 @@ import axios from 'axios'
 // would be wrong.
 const baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:5001'
 
+export { baseURL }
+
 const api = axios.create({
   baseURL,
   withCredentials: true, // send cookies for cookie-based JWT

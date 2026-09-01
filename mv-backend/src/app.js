@@ -11,6 +11,7 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import recommendRoutes from "./routes/recommendRoutes.js";
 import dealRoutes from "./routes/dealRoutes.js";
 import listRoutes from "./routes/listRoutes.js";
+import coverRoutes from "./routes/coverRoutes.js";
 import socialRoutes from "./routes/socialRoutes.js";
 import accountRoutes from "./routes/accountRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
@@ -99,6 +100,12 @@ export const createApp = () => {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
+
+    // Before the API limiter, deliberately. A search page requests twenty
+    // covers, and charging those against a 100-per-15-minutes API budget
+    // would rate limit a person for scrolling. This router carries its own,
+    // sized for images.
+    app.use("/covers", coverRoutes);
 
     app.use(apiLimiter);
 
