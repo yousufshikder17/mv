@@ -21,8 +21,37 @@ export const getProfileItems = async (req, res) => {
     const profile = await publicProfile(req.params.userId, viewer(req));
     if (!profile) return res.status(404).json({ error: 'Profile not found' });
 
+    // Columns named explicitly, never the whole row.
+    //
+    // `select({ item: trackingItems })` expands to every column, which shipped
+    // tracking_item.notes - private scratch text, by the schema's own
+    // definition, and something the privacy page promises is "never public".
+    // Nothing rendered it, so the leak was invisible in the UI.
+    //
+    // The hidden-row filter below does not help: it decides which ROWS a
+    // stranger sees, not which COLUMNS. A visible row's notes are exactly the
+    // case that leaked.
+    const publicColumns = {
+        id: trackingItems.id,
+        mediaItemId: trackingItems.mediaItemId,
+        status: trackingItems.status,
+        rating: trackingItems.rating,
+        platform: trackingItems.platform,
+        progressSeason: trackingItems.progressSeason,
+        progressCurrent: trackingItems.progressCurrent,
+        progressTotal: trackingItems.progressTotal,
+        progressUnit: trackingItems.progressUnit,
+        createdAt: trackingItems.createdAt,
+        updatedAt: trackingItems.updatedAt,
+    };
+
+    // Your own profile is the one place the private fields belong.
+    const columns = profile.isSelf
+        ? { ...publicColumns, notes: trackingItems.notes, hidden: trackingItems.hidden }
+        : publicColumns;
+
     const rows = await db
-        .select({ item: trackingItems, media: mediaItems })
+        .select({ item: columns, media: mediaItems })
         .from(trackingItems)
         .innerJoin(mediaItems, eq(trackingItems.mediaItemId, mediaItems.id))
         .where(and(

@@ -17,7 +17,13 @@ import { users } from '../db/schema.js';
  */
 export const optionalAuth = async (req, res, next) => {
     const header = req.headers.authorization || '';
-    const token = header.startsWith('Bearer ') ? header.slice(7) : req.cookies?.token;
+    // `jwt`, matching generateToken and authMiddleware. This read `cookies.token`,
+    // a name nothing sets, so the cookie fallback never fired: a signed-in
+    // viewer without a Bearer header was treated as a stranger on every public
+    // route - their own private profile 404'd, their hidden items vanished and
+    // follow state came back false. It failed closed, so nothing leaked, but it
+    // silently defeated the whole purpose of this middleware.
+    const token = header.startsWith('Bearer ') ? header.slice(7) : req.cookies?.jwt;
     if (!token) return next();
 
     try {

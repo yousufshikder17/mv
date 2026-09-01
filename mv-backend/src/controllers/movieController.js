@@ -21,6 +21,29 @@ const AIRING_STATUSES = ['Returning Series', 'In Production', 'Planned'];
 // pages. One constant so no two rows can disagree about their own length.
 const ROW_SIZE = 15;
 
+/**
+ * Is this a plausible id at a provider, rather than a path?
+ *
+ * `externalId` arrives from the URL and is interpolated straight into a
+ * provider path by every adapter - `/games/${id}`, `/works/${id}.json`,
+ * `/release-group/${id}`. Express 5 decodes %2F in a route parameter, so
+ * without this a caller could send `..%2F..%2Faccount` and have the adapter
+ * build a URL that `new URL()` then normalises to a DIFFERENT endpoint at the
+ * same provider - reached with our API key, and the JSON returned to them.
+ *
+ * The host is fixed, so this was never arbitrary-origin SSRF. It was the use
+ * of our credentials against provider endpoints we did not choose.
+ *
+ * Checked here rather than encoded in each of the eleven interpolation sites:
+ * one gate covers every adapter, including the next one added. Every real id
+ * passes - TMDB and RAWG are numeric, Open Library is OL123W, MusicBrainz is a
+ * UUID, and RAWG slugs are lowercase and hyphenated.
+ */
+const SAFE_EXTERNAL_ID = /^[A-Za-z0-9._-]{1,128}$/;
+
+const isSafeExternalId = (value) =>
+    typeof value === 'string' && SAFE_EXTERNAL_ID.test(value) && !value.includes('..');
+
 const daysAgo = (n) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
 
 const staleBefore = (item) =>
@@ -245,6 +268,10 @@ export const importFromTmdb = async (req, res) => {
 export const publicDetails = async (req, res) => {
     const { type, externalId } = req.params;
 
+    if (!isSafeExternalId(externalId)) {
+        return res.status(400).json({ error: 'Invalid item id' });
+    }
+
     const adapter = adapterForType(type);
     if (!adapter) return res.status(400).json({ error: 'Unknown media type' });
 
@@ -285,6 +312,11 @@ export const publicDetails = async (req, res) => {
  */
 export const itemPrices = async (req, res) => {
     const { type, externalId } = req.params;
+
+    if (!isSafeExternalId(externalId)) {
+        return res.status(400).json({ error: 'Invalid item id' });
+    }
+
     if (type !== 'game') {
         // Books have prices too, but through a different adapter (M0/M6).
         return res.status(200).json({ status: 'Success', data: { deals: [], historyLow: null, observed: [] } });
