@@ -8,6 +8,7 @@ import {
     searchTmdb,
     trending,
     variety,
+    browse,
     publicDetails,
     itemPrices,
     importFromTmdb,
@@ -33,6 +34,7 @@ const router = express.Router();
 router.get("/search", publicLimiter, catchAsync(searchTmdb));
 router.get("/trending", publicLimiter, catchAsync(trending));
 router.get("/variety", publicLimiter, catchAsync(variety));
+router.get("/browse/:type", publicLimiter, catchAsync(browse));
 router.get("/details/:type/:externalId", publicLimiter, catchAsync(publicDetails));
 router.get("/prices/:type/:externalId", publicLimiter, catchAsync(itemPrices));
 

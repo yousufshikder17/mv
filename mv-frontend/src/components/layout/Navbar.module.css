@@ -19,10 +19,20 @@
 .logoMark { color: var(--c-accent); font-size: 16px; line-height: 1; }
 .logoWord  { font-style: italic; }
 
-.hdrNav { display: flex; gap: 2px; margin-left: 8px; }
+.hdrNav {
+  display: flex; gap: 2px; margin-left: 8px;
+  /* Nine links now. Scroll the strip rather than wrapping the header or
+     hiding entries - a nav item that is not on screen is a page nobody
+     finds. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.hdrNav::-webkit-scrollbar { display: none; }
+
 .navItem {
   padding: 6px 12px; font-size: 13.5px; border-radius: 999px;
   color: var(--c-muted);
+  white-space: nowrap;
   transition: all .15s;
 }
 .navItem:hover { color: var(--c-fg); background: var(--c-faint); }
@@ -33,9 +43,24 @@
   color: var(--c-muted); letter-spacing: .04em;
 }
 
+@media (max-width: 900px) {
+  .navItem { padding: 6px 9px; font-size: 12.5px; }
+}
+
 @media (max-width: 640px) {
-  .hdr { padding: 14px 18px; }
-  .hdrNav { display: none; }
+  /* Two rows: identity and controls on top, the nav strip beneath. The nav
+     used to be hidden outright here, which left a phone with no way to reach
+     any page at all. */
+  .hdr { padding: 12px 18px; flex-wrap: wrap; gap: 10px; }
+  .hdrL { flex: 1 1 auto; }
+  .hdrNav {
+    order: 3;
+    flex-basis: 100%;
+    margin-left: 0;
+    /* Bleed to the edges so the strip reads as scrollable. */
+    margin-right: -18px;
+    padding-right: 18px;
+  }
   .userGreeting { display: none; }
 }
 

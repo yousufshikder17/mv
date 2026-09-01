@@ -15,6 +15,27 @@ export const TYPE_LABEL = {
 };
 
 /** Which statuses each type may use. Albums are never "completed" (SPEC §6). */
+// The type pages, in nav order. `path` is the public URL, `type` the value
+// the API speaks — kept together so the nav, the routes and the API call can
+// never drift apart.
+export const BROWSE_NAV = [
+  { path: 'films',  type: 'film',  label: 'Films' },
+  { path: 'shows',  type: 'tv',    label: 'Shows' },
+  { path: 'games',  type: 'game',  label: 'Games' },
+  { path: 'books',  type: 'book',  label: 'Books' },
+  { path: 'music',  type: 'album', label: 'Music' },
+];
+
+// What each type page shows, and where the row honestly comes from. Only TMDB
+// publishes a chart; the rest borrow the nearest real thing their source has.
+export const BROWSE_SOURCE = {
+  film:  'Trending this week, from TMDB',
+  tv:    'Trending this week, from TMDB',
+  game:  'Most added this year, from RAWG',
+  book:  'Trending this week, from Open Library',
+  album: 'Recent releases by listens, from ListenBrainz',
+};
+
 // The type filter, in the order the nav and the search page both use.
 // Empty string is "all" — it maps straight onto the API's optional ?type=.
 export const TYPE_TABS = [

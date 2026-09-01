@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.js'
 import NotificationBell from '../notifications/NotificationBell.jsx'
 import NavSearch from './NavSearch.jsx'
+import { BROWSE_NAV } from '../../lib/media.js'
 import styles from './Navbar.module.css'
 
 export default function Navbar({ onThemeToggle, theme }) {
@@ -26,6 +27,16 @@ export default function Navbar({ onThemeToggle, theme }) {
           >
             Home
           </Link>
+          {BROWSE_NAV.map((n) => (
+            <Link
+              key={n.path}
+              to={`/${n.path}`}
+              id={`nav-${n.path}`}
+              className={`${styles.navItem} ${pathname === `/${n.path}` ? styles.active : ''}`}
+            >
+              {n.label}
+            </Link>
+          ))}
           <Link
             to="/deals"
             id="nav-deals"

@@ -125,3 +125,62 @@ export const enrich = async (results = []) => {
         };
     });
 };
+
+/**
+ * Browse: recent releases, ordered by how much they are actually being played.
+ *
+ * The one music row we can honestly build. MusicBrainz is a catalogue with no
+ * chart in it, so "popular albums" has to come from listening data, and this
+ * is the only CC0 source of that.
+ *
+ * Two details the API forces:
+ *   - the trailing slash is required; without it the endpoint 308s and the
+ *     redirect is not followed by fetch's default settings here.
+ *   - `sort` accepts only release_date, artist_credit_name or release_name -
+ *     not listen_count - so the ordering that matters is done here.
+ *
+ * Singles and EPs are filtered out. A browse row for albums that is half
+ * singles is not an album row.
+ */
+export const browseAlbums = async (limit = 20) => {
+    const url = 'https://api.listenbrainz.org/1/explore/fresh-releases/?days=30&past=true&future=false';
+
+    return cached('lb:fresh-releases', TTL_MS, async () => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+        try {
+            const res = await fetch(url, {
+                headers: { Accept: 'application/json', 'User-Agent': USER_AGENT },
+                signal: controller.signal,
+            });
+            // Browse is not worth failing a page over: an empty row renders as
+            // an honest "nothing here", which beats an error on a nav link.
+            if (!res.ok) return [];
+
+            const body = await res.json();
+            const releases = body?.payload?.releases ?? [];
+
+            return releases
+                .filter((r) => r.release_group_primary_type === 'Album' && r.release_group_mbid)
+                .sort((a, b) => (b.listen_count ?? 0) - (a.listen_count ?? 0))
+                .slice(0, limit)
+                .map((r) => ({
+                    type: 'album',
+                    source: 'musicbrainz',
+                    // The release GROUP id, which is what our catalogue keys
+                    // albums by - not the release id sitting next to it.
+                    externalId: r.release_group_mbid,
+                    title: r.artist_credit_name
+                        ? r.release_name + ' by ' + r.artist_credit_name
+                        : r.release_name,
+                    releaseYear: r.release_date ? Number(r.release_date.slice(0, 4)) : null,
+                    posterUrl: 'https://coverartarchive.org/release-group/' + r.release_group_mbid + '/front-250',
+                    overview: null,
+                }));
+        } catch {
+            return [];
+        } finally {
+            clearTimeout(timer);
+        }
+    });
+};

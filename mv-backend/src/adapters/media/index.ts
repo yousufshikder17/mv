@@ -4,7 +4,7 @@ import * as openlibrary from './openlibrary.ts';
 import * as musicbrainz from './musicbrainz.ts';
 import type { MediaSearchResult, MediaType } from './types.ts';
 import { rankResults } from '../../services/rankingService.js';
-import { enrich as enrichMusic } from '../enrichment/listenbrainz.js';
+import { enrich as enrichMusic, browseAlbums } from '../enrichment/listenbrainz.js';
 
 /**
  * Which adapter owns which source and which media type.
@@ -39,6 +39,41 @@ export const adapterForSource = (source: string) =>
 /** The adapter that owns a media type, for a fresh lookup. */
 export const adapterForType = (type: string) =>
     BY_TYPE[type as keyof typeof BY_TYPE] ?? null;
+
+/**
+ * The browse feed per type — what a type page shows before anyone searches.
+ *
+ * Written out one by one rather than derived, because each one comes from a
+ * different place for a different reason. Only TMDB has a chart; the rest
+ * borrow the nearest honest thing their source actually publishes:
+ *
+ *   film/tv  TMDB's weekly trending
+ *   game     RAWG, most-added over the last year
+ *   book     Open Library's own weekly trending
+ *   album    ListenBrainz fresh releases, by listen count
+ *
+ * A source with nothing to offer here would simply have no entry, and its
+ * page would say so rather than inventing a row.
+ */
+// Called through rather than referenced directly: reading `tmdb.getTrending`
+// here would resolve it when this module loads, which makes every test that
+// mocks an adapter responsible for stubbing an export it does not use.
+const BROWSE_BY_TYPE = {
+    film: () => tmdb.getTrending(),
+    tv: () => tmdb.getTrendingTv(),
+    game: () => rawg.browseGames(),
+    book: () => openlibrary.browseBooks(),
+    album: () => browseAlbums(),
+} as const;
+
+export const BROWSABLE_TYPES = Object.keys(BROWSE_BY_TYPE) as MediaType[];
+
+/** The browse row for one type, or [] when its source publishes nothing. */
+export const browse = async (type: MediaType): Promise<MediaSearchResult[]> => {
+    const fetchRow = BROWSE_BY_TYPE[type as keyof typeof BROWSE_BY_TYPE];
+    if (!fetchRow) return [];
+    return fetchRow();
+};
 
 export const SEARCHABLE_TYPES: MediaType[] = ['film', 'tv', 'game', 'book', 'album'];
 

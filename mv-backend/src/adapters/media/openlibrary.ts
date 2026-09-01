@@ -100,6 +100,30 @@ export const searchBooks = async (query: string): Promise<MediaSearchResult[]> =
 };
 
 /**
+ * Browse: Open Library's own weekly trending list.
+ *
+ * Their endpoint, their ranking - we have no reading data of our own to rank
+ * with, and a "popular books" row invented from our catalogue would be a list
+ * of whatever one user happened to add. Same document shape as search, so the
+ * mapping is the same.
+ */
+export const browseBooks = async (): Promise<MediaSearchResult[]> => {
+    const data = await request('/trending/weekly.json', { limit: 20 });
+
+    return (data.works ?? [])
+        .filter((d: any) => workId(d.key))
+        .map((d: any) => ({
+            type: 'book' as const,
+            source: SOURCE,
+            externalId: workId(d.key) as string,
+            title: d.title,
+            releaseYear: d.first_publish_year ?? null,
+            posterUrl: coverUrl(d.cover_i, 'M'),
+            overview: null,
+        }));
+};
+
+/**
  * Open Library "subjects" are not genres, and using them raw was a bug.
  *
  * A real response carried: form:novel, genre:fantasy, English literature,

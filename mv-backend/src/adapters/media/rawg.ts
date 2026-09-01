@@ -108,6 +108,36 @@ export const searchGames = async (query: string): Promise<MediaSearchResult[]> =
     }));
 };
 
+/**
+ * Browse: the games people have been adding lately.
+ *
+ * `-added` rather than `-rating`, and windowed to the last year. Rating order
+ * returns the same canonical top 20 forever, which is a hall of fame rather
+ * than a browse row; "recently added" moves, which is the point of a page
+ * someone might come back to.
+ */
+export const browseGames = async (): Promise<MediaSearchResult[]> => {
+    const to = new Date();
+    const from = new Date(to.getFullYear() - 1, to.getMonth(), to.getDate());
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+
+    const data = await request('/games', {
+        ordering: '-added',
+        dates: iso(from) + ',' + iso(to),
+        page_size: 20,
+    });
+
+    return (data.results ?? []).map((g: any) => ({
+        type: 'game' as const,
+        source: SOURCE,
+        externalId: String(g.id),
+        title: g.name,
+        releaseYear: year(g.released),
+        posterUrl: g.background_image || null,
+        overview: null,
+    }));
+};
+
 export const getGameDetails = async (externalId: string) =>
     mapGame(await request(`/games/${externalId}`));
 

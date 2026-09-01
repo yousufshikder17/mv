@@ -113,6 +113,20 @@ export const getTrending = async (): Promise<MediaSearchResult[]> => {
     }));
 };
 
+/** Trending TV this week. The browse row's counterpart to getTrending. */
+export const getTrendingTv = async (): Promise<MediaSearchResult[]> => {
+    const data = await request('/trending/tv/week', { language: 'en-US' });
+    return (data.results ?? []).map((s: any) => ({
+        type: 'tv' as const,
+        source: SOURCE,
+        externalId: String(s.id),
+        title: s.name,
+        releaseYear: year(s.first_air_date),
+        posterUrl: posterUrl(s.poster_path),
+        overview: s.overview || null,
+    }));
+};
+
 const mapFilm = (m: any): MediaItem => ({
         type: 'film',
         source: SOURCE,

@@ -34,7 +34,7 @@ describe('GET /movies/variety', () => {
 
         const types = (await api().get('/movies/variety')).body.data.map((r) => r.type);
 
-        expect(types.filter((t) => t === 'game').length).toBeLessThanOrEqual(6);
+        expect(types.filter((t) => t === 'game').length).toBeLessThanOrEqual(9);
         expect(new Set(types)).toEqual(new Set(['game', 'film', 'book']));
     });
 
@@ -44,7 +44,7 @@ describe('GET /movies/variety', () => {
         await seed('film', 20);
 
         const res = await api().get('/movies/variety');
-        expect(res.body.results).toBe(12);
+        expect(res.body.results).toBe(15);
     });
 
     it('puts featured rows first', async () => {
@@ -55,11 +55,11 @@ describe('GET /movies/variety', () => {
         expect(first.title).toBe('Picked');
     });
 
-    it('caps the strip at twelve', async () => {
+    it('caps the strip at fifteen', async () => {
         await seed('film', 10);
         await seed('tv', 10);
         await seed('game', 10);
 
-        expect((await api().get('/movies/variety')).body.results).toBe(12);
+        expect((await api().get('/movies/variety')).body.results).toBe(15);
     });
 });

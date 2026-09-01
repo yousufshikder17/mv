@@ -7,12 +7,14 @@ import LandingPage    from './pages/LandingPage.jsx'
 import ItemPage       from './pages/ItemPage.jsx'
 import DealsPage      from './pages/DealsPage.jsx'
 import SearchPage     from './pages/SearchPage.jsx'
+import BrowsePage     from './pages/BrowsePage.jsx'
 import LoginPage      from './pages/LoginPage.jsx'
 import RegisterPage   from './pages/RegisterPage.jsx'
 import WatchlistPage  from './pages/WatchlistPage.jsx'
 import ProfilePage    from './pages/ProfilePage.jsx'
 import FeedPage       from './pages/FeedPage.jsx'
 import { useToast }   from './hooks/useToast.js'
+import { BROWSE_NAV } from './lib/media.js'
 
 // Pages that hide the Navbar
 const BARE_ROUTES = ['/login', '/register']
@@ -42,6 +44,15 @@ export default function App() {
         {/* Public item page - no ProtectedRoute. Reading is free; keeping
             needs an account (M3). */}
         <Route path="/media/:type/:externalId" element={<ItemPage showToast={showToast} />} />
+        {/* Public type pages. One component, five feeds — the only thing
+            that differs is which source fills the row. */}
+        {BROWSE_NAV.map((n) => (
+          <Route
+            key={n.path}
+            path={`/${n.path}`}
+            element={<BrowsePage type={n.type} label={n.label} />}
+          />
+        ))}
         {/* Public. The query lives in the URL so a search can be shared,
             bookmarked and reached with the back button. */}
         <Route path="/search" element={<SearchPage />} />

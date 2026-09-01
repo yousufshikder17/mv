@@ -2,7 +2,7 @@ import { eq, and, or, inArray, desc, lt } from 'drizzle-orm';
 import { db } from '../config/db.js';
 import { mediaItems, priceQuotes } from '../db/schema.js';
 import * as tmdb from '../adapters/media/tmdb.ts';
-import { adapterForSource, adapterForType, search as searchMedia } from '../adapters/media/index.ts';
+import { adapterForSource, adapterForType, search as searchMedia, browse as browseMedia, BROWSABLE_TYPES } from '../adapters/media/index.ts';
 import { cached } from '../utils/cache.js';
 import * as itad from '../adapters/price/itad.js';
 import { asc } from 'drizzle-orm';
@@ -16,6 +16,10 @@ const CACHE_TTL_DAYS = 30;
 // mid-season, who would be shown last month episode count.
 const AIRING_TTL_DAYS = 3;
 const AIRING_STATUSES = ['Returning Series', 'In Production', 'Planned'];
+
+// How many cards a discovery row holds. One constant so the strip and the
+// query that fills it cannot disagree.
+const ROW_SIZE = 15;
 
 const daysAgo = (n) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
 
@@ -92,6 +96,37 @@ export const trending = async (req, res) => {
 };
 
 /**
+ * GET /movies/browse/:type - the browse row behind each type page.
+ *
+ * Cached for an hour. These are charts that move weekly at best, and every
+ * one of them sits in front of somebody else's quota - a type page that
+ * refetched per visit would be the single heaviest thing we do to them.
+ */
+export const browse = async (req, res) => {
+    const { type } = req.params;
+
+    if (!BROWSABLE_TYPES.includes(type)) {
+        return res.status(400).json({
+            error: `Unknown media type "${type}"`,
+            supported: BROWSABLE_TYPES,
+        });
+    }
+
+    // Failures here return an empty row rather than an error: a browse feed
+    // is the page's content, not the page itself, and one dead upstream
+    // should not turn a nav link into an error screen.
+    const results = await cached(`browse:${type}`, 60 * 60 * 1000, async () => {
+        try {
+            return await browseMedia(type);
+        } catch {
+            return [];
+        }
+    });
+
+    return res.status(200).json({ status: 'Success', results: results.length, data: results });
+};
+
+/**
  * GET /movies/variety - a mixed strip across every media type we hold.
  *
  * Drawn from our own catalogue rather than any provider: TMDB is the only
@@ -133,14 +168,14 @@ export const variety = async (req, res) => {
         // One pass per round, one item per type, until we have enough or the
         // queues run dry.
         const mixed = [];
-        while (mixed.length < 12) {
+        while (mixed.length < ROW_SIZE) {
             let took = false;
             for (const queue of queues.values()) {
                 const next = queue.shift();
                 if (!next) continue;
                 mixed.push(next);
                 took = true;
-                if (mixed.length >= 12) break;
+                if (mixed.length >= ROW_SIZE) break;
             }
             if (!took) break;
         }

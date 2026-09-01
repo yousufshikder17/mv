@@ -4,6 +4,10 @@ import { getTrending, getVariety } from '../../services/watchlistService.js'
 import ResultGrid from './ResultGrid.jsx'
 import styles from './Discover.module.css'
 
+// Matches ROW_SIZE on the server, which caps the variety row at the same
+// number. Two rows of unequal length read as a bug rather than a choice.
+const ROW_SIZE = 15
+
 /**
  * Public discovery, no account (M3).
  *
@@ -30,7 +34,7 @@ export default function Discover() {
   useEffect(() => {
     // Silent failures: a discovery strip that did not load is not worth a
     // toast, and each row stands on its own if the other is empty.
-    getTrending().then((res) => setTrending((res.data?.data ?? []).slice(0, 12))).catch(() => {})
+    getTrending().then((res) => setTrending((res.data?.data ?? []).slice(0, ROW_SIZE))).catch(() => {})
     getVariety().then((res) => setVariety(res.data?.data ?? [])).catch(() => {})
   }, [])
 

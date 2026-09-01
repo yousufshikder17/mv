@@ -1,0 +1,25 @@
+.page { max-width: 1200px; margin: 0 auto; padding: 44px 32px 80px; }
+
+.head { margin-bottom: 30px; }
+
+.eyebrow {
+  font-family: var(--ff-mono); font-size: 11px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--c-accent); margin: 0 0 12px;
+}
+
+.h1 {
+  font-family: var(--ff-display); font-size: clamp(30px, 4vw, 46px);
+  line-height: 1.05; letter-spacing: -.03em; font-weight: 400; margin: 0 0 10px;
+}
+
+.source {
+  font-family: var(--ff-mono); font-size: 10.5px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--c-muted); margin: 0;
+}
+
+.note { font-size: 15px; line-height: 1.6; color: var(--c-muted); margin: 8px 0 0; max-width: 55ch; }
+.link { color: var(--c-accent); }
+
+.credit { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--c-line); }
+
+@media (max-width: 640px) { .page { padding: 32px 18px 64px; } }

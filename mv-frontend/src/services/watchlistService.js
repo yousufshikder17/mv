@@ -18,6 +18,8 @@ export const getTrending     = ()           => api.get('/movies/trending')
 // A mixed strip across every type we hold - our own catalogue, since TMDB is
 // the only source with a trending feed.
 export const getVariety      = ()           => api.get('/movies/variety')
+// The browse row behind each type page. Cached an hour server-side.
+export const getBrowse       = (type)       => api.get(`/movies/browse/${type}`)
 // Public - no account needed. Reads straight from TMDB and creates no
 // catalogue row, so browsing does not cache content we then have to expire.
 export const getPublicDetails = (type, externalId) => api.get(`/movies/details/${type}/${externalId}`)
