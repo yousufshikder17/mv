@@ -135,7 +135,7 @@ export const BROWSE_SOURCE = {
   tv:    'Trending this week, from TMDB',
   game:  'Most added this year, from RAWG',
   book:  'Trending this week, from Open Library',
-  album: 'Recent releases by listens, from ListenBrainz',
+  album: 'New this month, by artists people listen to — ListenBrainz',
 };
 
 // The type filter, in the order the nav and the search page both use.

@@ -104,3 +104,38 @@ describe('backfilling a row of albums', () => {
         expect(fetch.mock.calls.length).toBeLessThanOrEqual(8);
     });
 });
+
+describe('what the album row is ranked on', () => {
+    it('uses artist listeners, because a new release has none of its own', async () => {
+        // Measured on a live response: all 1366 albums came back with
+        // listen_count 0, so sorting on the feed's own numbers was a no-op
+        // that left the API's roughly-alphabetical order in place.
+        const { browseAlbums } = await import('../src/adapters/enrichment/listenbrainz.js');
+
+        const releases = [
+            { release_group_primary_type: 'Album', release_group_mbid: 'rg-unknown', release_name: 'Nobody Listens', artist_credit_name: 'Obscure Act', artist_mbids: ['a-unknown'], caa_id: 1, caa_release_mbid: 'r1', listen_count: 0 },
+            { release_group_primary_type: 'Album', release_group_mbid: 'rg-known', release_name: 'Real Record', artist_credit_name: 'Known Band', artist_mbids: ['a-known'], caa_id: 2, caa_release_mbid: 'r2', listen_count: 0 },
+        ];
+
+        vi.stubGlobal('fetch', vi.fn(async (url, init) => {
+            if (String(url).includes('popularity/artist')) {
+                return {
+                    ok: true, status: 200, json: async () => [
+                        { artist_mbid: 'a-known', total_listen_count: 900000, total_user_count: 14000 },
+                        { artist_mbid: 'a-unknown', total_listen_count: 0, total_user_count: 0 },
+                    ],
+                };
+            }
+            return { ok: true, status: 200, json: async () => ({ payload: { releases } }) };
+        }));
+
+        const out = await browseAlbums(10);
+
+        // The unknown act is not filtered out - it simply does not rank.
+        expect(out.map((r) => r.title)).toEqual([
+            'Real Record by Known Band',
+            'Nobody Listens by Obscure Act',
+        ]);
+        expect(out[0].artistListeners).toBe(14000);
+    });
+});
