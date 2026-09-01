@@ -1,0 +1,66 @@
+.page { max-width: 1000px; margin: 0 auto; padding: 44px 32px 80px; }
+
+.head { margin-bottom: 26px; }
+
+.eyebrow {
+  font-family: var(--ff-mono); font-size: 11px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--c-accent); margin: 0 0 12px;
+}
+
+.h1 {
+  font-family: var(--ff-display); font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.05; letter-spacing: -.03em; font-weight: 400; margin: 0 0 12px;
+}
+
+.sub { font-size: 15px; line-height: 1.6; color: var(--c-muted); margin: 0; max-width: 58ch; }
+
+.newList { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+
+.input {
+  flex: 1; min-width: 220px;
+  padding: 10px 14px;
+  border: 1px solid var(--c-line); border-radius: var(--radius-sm);
+  background: var(--c-bg); color: var(--c-fg); font: inherit; font-size: 14px;
+}
+.input:focus { outline: none; border-color: var(--c-accent); }
+
+.note { font-size: 15px; line-height: 1.6; color: var(--c-muted); margin: 0; max-width: 55ch; }
+.link { color: var(--c-accent); }
+
+.grid {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.card {
+  padding: 20px;
+  border: 1px solid var(--c-line); border-radius: var(--radius-md);
+  background: var(--c-surface);
+  transition: border-color .2s, transform .25s cubic-bezier(.3,.7,.4,1);
+}
+.card:hover { border-color: var(--c-accent); transform: translateY(-3px); }
+
+.cardLink { text-decoration: none; color: inherit; display: block; }
+
+.cardTitle {
+  font-family: var(--ff-display); font-size: 19px; font-weight: 500;
+  letter-spacing: -.01em; margin: 0 0 6px;
+}
+
+.cardDesc {
+  font-size: 13.5px; line-height: 1.55; color: var(--c-muted); margin: 0;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.cardMeta {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin: 14px 0 0;
+  font-family: var(--ff-mono); font-size: 10.5px;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--c-muted);
+}
+
+.public { color: var(--c-accent); }
+.private { color: var(--c-muted); }
+
+@media (max-width: 640px) { .page { padding: 32px 18px 64px; } }

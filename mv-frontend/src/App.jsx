@@ -12,6 +12,8 @@ import LoginPage      from './pages/LoginPage.jsx'
 import RegisterPage   from './pages/RegisterPage.jsx'
 import WatchlistPage  from './pages/WatchlistPage.jsx'
 import ProfilePage    from './pages/ProfilePage.jsx'
+import ListsPage      from './pages/ListsPage.jsx'
+import ListDetailPage from './pages/ListDetailPage.jsx'
 import FeedPage       from './pages/FeedPage.jsx'
 import { useToast }   from './hooks/useToast.js'
 import { BROWSE_NAV } from './lib/media.js'
@@ -59,6 +61,9 @@ export default function App() {
         {/* Public. A deal is a link - browsing needs no account, and only
             voting writes a row (M7). */}
         <Route path="/deals" element={<DealsPage showToast={showToast} />} />
+        {/* Public when its owner says so - a list is meant to be handed to
+            someone, which is most of the point of making one. */}
+        <Route path="/lists/:listId" element={<ListDetailPage showToast={showToast} />} />
         {/* Public. A profile is a page about someone's taste - reading it
             needs no account, and its owner can make it private (M8). */}
         <Route path="/u/:userId" element={<ProfilePage showToast={showToast} />} />
@@ -71,6 +76,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <FeedPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Yours by definition. */}
+        <Route
+          path="/lists"
+          element={
+            <ProtectedRoute>
+              <ListsPage showToast={showToast} />
             </ProtectedRoute>
           }
         />

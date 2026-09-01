@@ -7,6 +7,7 @@ import TmdbCredit from '../components/layout/TmdbCredit.jsx'
 import RawgCredit from '../components/layout/RawgCredit.jsx'
 import PricePanel from '../components/prices/PricePanel.jsx'
 import Discussion from '../components/social/Discussion.jsx'
+import AddToList from '../components/lists/AddToList.jsx'
 import { TYPE_LABEL } from '../lib/media.js'
 import styles from './ItemPage.module.css'
 
@@ -103,6 +104,13 @@ export default function ItemPage({ showToast }) {
           >
             {adding ? 'Adding...' : isAuthenticated ? '+ Add to watchlist' : 'Sign in to track this'}
           </button>
+
+          {/* Lists point at a catalogue row, so this appears once one exists.
+              Tracking is the ledger; a list is curation, and you can list
+              something you have no intention of tracking. */}
+          {item.mediaItemId && (
+            <AddToList mediaItemId={item.mediaItemId} showToast={showToast} />
+          )}
         </div>
 
         <div className={styles.detail}>

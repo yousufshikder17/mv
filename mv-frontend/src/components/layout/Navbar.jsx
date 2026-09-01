@@ -46,6 +46,15 @@ export default function Navbar({ onThemeToggle, theme }) {
           </Link>
           {isAuthenticated && (
             <Link
+              to="/lists"
+              id="nav-lists"
+              className={`${styles.navItem} ${pathname.startsWith('/lists') ? styles.active : ''}`}
+            >
+              Lists
+            </Link>
+          )}
+          {isAuthenticated && (
+            <Link
               to="/feed"
               id="nav-feed"
               className={`${styles.navItem} ${pathname === '/feed' ? styles.active : ''}`}
