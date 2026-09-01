@@ -117,18 +117,27 @@ const RAWG_ART = (path) => 'https://media.rawg.io/media/games/' + path;
 const OL_ART = (id, size = 'M') =>
   'https://covers.openlibrary.org/b/id/' + id + '-' + size + '.jpg';
 
-// Order matters: .cell:nth-child(2) and (6) are the two cells the stylesheet
-// leaves in full colour, everything else is desaturated and darkened. The two
-// most colourful covers sit in those slots on purpose - illustration and a
-// gradient sleeve survive that treatment, a pale group photo does not.
+// Order matters, for two reasons.
+//
+// .cell:nth-child(2) and (6) are the two cells left in full colour; the rest
+// are desaturated and darkened. The two most colourful covers sit there on
+// purpose - illustration and a gradient sleeve survive that treatment, a pale
+// group photo does not.
+//
+// The wall is also masked: it fades out below 55% of its height and past 70%
+// of its width, so the nine cells are not equally visible. Reading as a
+// 3-wide grid, the bottom-right corner is faded twice over and the top-left
+// barely at all. Gatsby sits bottom-LEFT rather than bottom-right for that
+// reason - an edge position, but the one where the best cover on the wall can
+// still be seen.
 export const HOME_ART = [
   TMDB_ART('/lxM6kqilAdpdhqUl2biYp5frUxE.jpg'),          // Jaws
   TMDB_ART('/qwi3p6PzKfQZ4YXBzv3CP5pO2dE.jpg'),          // Gravity Falls        <- colour cell
   RAWG_ART('da1/da1b267764d77221f07a4386b6548e5a.jpg'),  // Dark Souls III
-  OL_ART('14314120', 'L'),                               // The Great Gatsby - Cugat's Celestial Eyes
+  TMDB_ART('/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg'),          // The Shawshank Redemption
   TMDB_ART('/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg'),          // Game of Thrones
   CAA_ART('08aa7a6c-3e43-4459-87b2-e47faf3a088a'),       // Currents - Tame Impala <- colour cell
-  TMDB_ART('/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg'),          // The Shawshank Redemption
+  OL_ART('14314120', 'L'),                               // The Great Gatsby - Cugat's Celestial Eyes
   RAWG_ART('8cd/8cd179c85bd3de8f79bef245b15075fb.jpg'),  // Machinarium
   TMDB_ART('/vfrQk5IPloGg1v9Rzbh2Eg3VGyM.jpg'),          // Alien (1979)
 ];
