@@ -36,13 +36,13 @@ export default function LandingPage() {
     return () => { alive = false }
   }, [])
 
-  // Curated, and drawn one or two from each type page's wall.
+  // Curated, and its own set - no cover here appears on a type page.
   //
-  // The catalogue used to fill this, which sounded principled and looked
-  // wrong: with 25 seeded games against two films it produced a wall of game
-  // art on the page whose whole claim is that it holds five kinds of thing.
-  // A hero should show what the site is for, not what happens to be in the
-  // database this week. The row underneath is still live.
+  // Filled from the catalogue at first, which sounded principled and looked
+  // wrong: 25 seeded games against two films produced a wall of game art on
+  // the page whose whole claim is that it holds five kinds of thing. Then it
+  // borrowed from the type walls, which made home read as a summary of the
+  // other pages. It is now its own curation. The row underneath is still live.
   const art = HOME_ART.slice(0, ART)
 
   return (

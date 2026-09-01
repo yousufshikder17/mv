@@ -103,19 +103,29 @@ const MUSIC_ART = [
   'aa0b4e86-358e-4c92-aecd-94f5f59233f7', // The Money Store - Death Grips
 ].map(CAA_ART);
 
-// Home takes one or two from each wall, because the page's whole claim is
-// that it holds five kinds of thing. Built from the arrays above rather than
-// repeated, so a cover fixed in one place is fixed everywhere.
+// Home's own wall. Deliberately shares nothing with the five above.
+//
+// It reused a cover or two from each type page at first, which made home read
+// as a summary of the other pages rather than a page in its own right.
+//
+// The register is different too, and that is the point. The type pages can
+// afford deep cuts - someone on /films has already chosen films. Home is the
+// first thing a stranger sees, so recognition beats taste: these are things
+// almost anyone can name on sight, across all five media types, which is the
+// one claim this page actually makes.
+const RAWG_ART = (path) => 'https://media.rawg.io/media/games/' + path;
+const OL_ART = (id) => 'https://covers.openlibrary.org/b/id/' + id + '-M.jpg';
+
 export const HOME_ART = [
-  FILM_ART[2],  // Dune
-  TV_ART[4],    // Severance
-  GAME_ART[0],  // Disco Elysium
-  BOOK_ART[5],  // Piranesi
-  MUSIC_ART[2], // In Rainbows
-  FILM_ART[8],  // Parasite
-  TV_ART[0],    // The Sopranos
-  GAME_ART[2],  // Outer Wilds
-  MUSIC_ART[3], // To Pimp a Butterfly
+  TMDB_ART('/lxM6kqilAdpdhqUl2biYp5frUxE.jpg'),          // Jaws
+  TMDB_ART('/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg'),          // Game of Thrones
+  RAWG_ART('cc1/cc196a5ad763955d6532cdba236f730c.jpg'),  // Breath of the Wild
+  OL_ART('15155833'),                                    // Harry Potter and the Philosopher's Stone
+  CAA_ART('f32fab67-77dd-3937-addc-9062e28e4c37'),       // Thriller - Michael Jackson
+  TMDB_ART('/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg'),          // The Shawshank Redemption
+  TMDB_ART('/uOOtwVbSr4QDjAGIifLDwpb2Pdl.jpg'),          // Stranger Things
+  RAWG_ART('b4e/b4e4c73d5aa4ec66bbf75375c4847a2b.jpg'),  // Minecraft
+  OL_ART('14627509'),                                    // The Hobbit
 ];
 
 export const BROWSE_COPY = {
