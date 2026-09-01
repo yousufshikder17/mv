@@ -49,6 +49,17 @@ const FILM_ART = [
   '/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg', // Parasite
 ].map(TMDB_ART);
 
+// Home's two film slots, pinned.
+//
+// Home draws the rest of its wall from the live catalogue, but the film slots
+// are fixed so the two pages do not open on the same posters: Dune and
+// Parasite belong to the Films wall above, and seeing them again one click
+// later makes the site look smaller than it is.
+export const HOME_FILM_ART = [
+  '/lxM6kqilAdpdhqUl2biYp5frUxE.jpg', // Jaws
+  '/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg', // The Shawshank Redemption
+].map(TMDB_ART);
+
 export const BROWSE_COPY = {
   film: {
     art: FILM_ART,
