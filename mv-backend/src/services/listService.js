@@ -110,6 +110,41 @@ export const listsOf = async (userId, viewerId = null) => {
     return rows.map((r) => ({ ...r, itemCount: counts.get(r.id) ?? 0 }));
 };
 
+/**
+ * Recently published lists, from anyone.
+ *
+ * The public index behind the Lists nav entry. First-party content by
+ * definition - these are our users' lists, not a borrowed chart - so unlike
+ * the discovery rows it needs no external source and no apology.
+ *
+ * Both privacy gates apply here as everywhere: the list's own flag, and its
+ * owner's profile flag, both checked in SQL rather than filtered afterwards.
+ * Empty lists are excluded, since a published list with nothing in it is a
+ * name rather than a list.
+ */
+export const publicLists = async ({ limit = 24 } = {}) => {
+    const rows = await db
+        .select({
+            list: lists,
+            ownerName: users.name,
+            itemCount: sql`count(${listItems.id})`.mapWith(Number),
+        })
+        .from(lists)
+        .innerJoin(users, eq(lists.userId, users.id))
+        .leftJoin(listItems, eq(listItems.listId, lists.id))
+        .where(and(eq(lists.isPublic, true), eq(users.profilePublic, true)))
+        .groupBy(lists.id, users.id)
+        .having(sql`count(${listItems.id}) > 0`)
+        .orderBy(desc(lists.updatedAt))
+        .limit(limit);
+
+    return rows.map((r) => ({
+        ...r.list,
+        owner: { id: r.list.userId, name: r.ownerName },
+        itemCount: r.itemCount,
+    }));
+};
+
 /** The next position at the end of a list. */
 export const nextPosition = async (listId) => {
     const [row] = await db

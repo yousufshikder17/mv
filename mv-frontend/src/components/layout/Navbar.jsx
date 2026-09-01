@@ -44,15 +44,16 @@ export default function Navbar({ onThemeToggle, theme }) {
           >
             Deals
           </Link>
-          {isAuthenticated && (
-            <Link
-              to="/lists"
-              id="nav-lists"
-              className={`${styles.navItem} ${pathname.startsWith('/lists') ? styles.active : ''}`}
-            >
-              Lists
-            </Link>
-          )}
+          {/* Not gated. A list is meant to be read by people who did not
+              make it, so hiding the entry from logged-out visitors hides the
+              half of the feature that faces outward. */}
+          <Link
+            to="/lists"
+            id="nav-lists"
+            className={`${styles.navItem} ${pathname.startsWith('/lists') ? styles.active : ''}`}
+          >
+            Lists
+          </Link>
           {isAuthenticated && (
             <Link
               to="/feed"

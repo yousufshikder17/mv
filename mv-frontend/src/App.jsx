@@ -79,15 +79,9 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        {/* Yours by definition. */}
-        <Route
-          path="/lists"
-          element={
-            <ProtectedRoute>
-              <ListsPage showToast={showToast} />
-            </ProtectedRoute>
-          }
-        />
+        {/* Public: published lists from anyone, plus your own when signed
+            in. Reading a list needs no account; making one does. */}
+        <Route path="/lists" element={<ListsPage showToast={showToast} />} />
         <Route
           path="/watchlist"
           element={

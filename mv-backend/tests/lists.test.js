@@ -305,3 +305,57 @@ describe('the GDPR export', () => {
         expect(res.body.lists[0].items[0].item.title).toBe('Dune');
     });
 });
+
+describe('the public list index', () => {
+    it('shows published lists to anyone, without an account', async () => {
+        const user = await registerUser();
+        const list = await makeList(user, { name: 'Shown', isPublic: true });
+        await addTo(user, list, await createMovie());
+
+        const res = await api().get('/lists/browse');
+
+        expect(res.status).toBe(200);
+        expect(res.body.data.lists.map((l) => l.name)).toEqual(['Shown']);
+        expect(res.body.data.lists[0].owner.name).toBe(user.name);
+    });
+
+    it('never shows a private list', async () => {
+        const user = await registerUser();
+        const list = await makeList(user, { name: 'Secret' });
+        await addTo(user, list, await createMovie());
+
+        expect((await api().get('/lists/browse')).body.results).toBe(0);
+    });
+
+    it('never shows a public list belonging to a private profile', async () => {
+        const user = await registerUser();
+        const list = await makeList(user, { isPublic: true });
+        await addTo(user, list, await createMovie());
+        await user.auth(api().patch('/account/privacy')).send({ profilePublic: false });
+
+        expect((await api().get('/lists/browse')).body.results).toBe(0);
+    });
+
+    it('skips an empty list', async () => {
+        // A published list with nothing in it is a name, not a list.
+        const user = await registerUser();
+        await makeList(user, { name: 'Empty', isPublic: true });
+
+        expect((await api().get('/lists/browse')).body.results).toBe(0);
+    });
+
+    it('counts the items in each list', async () => {
+        const user = await registerUser();
+        const list = await makeList(user, { isPublic: true });
+        await addTo(user, list, await createMovie());
+        await addTo(user, list, await createMovie());
+
+        expect((await api().get('/lists/browse')).body.data.lists[0].itemCount).toBe(2);
+    });
+
+    it('does not read "browse" as a list id', async () => {
+        // Route order: /lists/browse has to be declared before /lists/:listId,
+        // or Express hands "browse" to the detail handler as a uuid.
+        expect((await api().get('/lists/browse')).status).toBe(200);
+    });
+});

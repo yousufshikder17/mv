@@ -2,7 +2,7 @@ import { and, eq, asc } from 'drizzle-orm';
 import { db } from '../config/db.js';
 import { lists, listItems, mediaItems } from '../db/schema.js';
 import {
-    visibleList, itemsOf, listsOf, nextPosition, renumber, touch, POSITION_STEP,
+    visibleList, itemsOf, listsOf, publicLists, nextPosition, renumber, touch, POSITION_STEP,
 } from '../services/listService.js';
 
 const viewer = (req) => (req.user ? req.user.id : null);
@@ -23,6 +23,17 @@ const notFound = (res) => res.status(404).json({ error: 'List not found' });
 /** GET /lists - your own lists, private ones included. */
 export const myLists = async (req, res) => {
     const rows = await listsOf(req.user.id, req.user.id);
+    return res.status(200).json({ status: 'Success', results: rows.length, data: { lists: rows } });
+};
+
+/**
+ * GET /lists/browse - published lists from anyone. No account needed.
+ *
+ * Declared before /:listId in the router, or Express reads "browse" as a
+ * list id.
+ */
+export const browseLists = async (req, res) => {
+    const rows = await publicLists();
     return res.status(200).json({ status: 'Success', results: rows.length, data: { lists: rows } });
 };
 

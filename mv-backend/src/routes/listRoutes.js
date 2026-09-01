@@ -8,7 +8,7 @@ import {
     createListSchema, updateListSchema, addItemSchema, updateItemSchema,
 } from '../validators/listValidators.js';
 import {
-    myLists, getList, createList, updateList, deleteList,
+    myLists, browseLists, getList, createList, updateList, deleteList,
     addItem, updateItem, removeItem,
 } from "../controllers/listController.js";
 
@@ -24,6 +24,8 @@ const router = express.Router();
 //
 // Declared before the authMiddleware below, or reading a public list would
 // require an account.
+// Before "/:listId", or Express matches "browse" as a list id.
+router.get("/browse", publicLimiter, catchAsync(browseLists));
 router.get("/:listId", publicLimiter, optionalAuth, catchAsync(getList));
 
 // ── Everything below is yours ────────────────────────────────────────
