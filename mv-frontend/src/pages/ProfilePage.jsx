@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import {
   getProfile, getProfileItems, followUser, unfollowUser,
-  updatePrivacy, exportAccount,
+  updatePrivacy, exportAccount, deleteAccount, signOutEverywhere,
 } from '../services/socialService.js'
 import Poster from '../components/ui/Poster.jsx'
 import { TYPE_LABEL } from '../lib/media.js'
@@ -20,7 +20,7 @@ const TYPE_ORDER = ['film', 'tv', 'game', 'book', 'album']
  */
 export default function ProfilePage({ showToast }) {
   const { userId } = useParams()
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
 
   const [profile, setProfile] = useState(null)
   const [items, setItems] = useState([])
@@ -129,7 +129,9 @@ export default function ProfilePage({ showToast }) {
         </section>
       )}
 
-      {profile.isSelf && <SelfSettings profile={profile} reload={load} showToast={showToast} />}
+      {profile.isSelf && (
+        <SelfSettings profile={profile} reload={load} showToast={showToast} onSignedOut={logout} />
+      )}
 
       <section>
         <h2 className={styles.h2}>
@@ -174,9 +176,12 @@ const Stat = ({ label, value }) => (
 
 /* ── Your own account ────────────────────────────────────────────── */
 
-function SelfSettings({ profile, reload, showToast }) {
+function SelfSettings({ profile, reload, showToast, onSignedOut }) {
   const [bio, setBio] = useState(profile.bio ?? '')
   const [saving, setSaving] = useState(false)
+  const [confirming, setConfirming] = useState(false)
+  const [password, setPassword] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   const setPublic = async (profilePublic) => {
     try {
@@ -199,6 +204,35 @@ function SelfSettings({ profile, reload, showToast }) {
       showToast?.(err.response?.data?.message ?? 'Could not save that', 'error')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const signOutAll = async () => {
+    try {
+      await signOutEverywhere()
+      showToast?.('Signed out on every device', 'success')
+      onSignedOut?.()
+    } catch {
+      showToast?.('Could not sign out everywhere', 'error')
+    }
+  }
+
+  const confirmDelete = async (e) => {
+    e.preventDefault()
+    setDeleting(true)
+    try {
+      await deleteAccount(password)
+      // No toast: the next thing to happen is a redirect to a logged-out page,
+      // and a message about an account that no longer exists is noise.
+      onSignedOut?.()
+    } catch (err) {
+      showToast?.(
+        err.response?.status === 401
+          ? 'That password is not correct'
+          : 'Could not delete your account',
+        'error',
+      )
+      setDeleting(false)
     }
   }
 
@@ -267,6 +301,64 @@ function SelfSettings({ profile, reload, showToast }) {
         </div>
         <button className="btn-ghost" onClick={download} id="export-btn">Download</button>
       </div>
+
+      <div className={styles.settingRow}>
+        <div>
+          <p className={styles.settingLabel}>Sign out everywhere</p>
+          <p className={styles.settingHelp}>
+            Ends every session on every device. Signing out normally only
+            affects the browser you are using — this is the one to reach for if
+            a phone or laptop has gone missing.
+          </p>
+        </div>
+        <button className="btn-ghost" onClick={signOutAll} id="signout-all-btn">
+          Sign out everywhere
+        </button>
+      </div>
+
+      {/* Deletion last, and behind a confirmation. Everything above this is
+          reversible; this is not. */}
+      <div className={`${styles.settingRow} ${styles.dangerRow}`}>
+        <div>
+          <p className={styles.settingLabel}>Delete your account</p>
+          <p className={styles.settingHelp}>
+            Removes your tracked items, reviews, comments, lists, follows,
+            alerts and subscriptions. Films and games themselves stay — they
+            belong to nobody. This cannot be undone, so download your export
+            first if you want it.
+          </p>
+        </div>
+        {!confirming && (
+          <button className={styles.dangerBtn} onClick={() => setConfirming(true)} id="delete-account-btn">
+            Delete
+          </button>
+        )}
+      </div>
+
+      {confirming && (
+        <form className={styles.confirmRow} onSubmit={confirmDelete}>
+          <label className={styles.confirmLabel} htmlFor="delete-password">
+            Type your password to confirm
+          </label>
+          <div className={styles.confirmActions}>
+            <input
+              id="delete-password"
+              className={styles.input}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              autoFocus
+            />
+            <button type="button" className="btn-ghost" onClick={() => { setConfirming(false); setPassword('') }}>
+              Cancel
+            </button>
+            <button type="submit" className={styles.dangerBtn} disabled={deleting || !password}>
+              {deleting ? 'Deleting…' : 'Delete for good'}
+            </button>
+          </div>
+        </form>
+      )}
     </section>
   )
 }

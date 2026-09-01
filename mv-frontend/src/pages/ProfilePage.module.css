@@ -94,6 +94,10 @@
   gap: 20px;
 }
 
+/* The grid item itself. Referenced since this page was written but never
+   defined, so it was rendering as a bare block. */
+.card { list-style: none; min-width: 0; }
+
 .cardLink { text-decoration: none; color: inherit; display: block; }
 
 .cardTitle {
@@ -162,3 +166,23 @@
   font-size: 14px;
 }
 .input:focus { outline: none; border-color: var(--c-accent); }
+
+/* Destructive actions read differently from the rest. */
+.dangerRow { border-top-color: rgba(224, 92, 92, .25); }
+
+.dangerBtn {
+  padding: 8px 16px;
+  border: 1px solid rgba(224, 92, 92, .4);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--c-error);
+  font: inherit; font-size: 13px; cursor: pointer;
+  transition: var(--transition);
+}
+.dangerBtn:hover:not(:disabled) { background: rgba(224, 92, 92, .12); border-color: var(--c-error); }
+.dangerBtn:disabled { opacity: .45; cursor: default; }
+
+.confirmRow { padding: 14px 0 4px; border-top: 1px dashed rgba(224, 92, 92, .25); }
+.confirmLabel { display: block; margin-bottom: 8px; font-size: 13px; color: var(--c-muted); }
+.confirmActions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.confirmActions .input { flex: 1; min-width: 180px; margin-top: 0; }

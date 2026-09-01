@@ -26,6 +26,14 @@ export const authMiddleware = async (req, res, next) => {
             return res.status(401).json({ message: "Unauthorized: User not found" });
         }
 
+        // A token minted before the account's version was bumped is revoked:
+        // the password was reset, or every session was signed out. Tokens
+        // issued before this claim existed decode `v` as undefined, which is
+        // treated as version 0 - the default every existing row carries.
+        if ((decoded.v ?? 0) !== user.tokenVersion) {
+            return res.status(401).json({ message: "Unauthorized: Session expired" });
+        }
+
         req.user = user;
         next();
     } catch (error) {

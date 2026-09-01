@@ -40,6 +40,33 @@ const deliverInApp = async (userId, message, mediaItemId) => {
     return row;
 };
 
+/**
+ * A plain transactional email, for anything that is not a price alert.
+ *
+ * Thin wrapper over the same Resend call. Kept separate from notify() because
+ * that one is driven by an alert row and writes a notification record; a
+ * password reset has neither.
+ */
+export const sendMail = async (to, { title, body }) => {
+    const key = process.env.RESEND_API_KEY;
+    if (!key) return { skipped: 'email not configured' };
+
+    const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        signal: AbortSignal.timeout(15_000),
+        headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            from: process.env.ALERT_FROM_EMAIL ?? 'onboarding@resend.dev',
+            to,
+            subject: title,
+            text: body,
+        }),
+    });
+
+    if (!res.ok) throw new Error(`email failed (${res.status})`);
+    return { sent: true };
+};
+
 // ── Channel: email ───────────────────────────────────────────────────
 const deliverEmail = async (to, message) => {
     const key = process.env.RESEND_API_KEY;

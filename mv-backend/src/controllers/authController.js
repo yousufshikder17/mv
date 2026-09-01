@@ -58,7 +58,7 @@ const login = async (req, res) => {
     }
 
     //Generate JWT token
-    const token = generateToken(user.id, res);
+    const token = generateToken(user.id, res, user.tokenVersion ?? 0);
 
     // 200, not 201: logging in creates no resource. Registration below is the
     // only endpoint here that does.

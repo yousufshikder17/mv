@@ -20,3 +20,8 @@ export const deleteComment = (commentId)         => api.delete(`/social/comments
 
 export const updatePrivacy = (data) => api.patch('/account/privacy', data)
 export const exportAccount = ()     => api.get('/account/export')
+
+// Irreversible, so the password is required again even though the caller is
+// already signed in.
+export const deleteAccount = (password) => api.delete('/account', { data: { password } })
+export const signOutEverywhere = ()     => api.post('/auth/sign-out-everywhere')

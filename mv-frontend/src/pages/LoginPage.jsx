@@ -84,6 +84,11 @@ export default function LoginPage({ showToast }) {
               autoComplete="current-password"
               required
             />
+            {/* The reset flow is only findable from here - somebody who cannot
+                sign in has no other page to look on. */}
+            <Link to="/forgot-password" className={styles.forgotLink} id="forgot-password-link">
+              Forgot your password?
+            </Link>
           </div>
 
           {/* Error */}

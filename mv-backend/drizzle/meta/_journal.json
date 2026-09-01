@@ -113,6 +113,13 @@
       "when": 1788273838318,
       "tag": "0015_m9_lists",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1788292857507,
+      "tag": "0016_m10_auth_hardening",
+      "breakpoints": true
     }
   ]
 }

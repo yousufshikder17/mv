@@ -8,6 +8,8 @@ import ItemPage       from './pages/ItemPage.jsx'
 import DealsPage      from './pages/DealsPage.jsx'
 import SearchPage     from './pages/SearchPage.jsx'
 import PrivacyPage    from './pages/PrivacyPage.jsx'
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
+import ResetPasswordPage  from './pages/ResetPasswordPage.jsx'
 import BrowsePage     from './pages/BrowsePage.jsx'
 import LoginPage      from './pages/LoginPage.jsx'
 import RegisterPage   from './pages/RegisterPage.jsx'
@@ -20,7 +22,7 @@ import { useToast }   from './hooks/useToast.js'
 import { BROWSE_NAV } from './lib/media.js'
 
 // Pages that hide the Navbar
-const BARE_ROUTES = ['/login', '/register']
+const BARE_ROUTES = ['/login', '/register', '/forgot-password', '/reset-password']
 
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('mv_theme') ?? 'dark')
@@ -70,6 +72,10 @@ export default function App() {
             needs no account, and its owner can make it private (M8). */}
         <Route path="/u/:userId" element={<ProfilePage showToast={showToast} />} />
         <Route path="/login"    element={<LoginPage    showToast={showToast} />} />
+        {/* Unauthenticated by necessity: somebody who cannot sign in cannot
+            present a token. */}
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password"  element={<ResetPasswordPage showToast={showToast} />} />
         <Route path="/register" element={<RegisterPage showToast={showToast} />} />
         {/* Gated because it is built from YOUR follow list, not because
             reading is gated - every item it links to is public. */}

@@ -42,7 +42,32 @@ export const users = pgTable('user', {
     // Shown on a public profile. Optional, and never populated from anything
     // the user did not type.
     bio: text('bio'),
+    // Bumped to invalidate every token already issued to this account.
+    //
+    // JWTs are stateless, so a token stays valid until it expires no matter
+    // what the server thinks - which means a password reset, or a "sign out
+    // everywhere", has nothing to revoke unless the token carries a number
+    // the server can move. Every token embeds this value and every request
+    // checks it, so incrementing it invalidates all of them at once.
+    tokenVersion: integer('token_version').notNull().default(0),
     createdAt: timestamp('created_at').defaultNow(),
+});
+
+// 1b. Password reset
+//
+// The token is stored HASHED, never in plain text. A reset token is a
+// temporary password: anyone holding one can take the account, so a database
+// dump or a stray log must not hand them out. The emailed half is the only
+// place the plaintext ever exists.
+export const passwordResets = pgTable('password_reset', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+    tokenHash: text('token_hash').notNull().unique(),
+    expiresAt: timestamp('expires_at').notNull(),
+    // Set on use, so a token works exactly once even if the email is forwarded
+    // or the link is opened twice.
+    usedAt: timestamp('used_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 // 2. Follow

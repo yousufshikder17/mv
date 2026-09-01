@@ -29,11 +29,16 @@ export const optionalAuth = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const [user] = await db
-            .select({ id: users.id, name: users.name, email: users.email })
+            .select({
+                id: users.id, name: users.name, email: users.email,
+                tokenVersion: users.tokenVersion,
+            })
             .from(users)
             .where(eq(users.id, decoded.id))
             .limit(1);
-        if (user) req.user = user;
+        // Same revocation check as authMiddleware. A revoked token must not
+        // grant a viewer their own private profile here either.
+        if (user && (decoded.v ?? 0) === user.tokenVersion) req.user = user;
     } catch {
         // Public route: carry on as a stranger.
     }
