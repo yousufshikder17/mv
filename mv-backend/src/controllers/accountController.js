@@ -6,6 +6,7 @@ import {
     notifications, pushSubscriptions, reviews, reviewVotes, comments,
     follows, dealVotes, lists, listItems,
 } from '../db/schema.js';
+import { clearedCookie } from '../utils/cookieOptions.js';
 
 /**
  * GET /account/export - everything we hold about you, as JSON.
@@ -154,12 +155,7 @@ export const deleteAccount = async (req, res) => {
 
     // Clear the session cookie with the attributes it was set with, or it
     // survives the account it belonged to.
-    res.cookie('jwt', '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
-        expires: new Date(0),
-    });
+    res.cookie('jwt', '', clearedCookie());
 
     return res.status(200).json({ status: 'Success', message: 'Account deleted' });
 };

@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { sessionCookie } from './cookieOptions.js';
 
 // These tokens are stateless, so the expiry is the outer bound on a leaked
 // one. Keep it short.
@@ -21,11 +22,6 @@ export const generateToken = (userId, res, tokenVersion = 0) => {
     // hardcoding one, so the two can never disagree.
     const { exp } = jwt.decode(token);
 
-    res.cookie("jwt", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: exp * 1000 - Date.now(),
-    })
+    res.cookie("jwt", token, sessionCookie(exp * 1000 - Date.now()))
     return token;
 }

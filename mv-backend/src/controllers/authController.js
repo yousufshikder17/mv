@@ -3,6 +3,7 @@ import { users } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { generateToken } from "../utils/generateToken.js";
 import bcrypt from "bcryptjs";
+import { clearedCookie } from "../utils/cookieOptions.js";
 
 const register = async (req, res) => {
     const { name, email, password } = req.body;
@@ -79,12 +80,7 @@ const logout = async (req, res) => {
     // attributes, so clearing it with a different set writes a SECOND cookie
     // instead of overwriting the first - and the session cookie survives the
     // logout it was supposed to end.
-    res.cookie("jwt", "", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        expires: new Date(0),
-    });
+    res.cookie('jwt', '', clearedCookie());
     res.status(200).json({
         status: "success",
         message: "Logged out successfully",

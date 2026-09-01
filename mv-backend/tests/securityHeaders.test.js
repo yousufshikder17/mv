@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import { api, createSchema, resetTables, registerUser } from './helpers/testDb.js';
 
 beforeAll(createSchema);
@@ -73,5 +73,49 @@ describe('the session cookie', () => {
         expect(cookie).toMatch(/HttpOnly/i);
         expect(cookie).toMatch(/SameSite=Strict/i);
         expect(cookie).toMatch(/Expires=Thu, 01 Jan 1970/i);
+    });
+});
+
+// NODE_ENV used to gate `secure` as `=== 'production'`, so an unset or
+// misspelled value silently downgraded the session cookie to one that travels
+// over plain HTTP, with nothing reporting it. The test is inverted now: only an
+// explicit 'development' turns it off.
+describe('the secure flag fails closed', () => {
+    const optionsUnder = async (nodeEnv) => {
+        vi.resetModules();
+        const previous = process.env.NODE_ENV;
+        process.env.NODE_ENV = nodeEnv;
+        const { sessionCookie, clearedCookie } = await import('../src/utils/cookieOptions.js');
+        const result = { set: sessionCookie(1000), cleared: clearedCookie() };
+        process.env.NODE_ENV = previous;
+        vi.resetModules();
+        return result;
+    };
+
+    it('is secure when NODE_ENV is unset', async () => {
+        const { set } = await optionsUnder(undefined);
+        expect(set.secure).toBe(true);
+    });
+
+    it('is secure when NODE_ENV is misspelled', async () => {
+        // "Production", "prod", "PRODUCTION" all used to mean insecure.
+        for (const value of ['Production', 'prod', 'staging']) {
+            expect((await optionsUnder(value)).set.secure, value).toBe(true);
+        }
+    });
+
+    it('is NOT secure only for an explicit development', async () => {
+        // A Secure cookie is rejected over http://localhost, so this one case
+        // genuinely has to opt out.
+        expect((await optionsUnder('development')).set.secure).toBe(false);
+    });
+
+    it('clears with exactly the attributes it sets', async () => {
+        // The logout bug: a mismatch writes a second cookie and leaves the
+        // session one alive.
+        const { set, cleared } = await optionsUnder('production');
+        expect(cleared.httpOnly).toBe(set.httpOnly);
+        expect(cleared.secure).toBe(set.secure);
+        expect(cleared.sameSite).toBe(set.sameSite);
     });
 });

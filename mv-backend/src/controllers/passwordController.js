@@ -4,6 +4,7 @@ import { and, eq, gt, isNull, sql } from 'drizzle-orm';
 import { db } from '../config/db.js';
 import { users, passwordResets } from '../db/schema.js';
 import { sendMail } from '../services/notifier.js';
+import { clearedCookie } from '../utils/cookieOptions.js';
 
 /**
  * Password reset, and revoking sessions.
@@ -144,12 +145,7 @@ export const signOutEverywhere = async (req, res) => {
         .set({ tokenVersion: sql`${users.tokenVersion} + 1` })
         .where(eq(users.id, req.user.id));
 
-    res.cookie('jwt', '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
-        expires: new Date(0),
-    });
+    res.cookie('jwt', '', clearedCookie());
 
     return res.status(200).json({ status: 'Success', message: 'Signed out on every device' });
 };
