@@ -3,7 +3,7 @@ import { db } from '../config/db.js';
 import {
     users, trackingItems, mediaItems, seasonRatings, priceAlerts,
     notifications, pushSubscriptions, reviews, reviewVotes, comments,
-    follows, dealVotes,
+    follows, dealVotes, lists, listItems,
 } from '../db/schema.js';
 
 /**
@@ -34,7 +34,7 @@ export const exportAccount = async (req, res) => {
         .leftJoin(mediaItems, eq(trackingItems.mediaItemId, mediaItems.id))
         .where(eq(trackingItems.userId, userId));
 
-    const [alerts, notes, subs, written, votes, said, following, dealVoted] = await Promise.all([
+    const [alerts, notes, subs, written, votes, said, following, dealVoted, curated] = await Promise.all([
         db.select().from(priceAlerts).where(eq(priceAlerts.userId, userId)),
         db.select().from(notifications).where(eq(notifications.userId, userId)),
         // Endpoints only - the keys are credentials for a browser, not
@@ -47,7 +47,20 @@ export const exportAccount = async (req, res) => {
         db.select().from(comments).where(eq(comments.userId, userId)),
         db.select().from(follows).where(eq(follows.followerId, userId)),
         db.select().from(dealVotes).where(eq(dealVotes.userId, userId)),
+        db.select().from(lists).where(eq(lists.userId, userId)),
     ]);
+
+    // Lists carry their items, rather than being exported as bare names. A
+    // list without its contents is not the thing the person made.
+    const curatedWithItems = await Promise.all(curated.map(async (list) => ({
+        ...list,
+        items: await db
+            .select({ item: listItems, media: mediaItems })
+            .from(listItems)
+            .leftJoin(mediaItems, eq(listItems.mediaItemId, mediaItems.id))
+            .where(eq(listItems.listId, list.id))
+            .then((rows) => rows.map((r) => Object.assign({}, r.item, { item: r.media }))),
+    })));
 
     const seasons = tracked.length
         ? await db.select().from(seasonRatings)
@@ -70,6 +83,7 @@ export const exportAccount = async (req, res) => {
         comments: said,
         following,
         dealVotes: dealVoted,
+        lists: curatedWithItems,
     };
 
     res.setHeader('Content-Disposition', 'attachment; filename="media-vault-export.json"');

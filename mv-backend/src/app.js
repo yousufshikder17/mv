@@ -9,6 +9,7 @@ import alertRoutes from "./routes/alertRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import recommendRoutes from "./routes/recommendRoutes.js";
 import dealRoutes from "./routes/dealRoutes.js";
+import listRoutes from "./routes/listRoutes.js";
 import socialRoutes from "./routes/socialRoutes.js";
 import accountRoutes from "./routes/accountRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
@@ -54,6 +55,7 @@ export const createApp = () => {
     app.use("/notifications", notificationRoutes);
     app.use("/recommendations", recommendRoutes);
     app.use("/deals", dealRoutes);
+    app.use("/lists", listRoutes);
     app.use("/social", socialRoutes);
     app.use("/account", accountRoutes);
 

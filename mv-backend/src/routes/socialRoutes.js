@@ -7,6 +7,7 @@ import { validateRequest } from '../middleware/validateMiddleware.js';
 import { reviewSchema, commentSchema, voteSchema } from '../validators/socialValidators.js';
 import { getProfile, getProfileItems, follow, unfollow, getFeed } from "../controllers/socialController.js";
 import { listReviews, upsertReview, deleteReview, voteReview } from "../controllers/reviewController.js";
+import { listsForProfile } from "../controllers/listController.js";
 import { listComments, addComment, deleteComment } from "../controllers/commentController.js";
 
 const router = express.Router();
@@ -19,6 +20,7 @@ const router = express.Router();
 // private profile and their follow state, while a stranger still gets a page.
 router.get("/profile/:userId", publicLimiter, optionalAuth, catchAsync(getProfile));
 router.get("/profile/:userId/items", publicLimiter, optionalAuth, catchAsync(getProfileItems));
+router.get("/profile/:userId/lists", publicLimiter, optionalAuth, catchAsync(listsForProfile));
 router.get("/items/:mediaItemId/reviews", publicLimiter, catchAsync(listReviews));
 router.get("/items/:mediaItemId/comments", publicLimiter, catchAsync(listComments));
 

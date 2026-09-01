@@ -40,7 +40,7 @@ export const createSchema = async () => {
 /** Empties every table between tests. CASCADE follows the FKs for us. */
 export const resetTables = async () => {
     await db.execute(
-        sql.raw('TRUNCATE TABLE follow, review_vote, review, comment, deal_vote, notification, push_subscription, price_alert, price_quote, tracking_item, media_item, "user" RESTART IDENTITY CASCADE'),
+        sql.raw('TRUNCATE TABLE list_item, list, follow, review_vote, review, comment, deal_vote, notification, push_subscription, price_alert, price_quote, tracking_item, media_item, "user" RESTART IDENTITY CASCADE'),
     );
 };
 

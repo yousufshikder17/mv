@@ -242,6 +242,55 @@ export const comments = pgTable('comment', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// 4c. Lists
+//
+// Curation, deliberately separate from tracking_item.
+//
+// A tracking row is your ledger: one row per thing, carrying status, rating,
+// progress and notes — facts that only make sense once per item. A list is the
+// opposite shape. It is ordered, named, shareable, and the same film can sit in
+// ten of them.
+//
+// list_item therefore points at media_item, NOT at tracking_item. Otherwise a
+// list could only contain things you had already tracked, and "Films I want to
+// show my brother" would be impossible to write without first claiming to have
+// watched them all.
+//
+// This is also what finally makes SPEC 9's third privacy layer real. Per-item
+// and profile-level shipped in M8; per-LIST had nothing to hang a flag on until
+// a list existed as an object.
+export const lists = pgTable('list', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+    name: text('name').notNull(),
+    description: text('description'),
+    // Private by default. A list is a draft far more often than a publication,
+    // and the failure mode of the other default is publishing someone's
+    // half-finished thinking without them noticing.
+    isPublic: boolean('is_public').notNull().default(false),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (t) => [
+    // Two lists with the same name under one account are almost always a
+    // double-submitted form rather than an intention.
+    unique().on(t.userId, t.name),
+]);
+
+export const listItems = pgTable('list_item', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    listId: uuid('list_id').references(() => lists.id, { onDelete: 'cascade' }).notNull(),
+    mediaItemId: uuid('media_item_id').references(() => mediaItems.id, { onDelete: 'cascade' }).notNull(),
+    // Sparse (10, 20, 30...) so a move between two neighbours is one UPDATE
+    // rather than renumbering everything after it.
+    position: integer('position').notNull(),
+    // Why this is here — the part a bare list of titles cannot say.
+    note: text('note'),
+    addedAt: timestamp('added_at').defaultNow().notNull(),
+}, (t) => [
+    // The same thing twice in one list is a mistake every time.
+    unique().on(t.listId, t.mediaItemId),
+]);
+
 // 5. Season Rating
 //
 // Its own table rather than JSON on tracking_item: a per-season score is a
