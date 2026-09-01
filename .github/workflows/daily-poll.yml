@@ -39,10 +39,35 @@ jobs:
           cache: npm
           cache-dependency-path: mv-backend/package-lock.json
 
-      - run: npm ci
+      # --omit=dev deliberately. The poll needs none of the dev tooling, and
+      # installing it is what broke this job: vitest pulls esbuild, whose
+      # per-platform optional packages are exactly what a lock file drifts on.
+      # Skipping them is both faster and one less thing that can fail at 09:15.
+      - run: npm ci --omit=dev
 
       - run: npm run poll
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+          # Prices. Without these the job still exits 0 while collecting
+          # nothing, which is the failure mode that actually costs something:
+          # ITAD backfills game history on demand, Google Books does not, so a
+          # day of book prices missed is a permanent hole in the series.
+          GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY }}
+          GOOGLE_BOOKS_WATCH_IDS: ${{ secrets.GOOGLE_BOOKS_WATCH_IDS }}
+          ITAD_API_KEY: ${{ secrets.ITAD_API_KEY }}
           KINDLE_RSS_URL: ${{ secrets.KINDLE_RSS_URL }}
+
+          # Catalogue refresh. TMDB rows must not age past the six-month cache
+          # limit their terms set (SPEC 3), and games refresh through RAWG.
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+          RAWG_API_KEY: ${{ secrets.RAWG_API_KEY }}
+
+          # Alert delivery. Separate from collection on purpose - a missing
+          # mail key costs a notification, never a day of price history.
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_FROM_EMAIL: ${{ secrets.ALERT_FROM_EMAIL }}
+          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          PUBLIC_URL: ${{ secrets.PUBLIC_URL }}

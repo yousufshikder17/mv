@@ -146,11 +146,36 @@ export const runDailyPoll = async () => {
 const isEntrypoint =
     process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
+/**
+ * Whether a run counts as healthy.
+ *
+ * Errors fail it, as before. So does a run that fetched nothing while at least
+ * one source was skipped for missing configuration - which is not a hypothetical:
+ * the scheduled job ran for a while with three of its ten secrets set, so every
+ * price source skipped, and it went green every morning while collecting
+ * nothing at all.
+ *
+ * That is the expensive failure. ITAD backfills game history on demand, but
+ * Google Books does not - a day of book prices not recorded is a permanent
+ * hole in the series, and a green tick is exactly what stops anyone looking.
+ *
+ * A skip on its own still passes. A dormant Kindle adapter must not paint
+ * every run red while the other sources are doing their job.
+ */
+export const exitCodeFor = (summary) =>
+    summary.errors.length || (summary.fetched === 0 && summary.skipped.length) ? 1 : 0;
+
 if (isEntrypoint) {
     const summary = await runDailyPoll();
     console.log(JSON.stringify({ at: new Date().toISOString(), ...summary }));
+
+    if (summary.fetched === 0 && summary.skipped.length) {
+        console.error(
+            `Collected nothing: ${summary.skipped.join(', ')} skipped for missing configuration. ` +
+            'Book prices cannot be backfilled - check the secrets before tomorrow.',
+        );
+    }
+
     await disconnectDB();
-    // Non-zero so a failed run shows up red in the Actions log instead of
-    // silently reporting success for months.
-    process.exit(summary.errors.length ? 1 : 0);
+    process.exit(exitCodeFor(summary));
 }
