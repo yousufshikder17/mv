@@ -1,0 +1,27 @@
+# Working documents. Not part of the published project.
+#
+# Also in .git/info/exclude, which only ever applies to one clone. This copy is
+# the one that travels.
+SPEC.md
+roadmap_plan.md
+SECURITY.md
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output
+node_modules/
+dist/
+
+# Database dumps and poller output
+backups/
+logs/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
