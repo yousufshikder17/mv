@@ -17,8 +17,8 @@ const CACHE_TTL_DAYS = 30;
 const AIRING_TTL_DAYS = 3;
 const AIRING_STATUSES = ['Returning Series', 'In Production', 'Planned'];
 
-// How many cards a discovery row holds. One constant so the strip and the
-// query that fills it cannot disagree.
+// How many cards a discovery row holds - every row, on home and on the type
+// pages. One constant so no two rows can disagree about their own length.
 const ROW_SIZE = 15;
 
 const daysAgo = (n) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
@@ -115,13 +115,17 @@ export const browse = async (req, res) => {
     // Failures here return an empty row rather than an error: a browse feed
     // is the page's content, not the page itself, and one dead upstream
     // should not turn a nav link into an error screen.
-    const results = await cached(`browse:${type}`, 60 * 60 * 1000, async () => {
+    const all = await cached(`browse:${type}`, 60 * 60 * 1000, async () => {
         try {
             return await browseMedia(type);
         } catch {
             return [];
         }
     });
+
+    // Trimmed after the cache, not inside it, so changing the row size takes
+    // effect immediately rather than an hour from now.
+    const results = all.slice(0, ROW_SIZE);
 
     return res.status(200).json({ status: 'Success', results: results.length, data: results });
 };

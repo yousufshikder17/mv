@@ -57,9 +57,15 @@ const year = (dateStr?: string | null) => {
 // title/name, release_date/first_air_date, one runtime/many. Normalising it
 // here is what lets everything downstream stop caring which it is.
 
+// TMDB's "movie" endpoints also carry things that are not films: trailers,
+// featurettes and promos like "Grand Theft Auto VI: An Extended Look", which
+// trends hard enough to land mid-chart. They are flagged video: true, and a
+// browse row for films should not contain a game advert.
+const isFilm = (m: any) => m.video !== true;
+
 export const searchFilms = async (query: string): Promise<MediaSearchResult[]> => {
     const data = await request('/search/movie', { query, include_adult: false, language: 'en-US', page: 1 });
-    return (data.results ?? []).map((m: any) => ({
+    return (data.results ?? []).filter(isFilm).map((m: any) => ({
         type: 'film' as const,
         source: SOURCE,
         externalId: String(m.id),
@@ -102,7 +108,7 @@ export const searchAll = async (query: string): Promise<MediaSearchResult[]> => 
  */
 export const getTrending = async (): Promise<MediaSearchResult[]> => {
     const data = await request('/trending/movie/week', { language: 'en-US' });
-    return (data.results ?? []).map((m: any) => ({
+    return (data.results ?? []).filter(isFilm).map((m: any) => ({
         type: 'film' as const,
         source: SOURCE,
         externalId: String(m.id),

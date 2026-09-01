@@ -29,8 +29,29 @@ export const BROWSE_NAV = [
 // The hero copy for each type page. One entry per type so the same page
 // component can carry five different pitches, and adding a sixth media type
 // is a block here rather than a new file.
+// A curated wall for the Films page, kept from the original landing hero.
+//
+// Deliberately not the trending feed. Trending is whatever released this
+// month; these nine are a statement of taste, which is what a hero is for -
+// and they are chosen to sit together as a palette rather than compete.
+// TMDB attribution for them lives in the page footer, as their terms require.
+const TMDB_ART = (path) => 'https://image.tmdb.org/t/p/w342' + path;
+
+const FILM_ART = [
+  '/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg', // Blade Runner 2049
+  '/iYypPT4bhqXfq1b6EnmxvRt6b2Y.jpg', // In the Mood for Love
+  '/v1tRXZ4JtD2Iv6fjkPvT4GiwslV.jpg', // Dune
+  '/602vevIURmpDfzbnv5Ubi6wIkQm.jpg', // Drive
+  '/pEzNVQfdzYDzVK0XqxERIw2x2se.jpg', // Arrival
+  '/fa0RDkAlCec0STeMNAhPaF89q6U.jpg', // There Will Be Blood
+  '/7fn624j5lj3xTme2SgiLCeuedmO.jpg', // Whiplash
+  '/eCOtqtfvn7mxGl6nfmq4b1exJRc.jpg', // Her
+  '/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg', // Parasite
+].map(TMDB_ART);
+
 export const BROWSE_COPY = {
   film: {
+    art: FILM_ART,
     headline: ['Every film you’ve', 'ever', 'watched, in one', 'vault.'],
     sub: 'Log what you have seen, what you gave up on, and what you keep meaning to get to.',
     features: [

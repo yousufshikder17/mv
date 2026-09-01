@@ -51,7 +51,11 @@ export default function BrowsePage({ type, label }) {
   }, [label])
 
   const copy = BROWSE_COPY[type]
-  const art = items.filter((i) => i.posterUrl).slice(0, ART).map((i) => i.posterUrl)
+  // A curated wall when the page has one, otherwise the feed's own covers.
+  // Films are curated because a hero is a statement of taste and trending is
+  // just whatever came out this month; the rest have no curated set yet and
+  // look better with real covers than with none.
+  const art = copy.art ?? items.filter((i) => i.posterUrl).slice(0, ART).map((i) => i.posterUrl)
 
   return (
     <main className={styles.page}>

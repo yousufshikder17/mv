@@ -141,3 +141,43 @@ describe('error mapping', () => {
         await expect(getTvDetails('1')).rejects.toMatchObject({ statusCode: 502 });
     });
 });
+
+// TMDB's movie endpoints carry things that are not films.
+describe('non-film entries on the movie endpoints', () => {
+    const PROMO = {
+        id: 1546040, title: 'Grand Theft Auto VI: An Extended Look',
+        release_date: '2026-05-06', poster_path: '/g.jpg', video: true,
+    };
+    const FILM = {
+        id: 438631, title: 'Dune', release_date: '2021-09-15', poster_path: '/d.jpg', video: false,
+    };
+
+    it('keeps a game promo out of trending films', async () => {
+        // Measured on the live endpoint: this really does trend mid-chart, and
+        // a browse row headed "Films" should not contain a game advert.
+        const { getTrending } = await load();
+        stub({ results: [FILM, PROMO] });
+
+        const titles = (await getTrending()).map((r) => r.title);
+        expect(titles).toEqual(['Dune']);
+    });
+
+    it('keeps them out of film search too', async () => {
+        // Same endpoint family, same flag - filtering only trending would fix
+        // the page somebody complained about and leave the other one wrong.
+        const { searchFilms } = await load();
+        stub({ results: [PROMO, FILM] });
+
+        const titles = (await searchFilms('grand theft auto')).map((r) => r.title);
+        expect(titles).toEqual(['Dune']);
+    });
+
+    it('keeps entries that simply do not carry the flag', async () => {
+        // Absent is not true. Dropping anything without an explicit
+        // video: false would empty most responses.
+        const { getTrending } = await load();
+        stub({ results: [{ id: 1, title: 'No flag', release_date: '2020-01-01', poster_path: null }] });
+
+        expect(await getTrending()).toHaveLength(1);
+    });
+});
