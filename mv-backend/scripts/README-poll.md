@@ -12,11 +12,16 @@ good as the history behind them.
 
 ## Register the task
 
-Run once, in an **Administrator** PowerShell:
+Run once, in an **Administrator** PowerShell, from `mv-backend`:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "C:\Users\yousu\Projects\Watchlist Platform\mv\mv-backend\scripts\register-poll-task.ps1"
+cd path\to\mv\mv-backend
+powershell -ExecutionPolicy Bypass -File .\scripts\register-poll-task.ps1
 ```
+
+If the path to your checkout contains a space, quote it — and paste it on one
+line. A path that wraps mid-paste becomes a path with a newline in it, which
+PowerShell reports as `Illegal characters in path`.
 
 That script is the block below. It checks it is elevated before it starts,
 rather than failing with an access-denied at the last step, and re-running it
@@ -26,9 +31,13 @@ replaces the task, so running it twice is safe.
 <summary>What it does</summary>
 
 ```powershell
-$dir     = "C:\Users\yousu\Projects\Watchlist Platform\mv\mv-backend"
+# Derived from the script's own location, so the task points at whichever
+# checkout it was registered from rather than a path written down once.
+$backend = Split-Path -Parent $PSScriptRoot
+$wrapper = Join-Path $PSScriptRoot 'poll-daily.cmd'
+
 $action  = New-ScheduledTaskAction -Execute "cmd.exe" `
-             -Argument "/c `"$dir\scripts\poll-daily.cmd`"" -WorkingDirectory $dir
+             -Argument ('/c "{0}"' -f $wrapper) -WorkingDirectory $backend
 $trigger = New-ScheduledTaskTrigger -Daily -At 9:15am
 $settings = New-ScheduledTaskSettingsSet `
              -StartWhenAvailable `
@@ -78,7 +87,8 @@ exactly like one that has been working, and that is precisely the failure this
 project cannot afford.
 
 ```powershell
-Get-Content "C:\Users\yousu\Projects\Watchlist Platform\mv\mv-backend\logs\poll.log" -Tail 20
+# From mv-backend:
+Get-Content .\logs\poll.log -Tail 20
 Get-ScheduledTaskInfo -TaskName "mv-daily-poll"    # LastRunTime, LastTaskResult (0 = ok)
 Start-ScheduledTask   -TaskName "mv-daily-poll"    # run it now, to test
 ```
