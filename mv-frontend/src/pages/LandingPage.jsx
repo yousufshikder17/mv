@@ -4,7 +4,7 @@ import Hero from '../components/marketing/Hero.jsx'
 import Pitch from '../components/marketing/Pitch.jsx'
 import Discover from '../components/discover/Discover.jsx'
 import { getVariety } from '../services/watchlistService.js'
-import { HOME_FILM_ART } from '../lib/media.js'
+import { HOME_ART } from '../lib/media.js'
 import styles from './LandingPage.module.css'
 
 // Nine covers, three columns.
@@ -36,17 +36,14 @@ export default function LandingPage() {
     return () => { alive = false }
   }, [])
 
-  // Two pinned films, then the live catalogue for the rest.
+  // Curated, and drawn one or two from each type page's wall.
   //
-  // The films are pinned so home and /films never open on the same posters —
-  // the Films wall has Dune and Parasite, and meeting them again one click
-  // later makes the site look smaller than it is. Everything after them comes
-  // from the catalogue, which is what keeps this wall showing five media types
-  // rather than nine films, and what stops it pointing at something delisted.
-  const art = [
-    ...HOME_FILM_ART,
-    ...variety.filter((i) => i.posterUrl && i.type !== 'film').map((i) => i.posterUrl),
-  ].slice(0, ART)
+  // The catalogue used to fill this, which sounded principled and looked
+  // wrong: with 25 seeded games against two films it produced a wall of game
+  // art on the page whose whole claim is that it holds five kinds of thing.
+  // A hero should show what the site is for, not what happens to be in the
+  // database this week. The row underneath is still live.
+  const art = HOME_ART.slice(0, ART)
 
   return (
     <main className={styles.page} id="landing-page">

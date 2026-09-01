@@ -29,13 +29,17 @@ export const BROWSE_NAV = [
 // The hero copy for each type page. One entry per type so the same page
 // component can carry five different pitches, and adding a sixth media type
 // is a block here rather than a new file.
-// A curated wall for the Films page, kept from the original landing hero.
+// Curated hero walls, one per page.
 //
-// Deliberately not the trending feed. Trending is whatever released this
-// month; these nine are a statement of taste, which is what a hero is for -
-// and they are chosen to sit together as a palette rather than compete.
-// TMDB attribution for them lives in the page footer, as their terms require.
+// Every one of these URLs was resolved through the same adapters the app uses
+// and checked for a 200 before being written down. A hardcoded cover that
+// 404s is worse than no wall at all, because it fails silently and only on
+// someone else's screen.
+//
+// Curated rather than fed, because a hero is a statement of taste and a feed
+// is whatever came out this month. The rows underneath are still live.
 const TMDB_ART = (path) => 'https://image.tmdb.org/t/p/w342' + path;
+const CAA_ART = (mbid) => 'https://coverartarchive.org/release-group/' + mbid + '/front-250';
 
 const FILM_ART = [
   '/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg', // Blade Runner 2049
@@ -49,29 +53,70 @@ const FILM_ART = [
   '/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg', // Parasite
 ].map(TMDB_ART);
 
-// Home's two film slots, pinned.
-//
-// Home draws the rest of its wall from the live catalogue, but the film slots
-// are fixed so the two pages do not open on the same posters: Dune and
-// Parasite belong to the Films wall above, and seeing them again one click
-// later makes the site look smaller than it is.
-export const HOME_FILM_ART = [
-  '/lxM6kqilAdpdhqUl2biYp5frUxE.jpg', // Jaws
-  '/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg', // The Shawshank Redemption
+const TV_ART = [
+  '/rTc7ZXdroqjkKivFPvCPX0Ru7uw.jpg', // The Sopranos
+  '/lA9CNSdo50iQPZ8A2fyVpMvJZAf.jpg', // Twin Peaks
+  '/anFx9aTOOYqgS3v7x3R84Kz67ly.jpg', // Breaking Bad
+  '/4lbclFySvugI51fwsyxBTOm4DqK.jpg', // The Wire
+  '/pPHpeI2X1qEd1CS1SeyrdhZ4qnT.jpg', // Severance
+  '/hlLXt2tOPT6RRnjiUmoxyG1LTFi.jpg', // Chernobyl
+  '/27vEYsRKa3eAniwmoccOoluEXQ1.jpg', // Fleabag
+  '/zjg4jpK1Wp2kiRvtt5ND0kznako.jpg', // Better Call Saul
+  '/z0XiwdrCQ9yVIr4O0pxzaAYRxdW.jpg', // Succession
 ].map(TMDB_ART);
 
-// Two pinned covers for the Music wall.
-//
-// ListenBrainz fresh releases is genuinely fresh - it is what came out in the
-// last month, which is the right row for "popular right now" and the wrong one
-// for a hero. These two are picked, and keyed by release-group MBID so they
-// resolve through the same Cover Art Archive path as everything else.
-const CAA_ART = (mbid) => 'https://coverartarchive.org/release-group/' + mbid + '/front-250';
+// RAWG art is landscape key art rather than box art, which is why the game
+// wall reads differently from the others. Their own images, their own shape.
+const GAME_ART = [
+  'https://media.rawg.io/media/games/0af/0afe9e8ace196123d8c7cf22172cec63.jpg', // Disco Elysium
+  'https://media.rawg.io/media/games/4cf/4cfc6b7f1850590a4634b08bfab308ab.jpg', // Hollow Knight
+  'https://media.rawg.io/media/games/9f4/9f418898f5415668ca47b5f4ab1ecfeb.jpg', // Outer Wilds
+  'https://media.rawg.io/media/games/511/5118aff5091cb3efec399c808f8c598f.jpg', // Red Dead Redemption 2
+  'https://media.rawg.io/media/games/b29/b294fdd866dcdb643e7bab370a552855.jpg', // Elden Ring
+  'https://media.rawg.io/media/games/2ba/2bac0e87cf45e5b508f227d281c9252a.jpg', // Portal 2
+  'https://media.rawg.io/media/games/1f4/1f47a270b8f241e4676b14d39ec620f7.jpg', // Hades
+  'https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10b6bcdbc.jpg', // The Witcher 3
+  'https://media.rawg.io/media/games/052/052f9afc7aaeea3e2c5d46eafa92c64e.jpg', // Return of the Obra Dinn
+];
+
+const BOOK_ART = [
+  '11481354', // Dune
+  '419991',   // Blood Meridian
+  '10618463', // The Left Hand of Darkness
+  '1047334',  // Never Let Me Go
+  '8261367',  // Beloved
+  '10226290', // Piranesi
+  '198120',   // The Road
+  '6714077',  // Cloud Atlas
+  '8345848',  // Wolf Hall
+].map((id) => 'https://covers.openlibrary.org/b/id/' + id + '-M.jpg');
 
 const MUSIC_ART = [
-  'd9ca78a8-e6d1-442c-bad1-4e5f26542111', // Hellfire — black midi
-  '25267682-bdfc-435a-b6a7-89c266f7d0e8', // Absolute Elsewhere — Blood Incantation
+  'd9ca78a8-e6d1-442c-bad1-4e5f26542111', // Hellfire - black midi
+  '25267682-bdfc-435a-b6a7-89c266f7d0e8', // Absolute Elsewhere - Blood Incantation
+  '6e335887-60ba-38f0-95af-fae7774336bf', // In Rainbows - Radiohead
+  'd9103c72-3807-4378-9ce7-b6f3e8fdd547', // To Pimp a Butterfly - Kendrick Lamar
+  'cb76227e-3ac0-3002-9a10-615a5b73cc59', // Loveless - My Bloody Valentine
+  '5cbcdd9f-4b7d-3b3c-b9f2-6b0e75971157', // Sound of Silver - LCD Soundsystem
+  '0da340a0-6ad7-4fc2-a272-6f94393a7831', // Blonde - Frank Ocean
+  'ab570ccb-b06b-3746-8147-4903163ba895', // Madvillainy - Madvillain
+  'aa0b4e86-358e-4c92-aecd-94f5f59233f7', // The Money Store - Death Grips
 ].map(CAA_ART);
+
+// Home takes one or two from each wall, because the page's whole claim is
+// that it holds five kinds of thing. Built from the arrays above rather than
+// repeated, so a cover fixed in one place is fixed everywhere.
+export const HOME_ART = [
+  FILM_ART[2],  // Dune
+  TV_ART[4],    // Severance
+  GAME_ART[0],  // Disco Elysium
+  BOOK_ART[5],  // Piranesi
+  MUSIC_ART[2], // In Rainbows
+  FILM_ART[8],  // Parasite
+  TV_ART[0],    // The Sopranos
+  GAME_ART[2],  // Outer Wilds
+  MUSIC_ART[3], // To Pimp a Butterfly
+];
 
 export const BROWSE_COPY = {
   film: {
@@ -86,6 +131,7 @@ export const BROWSE_COPY = {
     cta: ['Your film vault is waiting.', 'Free forever for personal use. Start logging today.'],
   },
   tv: {
+    art: TV_ART,
     headline: ['Every series, every', 'season', 'accounted', 'for.'],
     sub: 'Track a show to the episode, rate each season on its own, and remember exactly where you stopped.',
     features: [
@@ -96,6 +142,7 @@ export const BROWSE_COPY = {
     cta: ['Your next series is waiting.', 'Free forever for personal use. Start tracking today.'],
   },
   game: {
+    art: GAME_ART,
     headline: ['Every game you', 'own', 'and what it costs', 'today.'],
     sub: 'A backlog that knows its own prices — watched against real historical lows, not launch RRP.',
     features: [
@@ -106,6 +153,7 @@ export const BROWSE_COPY = {
     cta: ['Your backlog is waiting.', 'Free forever for personal use. Start tracking today.'],
   },
   book: {
+    art: BOOK_ART,
     headline: ['Every book you have', 'read', 'and the ones still', 'waiting.'],
     sub: 'Page counts, editions and prices, for the pile you finished and the pile you did not.',
     features: [
@@ -116,7 +164,7 @@ export const BROWSE_COPY = {
     cta: ['Your reading pile is waiting.', 'Free forever for personal use. Start logging today.'],
   },
   album: {
-    artLead: MUSIC_ART,
+    art: MUSIC_ART,
     headline: ['Every album worth', 'returning', 'to, in one', 'shelf.'],
     sub: 'A record collection that does not care which service you happen to be paying for this year.',
     features: [
