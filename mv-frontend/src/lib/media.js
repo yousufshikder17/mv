@@ -26,6 +26,32 @@ export const BROWSE_NAV = [
   { path: 'music',  type: 'album', label: 'Music' },
 ];
 
+// The hero copy for each type page. One entry per type so the same page
+// component can carry five different pitches, and adding a sixth media type
+// is a block here rather than a new file.
+export const BROWSE_COPY = {
+  film: {
+    headline: ['Every film you’ve', 'ever', 'watched, in one', 'vault.'],
+    sub: 'Log what you have seen, what you are part-way through, and what you keep meaning to get to.',
+  },
+  tv: {
+    headline: ['Every series, every', 'season', 'accounted', 'for.'],
+    sub: 'Track a show to the episode, rate each season on its own, and remember where you stopped.',
+  },
+  game: {
+    headline: ['Every game you', 'own', 'and what it costs', 'today.'],
+    sub: 'A backlog that knows its own prices — watched against real historical lows, not launch RRP.',
+  },
+  book: {
+    headline: ['Every book you have', 'read', 'and the ones still', 'waiting.'],
+    sub: 'Page counts, editions and prices, for the pile you finished and the pile you did not.',
+  },
+  album: {
+    headline: ['Every album worth', 'returning', 'to, in one', 'shelf.'],
+    sub: 'A record collection that does not care which service you happen to be paying for this year.',
+  },
+};
+
 // What each type page shows, and where the row honestly comes from. Only TMDB
 // publishes a chart; the rest borrow the nearest real thing their source has.
 export const BROWSE_SOURCE = {

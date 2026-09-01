@@ -1,50 +1,57 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import TmdbCredit from '../components/layout/TmdbCredit.jsx'
 import Discover from '../components/discover/Discover.jsx'
+import { getVariety } from '../services/watchlistService.js'
 import { ClapperIcon } from '../components/ui/Icon.jsx'
 import styles from './LandingPage.module.css'
 
-// Decorative only — nine posters served from TMDB's CDN, hardcoded rather than
-// fetched: a hero that waits on an API call before it paints is slower and can
-// fail, and this is scenery, not data. Attribution lives in <TmdbCredit /> in
-// the footer, which TMDB's terms require wherever their images appear.
-const POSTERS = [
-  { path: '/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg', title: 'Blade Runner 2049' },
-  { path: '/iYypPT4bhqXfq1b6EnmxvRt6b2Y.jpg', title: 'In the Mood for Love' },
-  { path: '/v1tRXZ4JtD2Iv6fjkPvT4GiwslV.jpg', title: 'Dune' },
-  { path: '/602vevIURmpDfzbnv5Ubi6wIkQm.jpg', title: 'Drive' },
-  { path: '/pEzNVQfdzYDzVK0XqxERIw2x2se.jpg', title: 'Arrival' },
-  { path: '/fa0RDkAlCec0STeMNAhPaF89q6U.jpg', title: 'There Will Be Blood' },
-  { path: '/7fn624j5lj3xTme2SgiLCeuedmO.jpg', title: 'Whiplash' },
-  { path: '/eCOtqtfvn7mxGl6nfmq4b1exJRc.jpg', title: 'Her' },
-  { path: '/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg', title: 'Parasite' },
-]
+// Nine covers, three columns.
+const ART = 9
 
 const FEATURES = [
   {
     icon: <ClapperIcon size={26} />,
     title: 'Track Everything',
-    body: 'Log every film you\'ve watched, are watching, or plan to watch. Your complete personal cinema history.',
+    body: 'Films, shows, games, books and albums in one ledger — with the progress that suits each: seasons, episodes, pages, playtime.',
   },
   {
     icon: '★',
     title: 'Rate & Review',
-    body: 'Give each film a score out of 10. Add private notes, thoughts, and tags that only you can see.',
+    body: 'Score anything out of 10, review it at length, and keep private notes nobody else sees.',
   },
   {
     icon: '◎',
-    title: 'Set Goals',
-    body: 'Define watching goals — genres to explore, directors to complete, annual counts to hit. Stay intentional.',
+    title: 'Watch Prices',
+    body: 'Know when something hits a genuine low — measured against its real price history, not a launch price nobody paid.',
   },
 ]
 
 const STEPS = [
   { num: '01', title: 'Create your vault', body: 'Sign up in seconds. No credit card, no noise.' },
-  { num: '02', title: 'Add your films',    body: 'Search your personal DB and add titles with one click.' },
-  { num: '03', title: 'Track your taste',  body: 'Rate, review, set status, and build your film identity.' },
+  { num: '02', title: 'Add anything',      body: 'Search five catalogues at once and add what you find in a click.' },
+  { num: '03', title: 'Track your taste',  body: 'Rate, review, set status, and watch what it costs.' },
 ]
 
 export default function LandingPage() {
+  const [variety, setVariety] = useState([])
+
+  useEffect(() => {
+    let alive = true
+    // Silent: a discovery row that did not load is not worth a toast on a
+    // marketing page, and the hero simply renders without its art.
+    getVariety()
+      .then((res) => { if (alive) setVariety(res.data?.data ?? []) })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [])
+
+  // The art wall is the catalogue itself rather than a hardcoded poster list.
+  // It costs no extra request, it is never stale, and on a page whose whole
+  // claim is "everything in one place" it actually shows five media types
+  // instead of nine films.
+  const art = variety.filter((i) => i.posterUrl).slice(0, ART)
+
   return (
     <main className={styles.page} id="landing-page">
 
@@ -52,15 +59,15 @@ export default function LandingPage() {
       <section className={styles.hero} id="hero">
         <div className={styles.heroGlow} aria-hidden="true" />
         <div className={styles.heroContent}>
-          <p className={styles.eyebrow}>Personal film ledger</p>
+          <p className={styles.eyebrow}>Personal media ledger</p>
           <h1 className={styles.headline}>
-            Every film you've<br />
+            Everything you've<br />
             <em>ever</em> watched,<br />
-            in one <em>vault.</em>
+            played and <em>read.</em>
           </h1>
           <p className={styles.subheadline}>
-            mv is the quiet, beautiful place to log every film,<br className="hide-mobile" />
-            track your goals, and understand your taste.
+            mv is the quiet, beautiful place to log every film, show, game,<br className="hide-mobile" />
+            book and album — and to know what they cost.
           </p>
           <div className={styles.heroCta}>
             <Link to="/register" className="btn-accent" id="hero-cta-register">
@@ -72,7 +79,7 @@ export default function LandingPage() {
           </div>
           {/* Stats strip */}
           <div className={styles.stats}>
-            {[['∞', 'Films to track'],['★ 10', 'Rating scale'],['4', 'Status tiers']].map(([v, l]) => (
+            {[['5', 'Media types'],['★ 10', 'Rating scale'],['∞', 'Things to track']].map(([v, l]) => (
               <div key={l} className={styles.stat}>
                 <span className={styles.statVal}>{v}</span>
                 <span className={styles.statLbl}>{l}</span>
@@ -81,12 +88,12 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Decorative film grid */}
+        {/* Decorative. The grid below is the accessible copy of this. */}
         <div className={styles.heroArt} aria-hidden="true">
-          {POSTERS.map((p, i) => (
-            <div key={p.path} className={styles.artCell} style={{ animationDelay: `${i * .12}s` }}>
+          {art.map((item, i) => (
+            <div key={`${item.type}-${item.externalId}`} className={styles.artCell} style={{ animationDelay: `${i * .12}s` }}>
               <img
-                src={`https://image.tmdb.org/t/p/w342${p.path}`}
+                src={item.posterUrl}
                 alt=""
                 loading={i < 6 ? 'eager' : 'lazy'}
                 decoding="async"
@@ -98,7 +105,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Discover (public, no account) ────────────────────────── */}
-      <Discover />
+      <Discover items={variety} />
 
       {/* ── Features ─────────────────────────────────────────────── */}
       <section className={styles.section} id="features">
@@ -168,7 +175,7 @@ export default function LandingPage() {
       <footer className={styles.footer} id="landing-footer">
         <div className={styles.footerInner}>
           <span className={styles.footerLogo}>◆ <em>mv</em></span>
-          <p className={styles.footerNote}>Personal film ledger — built for cinephiles.</p>
+          <p className={styles.footerNote}>Personal media ledger — films, shows, games, books and music.</p>
           <TmdbCredit />
           {/* Ad slot — SPEC §1: NOT BUILT. Ads would make the project
               commercial under TMDB's terms and trigger the $149/mo tier, on a
