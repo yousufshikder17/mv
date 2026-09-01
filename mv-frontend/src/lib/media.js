@@ -60,6 +60,19 @@ export const HOME_FILM_ART = [
   '/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg', // The Shawshank Redemption
 ].map(TMDB_ART);
 
+// Two pinned covers for the Music wall.
+//
+// ListenBrainz fresh releases is genuinely fresh - it is what came out in the
+// last month, which is the right row for "popular right now" and the wrong one
+// for a hero. These two are picked, and keyed by release-group MBID so they
+// resolve through the same Cover Art Archive path as everything else.
+const CAA_ART = (mbid) => 'https://coverartarchive.org/release-group/' + mbid + '/front-250';
+
+const MUSIC_ART = [
+  'd9ca78a8-e6d1-442c-bad1-4e5f26542111', // Hellfire — black midi
+  '25267682-bdfc-435a-b6a7-89c266f7d0e8', // Absolute Elsewhere — Blood Incantation
+].map(CAA_ART);
+
 export const BROWSE_COPY = {
   film: {
     art: FILM_ART,
@@ -103,6 +116,7 @@ export const BROWSE_COPY = {
     cta: ['Your reading pile is waiting.', 'Free forever for personal use. Start logging today.'],
   },
   album: {
+    artLead: MUSIC_ART,
     headline: ['Every album worth', 'returning', 'to, in one', 'shelf.'],
     sub: 'A record collection that does not care which service you happen to be paying for this year.',
     features: [

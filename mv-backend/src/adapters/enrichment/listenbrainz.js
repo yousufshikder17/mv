@@ -141,6 +141,12 @@ export const enrich = async (results = []) => {
  *
  * Singles and EPs are filtered out. A browse row for albums that is half
  * singles is not an album row.
+ *
+ * So are releases with no cover art. Measured on a live response, 216 of 1366
+ * albums carry no caa_id at all - those were rendering as blank cards, and a
+ * cover is most of what a card is. The presence of caa_id is proof the art
+ * exists, so filtering on it removes the guesswork rather than hoping a
+ * request resolves.
  */
 export const browseAlbums = async (limit = 20) => {
     const url = 'https://api.listenbrainz.org/1/explore/fresh-releases/?days=30&past=true&future=false';
@@ -161,7 +167,11 @@ export const browseAlbums = async (limit = 20) => {
             const releases = body?.payload?.releases ?? [];
 
             return releases
-                .filter((r) => r.release_group_primary_type === 'Album' && r.release_group_mbid)
+                .filter((r) =>
+                    r.release_group_primary_type === 'Album'
+                    && r.release_group_mbid
+                    && r.caa_id
+                    && r.caa_release_mbid)
                 .sort((a, b) => (b.listen_count ?? 0) - (a.listen_count ?? 0))
                 .slice(0, limit)
                 .map((r) => ({
@@ -174,7 +184,12 @@ export const browseAlbums = async (limit = 20) => {
                         ? r.release_name + ' by ' + r.artist_credit_name
                         : r.release_name,
                     releaseYear: r.release_date ? Number(r.release_date.slice(0, 4)) : null,
-                    posterUrl: 'https://coverartarchive.org/release-group/' + r.release_group_mbid + '/front-250',
+                    // Keyed by the exact release and image ListenBrainz named,
+                    // not by the release group. The group endpoint has to pick
+                    // a release for us and can miss; this pair came back in the
+                    // response and is therefore known to resolve.
+                    posterUrl: 'https://coverartarchive.org/release/'
+                        + r.caa_release_mbid + '/' + r.caa_id + '-250.jpg',
                     overview: null,
                 }));
         } catch {

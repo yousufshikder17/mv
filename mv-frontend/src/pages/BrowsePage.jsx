@@ -51,11 +51,13 @@ export default function BrowsePage({ type, label }) {
   }, [label])
 
   const copy = BROWSE_COPY[type]
-  // A curated wall when the page has one, otherwise the feed's own covers.
-  // Films are curated because a hero is a statement of taste and trending is
-  // just whatever came out this month; the rest have no curated set yet and
-  // look better with real covers than with none.
-  const art = copy.art ?? items.filter((i) => i.posterUrl).slice(0, ART).map((i) => i.posterUrl)
+  // Three ways a wall gets filled, in order of how much say we have:
+  //   art      - fully curated, the whole wall (Films)
+  //   artLead  - a few pinned, the live feed behind them (Music)
+  //   neither  - the feed's own covers
+  // A hero is a statement of taste; a feed is whatever came out this month.
+  const feedArt = items.filter((i) => i.posterUrl).map((i) => i.posterUrl)
+  const art = copy.art ?? [...(copy.artLead ?? []), ...feedArt].slice(0, ART)
 
   return (
     <main className={styles.page}>
