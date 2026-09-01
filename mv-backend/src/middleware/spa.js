@@ -60,6 +60,29 @@ export const injectMeta = (html, tags) =>
         .replace(/<meta\s+name="description"[^>]*>/i, '')
         .replace('</head>', `  ${tags}\n  </head>`);
 
+/**
+ * Is this a browser asking for a page, rather than code asking for data?
+ *
+ * Three frontend routes share a path with an API mount - /deals, /lists and
+ * /watchlist are each both a page and a router. Whichever is registered first
+ * wins, so mounting the API first returned JSON to anyone who opened
+ * /lists directly, refreshed on /watchlist, or followed a shared /deals link.
+ *
+ * Invisible in development, where Vite serves pages on another port entirely,
+ * and broken in production, where this process serves both.
+ *
+ * Renaming every API mount to /api would also fix it and is the more usual
+ * shape, but it would rewrite the URL in ~500 tests to solve a problem that is
+ * really about content negotiation. A browser navigating asks for text/html;
+ * axios asks for application/json and never for html.
+ *
+ * Tested for EXPLICITLY rather than with req.accepts(), which returns the
+ * first type offered when a request carries no Accept header at all - so
+ * curl, supertest and anything else terse would have been served the page
+ * instead of the API.
+ */
+const wantsHtml = (req) => String(req.headers.accept ?? '').includes('text/html');
+
 export const mountSpa = (app) => {
     const dist = path.resolve(process.env.FRONTEND_DIST ?? '../mv-frontend/dist');
 
@@ -71,6 +94,7 @@ export const mountSpa = (app) => {
     // untouched shell.
     app.get('/media/:type/:externalId', async (req, res, next) => {
         const { type, externalId } = req.params;
+        if (!wantsHtml(req)) return next();
         if (type !== 'film' && type !== 'tv') return next();
 
         try {
@@ -91,9 +115,11 @@ export const mountSpa = (app) => {
 
     app.use(express.static(dist, { index: false }));
 
-    // Everything else is a client route. Anything under an API prefix has
-    // already been handled above, so this cannot swallow a 404 from them.
-    app.get(/.*/, async (req, res) => {
+    // Everything else a BROWSER asks for is a client route. Anything that
+    // wanted JSON falls through to the API routers and their 404, so this
+    // cannot swallow an API response or mask a genuine missing endpoint.
+    app.get(/.*/, async (req, res, next) => {
+        if (!wantsHtml(req)) return next();
         res.type('html').send(await readFile(path.join(dist, 'index.html'), 'utf8'));
     });
 

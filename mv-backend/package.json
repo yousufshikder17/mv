@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:status": "node scripts/migrate.mjs --status",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "poll": "node src/jobs/dailyPoll.js",

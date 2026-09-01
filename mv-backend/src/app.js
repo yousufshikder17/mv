@@ -109,6 +109,13 @@ export const createApp = () => {
 
     app.use(apiLimiter);
 
+    // BEFORE the API routers, deliberately. /deals, /lists and /watchlist are
+    // each both a page and a router, and whichever registers first wins - so
+    // with the API first, opening /lists in a browser returned 401 JSON
+    // instead of the application. mountSpa only answers requests that asked
+    // for text/html, so API calls still fall through to the routers below.
+    mountSpa(app);
+
     app.use("/movies", movieRoutes);
     app.use("/auth", authRoutes);
     app.use("/watchlist", watchlistRoutes);
@@ -119,11 +126,6 @@ export const createApp = () => {
     app.use("/lists", listRoutes);
     app.use("/social", socialRoutes);
     app.use("/account", accountRoutes);
-
-    // Serves the built frontend when one exists, with per-item meta tags so
-    // shared links preview correctly. No-op in development, where Vite serves
-    // the frontend itself.
-    mountSpa(app);
 
     app.use(notFound);
     app.use(errorHandler);
