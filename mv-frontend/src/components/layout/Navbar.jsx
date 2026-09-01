@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.js'
 import NotificationBell from '../notifications/NotificationBell.jsx'
+import NavSearch from './NavSearch.jsx'
 import styles from './Navbar.module.css'
 
 export default function Navbar({ onThemeToggle, theme }) {
@@ -54,6 +55,9 @@ export default function Navbar({ onThemeToggle, theme }) {
       </div>
 
       <div className={styles.hdrR}>
+        {/* Global search — every media type, no account needed. */}
+        <NavSearch />
+
         {/* Theme toggle */}
         <button
           id="nav-theme-toggle"

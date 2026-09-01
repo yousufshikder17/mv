@@ -15,6 +15,13 @@ export const TYPE_LABEL = {
 };
 
 /** Which statuses each type may use. Albums are never "completed" (SPEC §6). */
+// The type filter, in the order the nav and the search page both use.
+// Empty string is "all" — it maps straight onto the API's optional ?type=.
+export const TYPE_TABS = [
+  ['', 'All'], ['film', 'Films'], ['tv', 'TV'],
+  ['game', 'Games'], ['book', 'Books'], ['album', 'Music'],
+];
+
 export const STATUSES_BY_TYPE = {
   film:  ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'DROPPED', 'REVISITING'],
   tv:    ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'DROPPED', 'REVISITING'],

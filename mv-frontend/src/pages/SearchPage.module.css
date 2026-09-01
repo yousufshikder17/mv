@@ -1,0 +1,33 @@
+.page { max-width: 1200px; margin: 0 auto; padding: 44px 32px 80px; }
+
+.head { margin-bottom: 26px; }
+
+.eyebrow {
+  font-family: var(--ff-mono); font-size: 11px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--c-accent); margin: 0 0 12px;
+}
+
+.h1 {
+  font-family: var(--ff-display); font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.05; letter-spacing: -.03em; font-weight: 400; margin: 0;
+}
+.h1 em { font-style: italic; color: var(--c-accent); }
+
+.tabs { display: flex; gap: 2px; flex-wrap: wrap; margin-bottom: 24px; }
+
+.tab {
+  padding: 8px 16px; font-size: 13.5px; border-radius: 999px;
+  background: transparent; border: 0; color: var(--c-muted); cursor: pointer;
+  transition: all .15s;
+}
+.tab:hover { color: var(--c-fg); background: var(--c-faint); }
+.tabOn { color: var(--c-fg); background: var(--c-faint); }
+
+.count {
+  font-family: var(--ff-mono); font-size: 10.5px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--c-muted); margin: 0 0 18px;
+}
+
+.note { font-size: 15px; line-height: 1.6; color: var(--c-muted); margin: 8px 0 0; max-width: 55ch; }
+
+@media (max-width: 640px) { .page { padding: 32px 18px 64px; } }

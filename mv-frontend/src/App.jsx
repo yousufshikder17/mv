@@ -6,6 +6,7 @@ import Toast          from './components/ui/Toast.jsx'
 import LandingPage    from './pages/LandingPage.jsx'
 import ItemPage       from './pages/ItemPage.jsx'
 import DealsPage      from './pages/DealsPage.jsx'
+import SearchPage     from './pages/SearchPage.jsx'
 import LoginPage      from './pages/LoginPage.jsx'
 import RegisterPage   from './pages/RegisterPage.jsx'
 import WatchlistPage  from './pages/WatchlistPage.jsx'
@@ -41,6 +42,9 @@ export default function App() {
         {/* Public item page - no ProtectedRoute. Reading is free; keeping
             needs an account (M3). */}
         <Route path="/media/:type/:externalId" element={<ItemPage showToast={showToast} />} />
+        {/* Public. The query lives in the URL so a search can be shared,
+            bookmarked and reached with the back button. */}
+        <Route path="/search" element={<SearchPage />} />
         {/* Public. A deal is a link - browsing needs no account, and only
             voting writes a row (M7). */}
         <Route path="/deals" element={<DealsPage showToast={showToast} />} />

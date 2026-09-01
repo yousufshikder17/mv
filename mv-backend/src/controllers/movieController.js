@@ -92,6 +92,65 @@ export const trending = async (req, res) => {
 };
 
 /**
+ * GET /movies/variety - a mixed strip across every media type we hold.
+ *
+ * Drawn from our own catalogue rather than any provider: TMDB is the only
+ * source with a trending feed, so a "what else is here" row built from
+ * providers would be films again wearing a different hat.
+ *
+ * Featured rows first, then whatever arrived most recently. Round-robined by
+ * type so one busy category cannot fill the strip - variety is the entire
+ * point of this row, and an ordering that happens to return twelve games is
+ * not it.
+ *
+ * This is the honest placeholder for a recommender. It cannot be personal
+ * until there are users to learn from, and inventing taste for an audience of
+ * one would be a worse lie than showing the catalogue.
+ */
+export const variety = async (req, res) => {
+    const results = await cached('variety:mixed', 10 * 60 * 1000, async () => {
+        const rows = await db
+            .select({
+                type: mediaItems.type,
+                source: mediaItems.source,
+                externalId: mediaItems.externalId,
+                title: mediaItems.title,
+                releaseYear: mediaItems.releaseYear,
+                posterUrl: mediaItems.posterUrl,
+                featured: mediaItems.featured,
+                createdAt: mediaItems.createdAt,
+            })
+            .from(mediaItems)
+            .orderBy(desc(mediaItems.featured), desc(mediaItems.createdAt))
+            .limit(120);
+
+        const queues = new Map();
+        for (const row of rows) {
+            if (!queues.has(row.type)) queues.set(row.type, []);
+            queues.get(row.type).push(row);
+        }
+
+        // One pass per round, one item per type, until we have enough or the
+        // queues run dry.
+        const mixed = [];
+        while (mixed.length < 12) {
+            let took = false;
+            for (const queue of queues.values()) {
+                const next = queue.shift();
+                if (!next) continue;
+                mixed.push(next);
+                took = true;
+                if (mixed.length >= 12) break;
+            }
+            if (!took) break;
+        }
+        return mixed;
+    });
+
+    return res.status(200).json({ status: 'Success', results: results.length, data: results });
+};
+
+/**
  * POST /movies/import { tmdbId, type }
  * Resolves a source id to a row in our shared catalogue, creating it on first
  * sight and refreshing it when stale. Returns the row so the client can then

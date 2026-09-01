@@ -7,6 +7,7 @@ import { publicLimiter } from '../middleware/rateLimiter.js';
 import {
     searchTmdb,
     trending,
+    variety,
     publicDetails,
     itemPrices,
     importFromTmdb,
@@ -31,6 +32,7 @@ const router = express.Router();
 // Declared before "/:id", or Express matches "search" and "details" as uuids.
 router.get("/search", publicLimiter, catchAsync(searchTmdb));
 router.get("/trending", publicLimiter, catchAsync(trending));
+router.get("/variety", publicLimiter, catchAsync(variety));
 router.get("/details/:type/:externalId", publicLimiter, catchAsync(publicDetails));
 router.get("/prices/:type/:externalId", publicLimiter, catchAsync(itemPrices));
 

@@ -15,6 +15,9 @@ export const getSeasonRatings = (itemId)             => api.get(`/watchlist/${it
 export const setSeasonRating  = (itemId, n, data)    => api.put(`/watchlist/${itemId}/seasons/${n}`, data)
 export const getSeasonEpisodes = (mediaId, n)        => api.get(`/movies/${mediaId}/seasons/${n}`)
 export const getTrending     = ()           => api.get('/movies/trending')
+// A mixed strip across every type we hold - our own catalogue, since TMDB is
+// the only source with a trending feed.
+export const getVariety      = ()           => api.get('/movies/variety')
 // Public - no account needed. Reads straight from TMDB and creates no
 // catalogue row, so browsing does not cache content we then have to expire.
 export const getPublicDetails = (type, externalId) => api.get(`/movies/details/${type}/${externalId}`)

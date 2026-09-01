@@ -38,3 +38,8 @@
   .hdrNav { display: none; }
   .userGreeting { display: none; }
 }
+
+/* The search sits with the account controls on the right, so that group
+   takes the slack while the logo and nav keep their natural width. */
+.hdrL { flex: 0 0 auto; }
+.hdrR { flex: 1 1 auto; justify-content: flex-end; min-width: 0; }

@@ -1,0 +1,24 @@
+.grid {
+  display: grid; gap: 26px 20px;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(140px, 15vw, 190px), 1fr));
+}
+
+.card { text-decoration: none; color: inherit; display: block; transition: transform .25s cubic-bezier(.3,.7,.4,1); }
+.card:hover { transform: translateY(-4px); }
+
+.cardTitle {
+  font-family: var(--ff-display); font-size: 15px; font-weight: 500;
+  margin: 10px 0 0; line-height: 1.25;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.cardSub { font-size: 12.5px; color: var(--c-muted); margin: 3px 0 0; }
+
+.badge {
+  font-family: var(--ff-mono); font-size: 10px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--c-accent);
+}
+
+/* Attribution sits with the results it describes, not in a page footer -
+   RAWG requires the link on every page their data appears on. */
+.credit { margin-top: 28px; }

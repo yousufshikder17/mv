@@ -75,7 +75,10 @@ export const registerUser = async (overrides = {}) => {
 
 /** Inserts a catalogue row directly — the catalogue is not what these tests exercise. */
 export const createMovie = async (overrides = {}) => {
-    counter += 1;
+    // Captured before the await, not read after it. Reading `counter` on the
+    // far side of an await gives every concurrent call the same number, and
+    // Promise.all(...createMovie()) then collides on (source, type, externalId).
+    const n = (counter += 1);
     const { mediaItems } = await import('../../src/db/schema.js');
     // tmdbId is accepted for readability at call sites and mapped to the
     // generic (source, externalId) key the schema now uses.
@@ -87,7 +90,7 @@ export const createMovie = async (overrides = {}) => {
             releaseYear: 2020,
             type: 'film',
             source: 'tmdb',
-            externalId: tmdbId === null ? null : String(tmdbId ?? 900000 + counter),
+            externalId: tmdbId === null ? null : String(tmdbId ?? 900000 + n),
             ...rest,
         })
         .returning();
