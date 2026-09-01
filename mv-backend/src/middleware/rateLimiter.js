@@ -48,5 +48,41 @@ const publicLimiter = rateLimit({
     message: { status: 429, error: "Too many requests. Please slow down." },
 });
 
-export { publicLimiter };
+/**
+ * Failed login attempts.
+ *
+ * The global limiter allows 100 requests per 15 minutes, which is fine for
+ * browsing and absurd for a password field: it is 100 guesses a quarter of an
+ * hour, forever, against every account on the site.
+ *
+ * skipSuccessfulRequests is the important flag. Only FAILURES count, so a
+ * person signing in normally - or several people behind one office NAT - never
+ * meets this, while someone guessing meets it on the tenth try.
+ */
+const loginLimiter = rateLimit({
+    windowMs: intFromEnv('AUTH_RATE_LIMIT_WINDOW_MINUTES', 15) * 60 * 1000,
+    max: intFromEnv('AUTH_RATE_LIMIT_MAX_REQUESTS', 10),
+    skipSuccessfulRequests: true,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { status: 429, error: "Too many sign-in attempts. Try again shortly." },
+});
+
+/**
+ * Account creation.
+ *
+ * Counts every request, unlike the login limiter: here it is the SUCCESSES
+ * that are the abuse. Registration is also the one endpoint that can make the
+ * mailer send to an address the requester chose, so an unbounded one is a way
+ * to have this server post mail at strangers.
+ */
+const registerLimiter = rateLimit({
+    windowMs: intFromEnv('REGISTER_RATE_LIMIT_WINDOW_MINUTES', 60) * 60 * 1000,
+    max: intFromEnv('REGISTER_RATE_LIMIT_MAX_REQUESTS', 5),
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { status: 429, error: "Too many accounts created from here. Try again later." },
+});
+
+export { publicLimiter, loginLimiter, registerLimiter };
 export default apiLimiter;

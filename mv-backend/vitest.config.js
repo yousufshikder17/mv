@@ -25,6 +25,13 @@ export default defineConfig({
             // public routes rather than merely defined.
             PUBLIC_RATE_LIMIT_MAX_REQUESTS: '1000',
             PUBLIC_RATE_LIMIT_WINDOW_MINUTES: '5',
+            // The suite registers a user per test and deliberately fails
+            // logins, so both auth limiters need headroom here. Distinct
+            // numbers again, so a test can prove which one it hit.
+            AUTH_RATE_LIMIT_MAX_REQUESTS: '5000',
+            AUTH_RATE_LIMIT_WINDOW_MINUTES: '15',
+            REGISTER_RATE_LIMIT_MAX_REQUESTS: '5000',
+            REGISTER_RATE_LIMIT_WINDOW_MINUTES: '60',
         },
         // pglite compiles a WASM Postgres on first boot.
         testTimeout: 30000,
