@@ -61,7 +61,7 @@
 .searchInput {
   padding: 8px 12px 8px 32px; border-radius: 999px;
   border: 1px solid var(--c-line); background: var(--c-faint); color: var(--c-fg);
-  font: inherit; font-size: 13.5px; outline: none; width: 220px;
+  font: inherit; font-size: 13.5px; width: 220px;
   transition: border-color .15s;
 }
 .searchInput:focus { border-color: var(--c-accent); }
@@ -81,7 +81,7 @@
 .densitySelect {
   padding: 7px 10px; border-radius: 8px;
   border: 1px solid var(--c-line); background: var(--c-faint); color: var(--c-fg);
-  font: inherit; font-size: 12.5px; cursor: pointer; outline: none;
+  font: inherit; font-size: 12.5px; cursor: pointer;
 }
 
 /* View toggle */

@@ -103,7 +103,7 @@
   line-height: 1.6;
   resize: vertical;
 }
-.textarea:focus { outline: none; border-color: var(--c-accent); }
+.textarea:focus { border-color: var(--c-accent); }
 
 .formRow {
   display: flex;

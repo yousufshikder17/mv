@@ -165,7 +165,7 @@
   font: inherit;
   font-size: 14px;
 }
-.input:focus { outline: none; border-color: var(--c-accent); }
+.input:focus { border-color: var(--c-accent); }
 
 /* Destructive actions read differently from the rest. */
 .dangerRow { border-top-color: rgba(224, 92, 92, .25); }

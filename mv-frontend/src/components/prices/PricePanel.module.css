@@ -52,7 +52,7 @@
 .alertInput input {
   width: 120px; padding: 9px 12px; border-radius: 8px;
   border: 1px solid var(--c-line); background: var(--c-bg); color: var(--c-fg);
-  font: inherit; font-size: 14px; outline: none; font-variant-numeric: tabular-nums;
+  font: inherit; font-size: 14px; font-variant-numeric: tabular-nums;
 }
 .alertInput input:focus { border-color: var(--c-accent); }
 

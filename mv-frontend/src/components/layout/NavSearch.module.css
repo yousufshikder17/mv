@@ -13,7 +13,6 @@
   color: var(--c-fg);
   font: inherit;
   font-size: 13.5px;
-  outline: none;
   transition: border-color .15s;
 }
 .input:focus { border-color: var(--c-accent); }

@@ -38,7 +38,7 @@
   border: 1px solid var(--c-line); border-radius: var(--radius-sm);
   background: var(--c-bg); color: var(--c-fg); font: inherit; font-size: 13px;
 }
-.input:focus { outline: none; border-color: var(--c-accent); }
+.input:focus { border-color: var(--c-accent); }
 
 .newBtn {
   padding: 7px 12px;

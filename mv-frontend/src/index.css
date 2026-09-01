@@ -18,6 +18,8 @@ html, body { margin: 0; padding: 0; height: 100%; }
   --c-surface: #161719;
   --c-error:   #e05c5c;
   --c-success: #5aad7a;
+  /* Focus ring. The accent, at roughly 8:1 against this background. */
+  --c-focus:   #d4a853;
 
   --ff-display: 'Fraunces', Georgia, serif;
   --ff-body:    'Inter Tight', system-ui, sans-serif;
@@ -43,6 +45,31 @@ html, body { margin: 0; padding: 0; height: 100%; }
   --c-line:    rgba(17, 16, 19, 0.10);
   --c-faint:   rgba(17, 16, 19, 0.06);
   --c-surface: #ffffff;
+  /* The accent is only ~1.9:1 on cream, which is not a visible indicator.
+     A darkened gold keeps the palette and clears 3:1 comfortably. */
+  --c-focus:   #7a5c14;
+}
+
+/* ── Focus ─────────────────────────────────────────────────────────
+   WCAG 2.4.7 (Focus Visible, AA). Fourteen stylesheets set `outline: none`
+   on inputs and selects and replaced it with a border-colour change, which
+   left a keyboard user with no reliable way to see where they were - a
+   1px tint on a control that already has a border is not an indicator.
+
+   :focus-visible rather than :focus, so the ring appears for keyboard and
+   assistive-tech focus and not on a mouse click. That is what those rules
+   were really trying to suppress, and the browser now decides it properly.
+
+   Defined once here rather than per component: a focus style that has to be
+   remembered in every new stylesheet is one that will be forgotten. */
+:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+/* Belt and braces for browsers that still paint a ring on mouse focus. */
+:focus:not(:focus-visible) {
+  outline: none;
 }
 
 body {
@@ -166,7 +193,7 @@ input, textarea { font-family: inherit; }
 .form-input {
   padding: 11px 14px; border-radius: var(--radius-md);
   border: 1px solid var(--c-line); background: var(--c-faint); color: var(--c-fg);
-  font-size: 14px; outline: none;
+  font-size: 14px;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 .form-input:focus {

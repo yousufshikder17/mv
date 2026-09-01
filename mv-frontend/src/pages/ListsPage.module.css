@@ -22,7 +22,7 @@
   border: 1px solid var(--c-line); border-radius: var(--radius-sm);
   background: var(--c-bg); color: var(--c-fg); font: inherit; font-size: 14px;
 }
-.input:focus { outline: none; border-color: var(--c-accent); }
+.input:focus { border-color: var(--c-accent); }
 
 .note { font-size: 15px; line-height: 1.6; color: var(--c-muted); margin: 0; max-width: 55ch; }
 .link { color: var(--c-accent); }
