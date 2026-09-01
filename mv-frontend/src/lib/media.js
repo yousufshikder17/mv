@@ -116,24 +116,33 @@ const MUSIC_ART = [
 const RAWG_ART = (path) => 'https://media.rawg.io/media/games/' + path;
 const OL_ART = (id) => 'https://covers.openlibrary.org/b/id/' + id + '-M.jpg';
 
+// Order matters: .cell:nth-child(2) and (6) are the two cells the stylesheet
+// leaves in full colour, everything else is desaturated and darkened. The two
+// most colourful covers sit in those slots on purpose - illustration and a
+// gradient sleeve survive that treatment, a pale group photo does not.
 export const HOME_ART = [
   TMDB_ART('/lxM6kqilAdpdhqUl2biYp5frUxE.jpg'),          // Jaws
-  TMDB_ART('/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg'),          // Game of Thrones
+  TMDB_ART('/qwi3p6PzKfQZ4YXBzv3CP5pO2dE.jpg'),          // Gravity Falls        <- colour cell
   RAWG_ART('da1/da1b267764d77221f07a4386b6548e5a.jpg'),  // Dark Souls III
   OL_ART('15155833'),                                    // Harry Potter and the Philosopher's Stone
-  CAA_ART('08aa7a6c-3e43-4459-87b2-e47faf3a088a'),       // Currents - Tame Impala
+  TMDB_ART('/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg'),          // Game of Thrones
+  CAA_ART('08aa7a6c-3e43-4459-87b2-e47faf3a088a'),       // Currents - Tame Impala <- colour cell
   TMDB_ART('/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg'),          // The Shawshank Redemption
-  TMDB_ART('/uOOtwVbSr4QDjAGIifLDwpb2Pdl.jpg'),          // Stranger Things
   RAWG_ART('8cd/8cd179c85bd3de8f79bef245b15075fb.jpg'),  // Machinarium
   RAWG_ART('47b/47b50d880be8453bf9cda6e5c007bc26.jpg'),  // DOOM (1993)
 ];
 
 // Swaps that were considered and are one line each, kept here so the choice
 // is visible rather than forgotten:
-//   Machinarium  <-> ICO                RAWG_ART('3ef/3ef0dc5bda761da51de4dcb170dcf32a.jpg')
-//   Currents     <-> Dark Side of the Moon
-//                    CAA_ART('f5093c06-23e3-404f-aeaa-40f72885ee3a')
-//   The Hobbit   OL_ART('14627509') - dropped to make room for a third game
+//   Gravity Falls <-> The Office (US, 2005)
+//                     TMDB_ART('/7DJKHzAi83BmQrWLrYYOqcoKfhR.jpg')
+//                     Rejected on the art, not the show: five people against
+//                     white paper on a pale ground goes to mud once the wall
+//                     desaturates and darkens it.
+//   Machinarium   <-> ICO   RAWG_ART('3ef/3ef0dc5bda761da51de4dcb170dcf32a.jpg')
+//   Currents      <-> Dark Side of the Moon
+//                     CAA_ART('f5093c06-23e3-404f-aeaa-40f72885ee3a')
+//   The Hobbit        OL_ART('14627509') - dropped to make room for a third game
 
 export const BROWSE_COPY = {
   film: {
