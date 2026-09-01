@@ -25,9 +25,27 @@ $settings = New-ScheduledTaskSettingsSet `
              -DontStopIfGoingOnBatteries `
              -ExecutionTimeLimit (New-TimeSpan -Minutes 20)
 
+# S4U: run whether or not anyone is logged on, without storing a password.
+# This is also what keeps the console window off the screen - see below.
+$principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" `
+             -LogonType S4U -RunLevel Limited
+
 Register-ScheduledTask -TaskName "mv-daily-poll" -Description "Media Vault price poll" `
-  -Action $action -Trigger $trigger -Settings $settings
+  -Action $action -Trigger $trigger -Settings $settings -Principal $principal
 ```
+
+### No console window
+
+Registered without a principal, the task runs **interactively**: cmd.exe opens a
+console in your session and it stays there for the ~1 minute the poll takes,
+every morning.
+
+`-LogonType S4U` runs it in a non-interactive session instead, so nothing
+appears on screen. It needs no stored password, unlike the equivalent
+"Run whether user is logged on or not" checkbox in the Task Scheduler UI.
+
+Nothing is hidden that you cannot see: everything the run printed is in
+`logs/poll.log`, which is the point of the wrapper.
 
 ### The settings that matter
 
