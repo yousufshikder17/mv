@@ -125,11 +125,13 @@ const OL_ART = (id, size = 'M') =>
 // group photo does not.
 //
 // The wall is also masked: it fades out below 55% of its height and past 70%
-// of its width, so the nine cells are not equally visible. Reading as a
-// 3-wide grid, the bottom-right corner is faded twice over and the top-left
-// barely at all. Gatsby sits bottom-LEFT rather than bottom-right for that
-// reason - an edge position, but the one where the best cover on the wall can
-// still be seen.
+// of its width, so the nine cells are not equally visible. Reading as a 3-wide
+// grid, the top-left is barely touched and the bottom-right is faded by both
+// gradients at once.
+//
+// Gatsby sits in that bottom-right corner by choice. It is the most faded cell
+// on the wall, so the cover reads as a suggestion rather than a statement -
+// which is the intent. Do not "fix" this by moving it inward.
 export const HOME_ART = [
   TMDB_ART('/lxM6kqilAdpdhqUl2biYp5frUxE.jpg'),          // Jaws
   TMDB_ART('/qwi3p6PzKfQZ4YXBzv3CP5pO2dE.jpg'),          // Gravity Falls        <- colour cell
@@ -137,9 +139,11 @@ export const HOME_ART = [
   TMDB_ART('/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg'),          // The Shawshank Redemption
   TMDB_ART('/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg'),          // Game of Thrones
   CAA_ART('08aa7a6c-3e43-4459-87b2-e47faf3a088a'),       // Currents - Tame Impala <- colour cell
-  OL_ART('14314120', 'L'),                               // The Great Gatsby - Cugat's Celestial Eyes
-  RAWG_ART('8cd/8cd179c85bd3de8f79bef245b15075fb.jpg'),  // Machinarium
   TMDB_ART('/vfrQk5IPloGg1v9Rzbh2Eg3VGyM.jpg'),          // Alien (1979)
+  RAWG_ART('8cd/8cd179c85bd3de8f79bef245b15075fb.jpg'),  // Machinarium
+  // Photographed jacket, not a flat scan: a sliver of the book's spine
+  // shows down the left edge. A small zoom crops it out.
+  { src: OL_ART('14314120', 'L'), zoom: 1.1 },           // The Great Gatsby - Cugat's Celestial Eyes
 ];
 
 // Book covers are chosen by cover id, after looking at the image. Searching
