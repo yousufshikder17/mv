@@ -141,9 +141,11 @@ export const HOME_ART = [
   CAA_ART('08aa7a6c-3e43-4459-87b2-e47faf3a088a'),       // Currents - Tame Impala <- colour cell
   TMDB_ART('/vfrQk5IPloGg1v9Rzbh2Eg3VGyM.jpg'),          // Alien (1979)
   RAWG_ART('8cd/8cd179c85bd3de8f79bef245b15075fb.jpg'),  // Machinarium
-  // Photographed jacket, not a flat scan: a sliver of the book's spine
-  // shows down the left edge. A small zoom crops it out.
-  { src: OL_ART('14314120', 'L'), zoom: 1.1 },           // The Great Gatsby - Cugat's Celestial Eyes
+  // Photographed jacket rather than a flat scan, so a thin light line of the
+  // book's edge runs along the top. object-fit already trims 2.8% a side here
+  // (the scan is 0.706 wide against a 0.667 cell), so this only has to clear
+  // the remainder: 1.05 removes the line, and 1.1 was eating into the title.
+  { src: OL_ART('14314120', 'L'), zoom: 1.05 },          // The Great Gatsby - Cugat's Celestial Eyes
 ];
 
 // Book covers are chosen by cover id, after looking at the image. Searching
