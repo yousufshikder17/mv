@@ -107,14 +107,24 @@ export const createApp = () => {
     // sized for images.
     app.use("/covers", coverRoutes);
 
-    app.use(apiLimiter);
-
-    // BEFORE the API routers, deliberately. /deals, /lists and /watchlist are
-    // each both a page and a router, and whichever registers first wins - so
-    // with the API first, opening /lists in a browser returned 401 JSON
-    // instead of the application. mountSpa only answers requests that asked
-    // for text/html, so API calls still fall through to the routers below.
+    // Before the API limiter as well as before the routers, and both for
+    // reasons.
+    //
+    // Before the ROUTERS because /deals, /lists and /watchlist are each both a
+    // page and a router, and whichever registers first wins - with the API
+    // first, opening /lists in a browser returned 401 JSON instead of the
+    // application. mountSpa answers only requests that asked for text/html, so
+    // API calls still fall through to the routers below.
+    //
+    // Before the LIMITER because a page view is not an API call. Serving
+    // index.html from the same budget meant browsing spent it: 100 requests
+    // per fifteen minutes covers a person clicking around, and does not cover
+    // an office or a mobile carrier behind one address. The failure was ugly
+    // too - a rate-limited navigation returns raw JSON where the application
+    // should be.
     mountSpa(app);
+
+    app.use(apiLimiter);
 
     app.use("/movies", movieRoutes);
     app.use("/auth", authRoutes);
