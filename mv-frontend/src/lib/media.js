@@ -32,23 +32,53 @@ export const BROWSE_NAV = [
 export const BROWSE_COPY = {
   film: {
     headline: ['Every film you’ve', 'ever', 'watched, in one', 'vault.'],
-    sub: 'Log what you have seen, what you are part-way through, and what you keep meaning to get to.',
+    sub: 'Log what you have seen, what you gave up on, and what you keep meaning to get to.',
+    features: [
+      ['Track Everything', 'Watched, watching, abandoned, or queued — and rewatches count as their own status rather than overwriting the first time.'],
+      ['Rate & Review', 'Score out of 10 with decimals, review at length, flag spoilers, and keep private notes nobody else sees.'],
+      ['Know what you are getting', 'Runtime, director, cast and the original title — because a film is not only its English name.'],
+    ],
+    cta: ['Your film vault is waiting.', 'Free forever for personal use. Start logging today.'],
   },
   tv: {
     headline: ['Every series, every', 'season', 'accounted', 'for.'],
-    sub: 'Track a show to the episode, rate each season on its own, and remember where you stopped.',
+    sub: 'Track a show to the episode, rate each season on its own, and remember exactly where you stopped.',
+    features: [
+      ['Season by season', 'Rate each season separately. A show that fell apart in series four should not average out to "fine".'],
+      ['Down to the episode', 'Progress is stored as season and episode, so picking a show back up after a year takes no detective work.'],
+      ['Never a stale count', 'Returning series refresh every three days rather than monthly — mid-season, last month’s episode count is useless.'],
+    ],
+    cta: ['Your next series is waiting.', 'Free forever for personal use. Start tracking today.'],
   },
   game: {
     headline: ['Every game you', 'own', 'and what it costs', 'today.'],
     sub: 'A backlog that knows its own prices — watched against real historical lows, not launch RRP.',
+    features: [
+      ['Prices with history', 'An alert fires when something is genuinely cheap, measured against its all-time low across dozens of stores.'],
+      ['Playtime, not page count', 'Progress in hours, plus which platform you actually own it on — a different fact from what it was released on.'],
+      ['Rate & Review', 'Score out of 10, review at length, and see what other people made of it.'],
+    ],
+    cta: ['Your backlog is waiting.', 'Free forever for personal use. Start tracking today.'],
   },
   book: {
     headline: ['Every book you have', 'read', 'and the ones still', 'waiting.'],
     sub: 'Page counts, editions and prices, for the pile you finished and the pile you did not.',
+    features: [
+      ['Reading, not watching', 'Progress in pages, with the status vocabulary a book actually needs — reading, reread, abandoned.'],
+      ['Prices worth waiting for', 'Ebook prices are tracked daily, so a long-term drop is visible rather than something you happen to catch.'],
+      ['Editions that differ', 'Page counts and covers vary by edition. The one you read is the one recorded.'],
+    ],
+    cta: ['Your reading pile is waiting.', 'Free forever for personal use. Start logging today.'],
   },
   album: {
     headline: ['Every album worth', 'returning', 'to, in one', 'shelf.'],
     sub: 'A record collection that does not care which service you happen to be paying for this year.',
+    features: [
+      ['Collected, not consumed', 'An album is not "completed" — you listen to it or you own it, and the statuses say so.'],
+      ['Open data underneath', 'Built on MusicBrainz and ListenBrainz, so your collection is not hostage to one streaming platform’s catalogue.'],
+      ['Rate & Review', 'Score out of 10, review at length, and keep the notes that explain why.'],
+    ],
+    cta: ['Your shelf is waiting.', 'Free forever for personal use. Start collecting today.'],
   },
 };
 

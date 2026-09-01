@@ -1,0 +1,105 @@
+.hero {
+  position: relative; overflow: hidden;
+  min-height: 78vh;
+  display: grid; grid-template-columns: 1fr 1fr; align-items: center;
+  padding: 80px 88px 80px 64px; gap: 64px;
+  max-width: 1480px; margin: 0 auto;
+}
+
+.glow {
+  position: absolute; top: -20%; left: 30%;
+  width: 700px; height: 700px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(212,168,83,.18) 0%, transparent 70%);
+  pointer-events: none;
+  animation: glow-pulse 6s ease-in-out infinite;
+}
+@keyframes glow-pulse {
+  0%, 100% { transform: scale(1);   opacity: .8; }
+  50%      { transform: scale(1.1); opacity: 1;  }
+}
+@media (prefers-reduced-motion: reduce) { .glow { animation: none; } }
+
+.content { position: relative; z-index: 1; }
+
+.eyebrow {
+  font-family: var(--ff-mono); font-size: 11px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--c-muted); margin: 0 0 22px;
+}
+
+.headline {
+  font-family: var(--ff-display);
+  font-size: clamp(42px, 6vw, 82px);
+  line-height: .96; letter-spacing: -.04em; font-weight: 400;
+  margin: 0 0 28px; text-wrap: balance;
+}
+.headline em { font-style: italic; color: var(--c-accent); }
+
+.sub {
+  font-size: 17px; line-height: 1.6; color: var(--c-muted);
+  max-width: 440px; margin: 0 0 36px;
+}
+
+.actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.stats { display: flex; gap: 36px; margin-top: 52px; }
+.stat { display: flex; flex-direction: column; gap: 5px; }
+.statVal {
+  font-family: var(--ff-display); font-size: 28px; line-height: 1;
+  letter-spacing: -.02em; font-weight: 400;
+}
+.statLbl {
+  font-family: var(--ff-mono); font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--c-muted);
+}
+
+/* Art wall — built from live covers, so it can never point at something
+   delisted and it always matches the page it sits on. */
+.art {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 14px; position: relative; z-index: 1;
+  /* Reads as a wall continuing past the frame rather than nine cropped boxes.
+     Bottom fade also hides the row the viewport cuts off. */
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 0 55%, transparent 100%),
+    linear-gradient(to right, #000 0 70%, transparent 100%);
+  -webkit-mask-composite: source-in;
+          mask-image:
+    linear-gradient(to bottom, #000 0 55%, transparent 100%),
+    linear-gradient(to right, #000 0 70%, transparent 100%);
+          mask-composite: intersect;
+}
+
+.cell {
+  aspect-ratio: 2/3; border-radius: 10px; overflow: hidden;
+  background: var(--c-faint); border: 1px solid var(--c-line);
+  animation: cell-fade 4s ease-in-out infinite alternate;
+}
+.cell img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  /* The headline is the hero. Covers at full saturation fight the
+     cream-and-gold palette and steal the eye, so they sit well back. */
+  filter: grayscale(.45) brightness(.5) contrast(1.05);
+}
+/* Column offsets big enough to read as intent, not as misalignment. */
+.cell:nth-child(3n+2) { transform: translateY(72px); }
+.cell:nth-child(3n)   { transform: translateY(34px); }
+/* Two accents carry colour so the wall isn't uniformly grey. */
+.cell:nth-child(2) img,
+.cell:nth-child(6) img { filter: grayscale(0) brightness(.72) contrast(1.05); }
+
+@keyframes cell-fade {
+  from { opacity: .55; }
+  to   { opacity: .9;  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cell { animation: none; opacity: .8; }
+}
+
+@media (max-width: 960px) {
+  .hero { grid-template-columns: 1fr; padding: 60px 32px; min-height: auto; }
+  .art { display: none; }
+}
+@media (max-width: 640px) {
+  .hero { padding: 44px 18px; gap: 32px; }
+  .stats { gap: 24px; margin-top: 40px; }
+}

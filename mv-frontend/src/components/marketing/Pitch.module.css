@@ -1,0 +1,109 @@
+/* ── Sections ─────────────────────────────────────────────────── */
+.section {
+  padding: 96px 32px;
+  border-top: 1px solid var(--c-line);
+}
+.inner { max-width: 1100px; margin: 0 auto; }
+
+.eyebrow {
+  font-family: var(--ff-mono); font-size: 11px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--c-accent); margin: 0 0 14px;
+}
+.title {
+  font-family: var(--ff-display);
+  font-size: clamp(32px, 4vw, 54px);
+  line-height: 1.05; letter-spacing: -.03em; font-weight: 400;
+  margin: 0 0 56px; text-wrap: balance;
+}
+
+/* Features */
+.featureGrid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+}
+.featureCard {
+  padding: 30px; border: 1px solid var(--c-line); border-radius: 14px;
+  background: var(--c-faint);
+  transition: border-color .2s, transform .25s cubic-bezier(.3,.7,.4,1);
+}
+.featureCard:hover { border-color: var(--c-accent); transform: translateY(-4px); }
+
+.featureIcon {
+  font-size: 28px; display: block; margin-bottom: 16px;
+  /* Matches the cap-height the ★ and ◎ text glyphs render at, so the drawn
+     clapperboard lines up with them rather than sitting proud. */
+  line-height: 1;
+}
+.featureIcon svg { width: 26px; height: 26px; display: block; }
+.featureTitle {
+  font-family: var(--ff-display); font-size: 20px; font-weight: 500;
+  letter-spacing: -.02em; margin: 0 0 10px;
+}
+.featureBody { font-size: 14.5px; line-height: 1.6; color: var(--c-muted); margin: 0; }
+
+/* How it works */
+.howSection { background: var(--c-faint); }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+.step { display: flex; flex-direction: column; gap: 12px; }
+.stepNum {
+  font-family: var(--ff-mono); font-size: 13px; color: var(--c-accent);
+  letter-spacing: .1em;
+}
+.stepTitle {
+  font-family: var(--ff-display); font-size: 22px; font-weight: 500;
+  letter-spacing: -.02em; margin: 0;
+}
+.stepBody { font-size: 14.5px; line-height: 1.6; color: var(--c-muted); margin: 0; }
+
+/* CTA Banner */
+.ctaBanner {
+  padding: 100px 32px;
+  background: linear-gradient(135deg, rgba(212,168,83,.12) 0%, transparent 60%);
+  border-top: 1px solid var(--c-line); text-align: center;
+}
+.ctaInner { max-width: 680px; margin: 0 auto; }
+.ctaTitle {
+  font-family: var(--ff-display);
+  font-size: clamp(34px, 5vw, 62px);
+  line-height: 1.02; letter-spacing: -.035em; font-weight: 400;
+  margin: 0 0 16px;
+}
+.ctaBody { font-size: 16px; color: var(--c-muted); margin: 0 0 36px; }
+.ctaActions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* Footer */
+.footer {
+  padding: 36px 32px; border-top: 1px solid var(--c-line);
+}
+.footerInner {
+  max-width: 1480px; margin: 0 auto;
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+.footerLogo {
+  font-family: var(--ff-display); font-size: 18px; font-weight: 500;
+  letter-spacing: -.02em;
+}
+.footerLogo em { font-style: italic; color: var(--c-accent); }
+.footerNote { font-size: 13px; color: var(--c-muted); margin: 0; }
+
+/* Ad slot placeholder */
+.adSlot {
+  margin-left: auto; padding: 8px 16px; border-radius: 6px;
+  border: 1px dashed var(--c-line); font-size: 11px;
+  color: var(--c-muted); font-family: var(--ff-mono);
+  letter-spacing: .06em; text-transform: uppercase;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  .featureGrid { grid-template-columns: 1fr 1fr; }
+  .steps { grid-template-columns: 1fr; gap: 28px; }
+}
+@media (max-width: 640px) {
+  .section { padding: 64px 18px; }
+  .title { margin-bottom: 36px; }
+  .featureGrid { grid-template-columns: 1fr; gap: 18px; }
+  .featureCard { padding: 24px; }
+  .ctaBanner { padding: 72px 18px; }
+  .footer { padding: 28px 18px; }
+  .footerInner { gap: 16px; }
+}
