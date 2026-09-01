@@ -124,25 +124,36 @@ export const HOME_ART = [
   TMDB_ART('/lxM6kqilAdpdhqUl2biYp5frUxE.jpg'),          // Jaws
   TMDB_ART('/qwi3p6PzKfQZ4YXBzv3CP5pO2dE.jpg'),          // Gravity Falls        <- colour cell
   RAWG_ART('da1/da1b267764d77221f07a4386b6548e5a.jpg'),  // Dark Souls III
-  OL_ART('15155833'),                                    // Harry Potter and the Philosopher's Stone
+  OL_ART('12882940'),                                    // Jurassic Park - Chip Kidd's jacket
   TMDB_ART('/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg'),          // Game of Thrones
   CAA_ART('08aa7a6c-3e43-4459-87b2-e47faf3a088a'),       // Currents - Tame Impala <- colour cell
   TMDB_ART('/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg'),          // The Shawshank Redemption
   RAWG_ART('8cd/8cd179c85bd3de8f79bef245b15075fb.jpg'),  // Machinarium
-  RAWG_ART('47b/47b50d880be8453bf9cda6e5c007bc26.jpg'),  // DOOM (1993)
+  TMDB_ART('/vfrQk5IPloGg1v9Rzbh2Eg3VGyM.jpg'),          // Alien (1979)
 ];
 
+// Book covers were chosen by looking at what Open Library actually returns,
+// not by title. The edition it serves is often a schools reprint rather than
+// the famous jacket - The Great Gatsby comes back as an Oxford OCR edition,
+// Nineteen Eighty-Four as a blank cloth binding. Jurassic Park comes back as
+// Chip Kidd's, which is the one worth having and survives the wall's
+// desaturation because its contrast is black-on-white rather than colour.
+//
 // Swaps that were considered and are one line each, kept here so the choice
 // is visible rather than forgotten:
+//   Jurassic Park <-> A Clockwork Orange  OL_ART('13151224')
+//                     The 1962 illustrated jacket, strong orange. Loses only
+//                     because orange goes muddy outside a colour cell.
+//                 <-> The Little Prince   OL_ART('10708272')
+//                 <-> Where the Wild Things Are  OL_ART('50842')
+//                     Landscape cover, so 2/3 crops it hard.
 //   Gravity Falls <-> The Office (US, 2005)
 //                     TMDB_ART('/7DJKHzAi83BmQrWLrYYOqcoKfhR.jpg')
-//                     Rejected on the art, not the show: five people against
-//                     white paper on a pale ground goes to mud once the wall
-//                     desaturates and darkens it.
+//                     Rejected on the art: five people against white paper on
+//                     a pale ground goes to mud once the wall darkens it.
 //   Machinarium   <-> ICO   RAWG_ART('3ef/3ef0dc5bda761da51de4dcb170dcf32a.jpg')
 //   Currents      <-> Dark Side of the Moon
 //                     CAA_ART('f5093c06-23e3-404f-aeaa-40f72885ee3a')
-//   The Hobbit        OL_ART('14627509') - dropped to make room for a third game
 
 export const BROWSE_COPY = {
   film: {
