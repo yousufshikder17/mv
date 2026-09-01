@@ -114,7 +114,8 @@ const MUSIC_ART = [
 // almost anyone can name on sight, across all five media types, which is the
 // one claim this page actually makes.
 const RAWG_ART = (path) => 'https://media.rawg.io/media/games/' + path;
-const OL_ART = (id) => 'https://covers.openlibrary.org/b/id/' + id + '-M.jpg';
+const OL_ART = (id, size = 'M') =>
+  'https://covers.openlibrary.org/b/id/' + id + '-' + size + '.jpg';
 
 // Order matters: .cell:nth-child(2) and (6) are the two cells the stylesheet
 // leaves in full colour, everything else is desaturated and darkened. The two
@@ -124,7 +125,7 @@ export const HOME_ART = [
   TMDB_ART('/lxM6kqilAdpdhqUl2biYp5frUxE.jpg'),          // Jaws
   TMDB_ART('/qwi3p6PzKfQZ4YXBzv3CP5pO2dE.jpg'),          // Gravity Falls        <- colour cell
   RAWG_ART('da1/da1b267764d77221f07a4386b6548e5a.jpg'),  // Dark Souls III
-  OL_ART('12882940'),                                    // Jurassic Park - Chip Kidd's jacket
+  OL_ART('14314120', 'L'),                               // The Great Gatsby - Cugat's Celestial Eyes
   TMDB_ART('/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg'),          // Game of Thrones
   CAA_ART('08aa7a6c-3e43-4459-87b2-e47faf3a088a'),       // Currents - Tame Impala <- colour cell
   TMDB_ART('/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg'),          // The Shawshank Redemption
@@ -132,18 +133,27 @@ export const HOME_ART = [
   TMDB_ART('/vfrQk5IPloGg1v9Rzbh2Eg3VGyM.jpg'),          // Alien (1979)
 ];
 
-// Book covers were chosen by looking at what Open Library actually returns,
-// not by title. The edition it serves is often a schools reprint rather than
-// the famous jacket - The Great Gatsby comes back as an Oxford OCR edition,
-// Nineteen Eighty-Four as a blank cloth binding. Jurassic Park comes back as
-// Chip Kidd's, which is the one worth having and survives the wall's
-// desaturation because its contrast is black-on-white rather than colour.
+// Book covers are chosen by cover id, after looking at the image. Searching
+// by title is not enough: Open Library serves whichever edition it holds, and
+// the first hit for The Great Gatsby is an Oxford schools reprint with no art
+// on it at all, while Nineteen Eighty-Four is a blank cloth binding.
+//
+// 14314120 is the 1925 first-edition jacket - Francis Cugat's Celestial Eyes,
+// the eyes and lips over the carnival lights. Requested by name as the iconic
+// one, and it is: probably the most recognised book cover ever made. Served at
+// -L because a large scan exists for this id, which is not true of every
+// cover; the hero cell is big enough for the difference to show.
 //
 // Swaps that were considered and are one line each, kept here so the choice
 // is visible rather than forgotten:
-//   Jurassic Park <-> A Clockwork Orange  OL_ART('13151224')
-//                     The 1962 illustrated jacket, strong orange. Loses only
-//                     because orange goes muddy outside a colour cell.
+//   Great Gatsby  <-> Jurassic Park      OL_ART('12882940')
+//                     Chip Kidd's jacket, black skeleton on white.
+//                 <-> A Clockwork Orange  OL_ART('13151224')
+//                     The 1962 illustrated jacket, strong orange. Goes muddy
+//                     outside one of the two colour cells.
+//                 <-> The Hobbit          OL_ART('14627509')
+//                     1960s Ballantine paperback. Warm, but three lines of
+//                     cover text and a busy oval read as clutter at this size.
 //                 <-> The Little Prince   OL_ART('10708272')
 //                 <-> Where the Wild Things Are  OL_ART('50842')
 //                     Landscape cover, so 2/3 crops it hard.
