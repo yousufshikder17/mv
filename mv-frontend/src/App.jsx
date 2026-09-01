@@ -7,6 +7,7 @@ import LandingPage    from './pages/LandingPage.jsx'
 import ItemPage       from './pages/ItemPage.jsx'
 import DealsPage      from './pages/DealsPage.jsx'
 import SearchPage     from './pages/SearchPage.jsx'
+import PrivacyPage    from './pages/PrivacyPage.jsx'
 import BrowsePage     from './pages/BrowsePage.jsx'
 import LoginPage      from './pages/LoginPage.jsx'
 import RegisterPage   from './pages/RegisterPage.jsx'
@@ -58,6 +59,7 @@ export default function App() {
         {/* Public. The query lives in the URL so a search can be shared,
             bookmarked and reached with the back button. */}
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         {/* Public. A deal is a link - browsing needs no account, and only
             voting writes a row (M7). */}
         <Route path="/deals" element={<DealsPage showToast={showToast} />} />

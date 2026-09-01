@@ -1,0 +1,42 @@
+.page { max-width: 720px; margin: 0 auto; padding: 44px 32px 80px; }
+
+.head { margin-bottom: 36px; }
+
+.eyebrow {
+  font-family: var(--ff-mono); font-size: 11px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--c-accent); margin: 0 0 12px;
+}
+
+.h1 {
+  font-family: var(--ff-display); font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.1; letter-spacing: -.03em; font-weight: 400; margin: 0 0 10px;
+}
+
+.updated { font-family: var(--ff-mono); font-size: 11px; color: var(--c-muted); margin: 0; }
+
+.section { margin-bottom: 34px; }
+
+.h2 {
+  font-family: var(--ff-display); font-size: 19px; font-weight: 500;
+  letter-spacing: -.01em; margin: 0 0 12px;
+}
+
+.section p {
+  font-size: 15px; line-height: 1.7; color: var(--c-fg); margin: 0 0 12px;
+}
+
+.section p b { font-weight: 600; }
+
+.list { margin: 0 0 12px; padding-left: 20px; }
+.list li { font-size: 15px; line-height: 1.7; margin-bottom: 5px; }
+
+.section code {
+  font-family: var(--ff-mono); font-size: 13px;
+  padding: 1px 5px; border-radius: 4px;
+  background: var(--c-faint); color: var(--c-accent);
+}
+
+.foot { padding-top: 24px; border-top: 1px solid var(--c-line); }
+.link { color: var(--c-accent); font-size: 14px; }
+
+@media (max-width: 640px) { .page { padding: 32px 18px 64px; } }

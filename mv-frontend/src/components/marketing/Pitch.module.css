@@ -107,3 +107,6 @@
   .footer { padding: 28px 18px; }
   .footerInner { gap: 16px; }
 }
+
+.footerLink { font-size: 13px; color: var(--c-muted); text-decoration: none; }
+.footerLink:hover { color: var(--c-accent); }

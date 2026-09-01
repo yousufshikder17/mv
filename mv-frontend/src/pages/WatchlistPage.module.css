@@ -150,9 +150,23 @@
 /* Responsive */
 @media (max-width: 720px) {
   .hero    { padding: 32px 18px 20px; }
-  .toolbar { padding: 12px 18px; gap: 8px; }
-  .filterTabs { display: none; }
+  .toolbar { padding: 12px 18px; gap: 8px; flex-wrap: wrap; }
   .searchInput { width: 160px; }
   .feed    { padding: 10px 18px 60px; }
   .stats   { gap: 22px; }
+
+  /* These used to be hidden here, which made filtering by status impossible
+     on a phone with nothing offered in its place. They scroll instead: the
+     row keeps every option reachable and simply runs off the edge. */
+  .filterTabs {
+    order: 3;
+    flex-basis: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* Bleed to the edge so the strip reads as scrollable rather than clipped. */
+    margin: 0 -18px;
+    padding: 0 18px;
+  }
+  .filterTabs::-webkit-scrollbar { display: none; }
+  .filterTab { white-space: nowrap; }
 }

@@ -73,8 +73,16 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
+    // Same attributes generateToken sets, minus the value.
+    //
+    // A cookie is identified by name AND its path/domain/sameSite/secure
+    // attributes, so clearing it with a different set writes a SECOND cookie
+    // instead of overwriting the first - and the session cookie survives the
+    // logout it was supposed to end.
     res.cookie("jwt", "", {
         httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Strict",
         expires: new Date(0),
     });
     res.status(200).json({

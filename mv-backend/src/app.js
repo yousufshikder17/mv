@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import apiLimiter from "./middleware/rateLimiter.js";
 import movieRoutes from "./routes/movieRoutes.js";
@@ -24,6 +25,49 @@ export const createApp = () => {
     // So express-rate-limit and req.ip see the real client address behind a
     // proxy rather than the proxy's own.
     app.set("trust proxy", 1);
+
+    // Security headers. HSTS, no-sniff, frame-deny, referrer policy and a CSP.
+    //
+    // The CSP is written out rather than left on helmet's default, because the
+    // default img-src is 'self' and every cover on this site comes from
+    // somebody else's CDN - TMDB, RAWG, Open Library, the Cover Art Archive
+    // and iTunes. Leaving it default would ship a site with no images.
+    //
+    // Each entry here corresponds to an adapter. Adding a media source means
+    // adding its image host, and if that is forgotten the covers vanish
+    // loudly rather than the policy silently permitting everything.
+    app.use(
+        helmet({
+            contentSecurityPolicy: {
+                directives: {
+                    defaultSrc: ["'self'"],
+                    // 'unsafe-inline' for style attributes: React writes them
+                    // for the hero's animation delays and per-cover zoom.
+                    styleSrc: ["'self'", "'unsafe-inline'"],
+                    scriptSrc: ["'self'"],
+                    imgSrc: [
+                        "'self'",
+                        "data:",
+                        "https://image.tmdb.org",        // films, TV
+                        "https://media.rawg.io",         // games
+                        "https://covers.openlibrary.org",// books
+                        "https://coverartarchive.org",   // albums
+                        "https://archive.org",           // where the CAA redirects
+                        "https://*.mzstatic.com",        // iTunes artwork fallback
+                    ],
+                    connectSrc: ["'self'"],
+                    fontSrc: ["'self'", "data:"],
+                    objectSrc: ["'none'"],
+                    frameAncestors: ["'self'"],
+                    upgradeInsecureRequests: [],
+                },
+            },
+            // The API serves images and JSON to its own frontend; the default
+            // same-origin policy would block the SPA's own asset requests when
+            // frontend and API are deployed on different hosts.
+            crossOriginResourcePolicy: { policy: "cross-origin" },
+        }),
+    );
 
     // Hardcoding localhost blocked every deployed frontend, which matters now
     // that M3 serves public pages. Comma-separated CORS_ORIGINS in .env, with

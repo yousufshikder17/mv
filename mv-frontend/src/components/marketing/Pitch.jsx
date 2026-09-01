@@ -92,6 +92,7 @@ export default function Pitch({ label, features, cta, footerNote, type = null })
         <div className={styles.footerInner}>
           <span className={styles.footerLogo}>◆ <em>mv</em></span>
           <p className={styles.footerNote}>{footerNote}</p>
+          <Link to="/privacy" className={styles.footerLink}>Privacy</Link>
           {/* Credits the source this page actually used, not a fixed list. */}
           <SourceCredit type={type} />
           {/* Ad slot — SPEC §1: NOT BUILT. Ads would make the project

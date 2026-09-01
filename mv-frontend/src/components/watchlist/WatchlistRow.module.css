@@ -38,12 +38,32 @@
 }
 .toggleBtnOn { background: var(--c-accent) !important; color: var(--c-bg) !important; border-color: var(--c-accent) !important; }
 
+/* Nothing below here hides a control.
+   Rating and status used to disappear at 900px and the watch button at 640px,
+   which left a phone showing a list it could not read or act on. They move
+   instead: rating and status wrap under the title, the button shrinks to a
+   44px target. */
 @media (max-width: 900px) {
-  .row { grid-template-columns: 52px 1fr auto; }
-  .ratingCol, .statusCol { display: none; }
+  .row { grid-template-columns: 52px 1fr auto; align-items: start; }
   .genres { display: none; }
+  .ratingCol, .statusCol {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: 6px;
+  }
 }
+
 @media (max-width: 640px) {
-  .row { grid-template-columns: 52px 1fr; }
-  .actions { display: none; }
+  /* 44px is the accessibility floor for a touch target, and marking something
+     watched is the one thing this view exists to do. */
+  .toggleBtn {
+    min-width: 44px; min-height: 44px;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0;
+    /* The label stays in the accessibility tree; only its glyph is swapped,
+       so a screen reader still hears "Watched" rather than a tick. */
+    font-size: 0;
+  }
+  .toggleBtn::after { content: '+'; font-size: 18px; line-height: 1; }
+  .toggleBtnOn::after { content: '✓'; }
 }
