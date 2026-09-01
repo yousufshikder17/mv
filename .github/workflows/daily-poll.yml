@@ -35,7 +35,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # 24, matching development. Not cosmetic: the adapters are .ts and
+          # are imported directly, which needs Node's native type stripping -
+          # unflagged from 23.6, absent on 22. With --omit=dev there is no tsx
+          # to fall back on, so this job could never have run on 22.
+          #
+          # It also settles the npm mismatch. npm 10 on Node 22 resolved
+          # esbuild differently from npm 11 here and rejected a lock file that
+          # validates cleanly locally.
+          node-version: 24
           cache: npm
           cache-dependency-path: mv-backend/package-lock.json
 
