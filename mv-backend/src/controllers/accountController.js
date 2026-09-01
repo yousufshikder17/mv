@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { db } from '../config/db.js';
 import {
@@ -112,4 +113,53 @@ export const updatePrivacy = async (req, res) => {
         .returning({ id: users.id, profilePublic: users.profilePublic, bio: users.bio });
 
     return res.status(200).json({ status: 'Success', data: { user } });
+};
+
+/**
+ * DELETE /account { password } - GDPR Article 17, the right to erasure.
+ *
+ * The privacy page promised this before it existed. That is the same class of
+ * problem as a leak: a written guarantee the code does not keep.
+ *
+ * The password is required again even though the caller is already
+ * authenticated. Deleting an account is irreversible and there is no undo, so
+ * a token lifted from a shared machine should not be enough to do it - this is
+ * the one action worth asking twice for.
+ *
+ * The delete itself is a single row. Every table that references a user
+ * cascades (verified: twelve foreign keys, all ON DELETE CASCADE), so tracking
+ * items, reviews, votes, comments, lists, list items, follows in both
+ * directions, season ratings, alerts, notifications, push subscriptions and
+ * deal votes all go with it.
+ *
+ * Shared catalogue rows stay. A film is not anyone's personal data, and
+ * removing it would delete other people's history along with this account's.
+ */
+export const deleteAccount = async (req, res) => {
+    const password = req.body?.password;
+    if (typeof password !== 'string' || !password) {
+        return res.status(400).json({ error: 'Your password is required to delete your account' });
+    }
+
+    const [user] = await db
+        .select({ id: users.id, password: users.password })
+        .from(users).where(eq(users.id, req.user.id)).limit(1);
+
+    if (!user) return res.status(404).json({ error: 'Account not found' });
+
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) return res.status(401).json({ error: 'That password is not correct' });
+
+    await db.delete(users).where(eq(users.id, user.id));
+
+    // Clear the session cookie with the attributes it was set with, or it
+    // survives the account it belonged to.
+    res.cookie('jwt', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        expires: new Date(0),
+    });
+
+    return res.status(200).json({ status: 'Success', message: 'Account deleted' });
 };
