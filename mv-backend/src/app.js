@@ -43,7 +43,10 @@ export const createApp = () => {
                     defaultSrc: ["'self'"],
                     // 'unsafe-inline' for style attributes: React writes them
                     // for the hero's animation delays and per-cover zoom.
-                    styleSrc: ["'self'", "'unsafe-inline'"],
+                    // Google Fonts serves the three typefaces index.html asks
+                    // for - without it the whole site falls back to system
+                    // fonts, silently, only in production.
+                    styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
                     scriptSrc: ["'self'"],
                     imgSrc: [
                         "'self'",
@@ -52,11 +55,18 @@ export const createApp = () => {
                         "https://media.rawg.io",         // games
                         "https://covers.openlibrary.org",// books
                         "https://coverartarchive.org",   // albums
-                        "https://archive.org",           // where the CAA redirects
+                        // Open Library and the Cover Art Archive both 302 to
+                        // archive.org, which redirects AGAIN to a numbered
+                        // node - ia600703.us.archive.org, dn711004.ca... - and
+                        // CSP is enforced against the final target, so the
+                        // wildcard is required rather than tidy.
+                        "https://archive.org",
+                        "https://*.archive.org",
                         "https://*.mzstatic.com",        // iTunes artwork fallback
                     ],
                     connectSrc: ["'self'"],
-                    fontSrc: ["'self'", "data:"],
+                    // The font FILES come from gstatic, not googleapis.
+                    fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
                     objectSrc: ["'none'"],
                     frameAncestors: ["'self'"],
                     upgradeInsecureRequests: [],

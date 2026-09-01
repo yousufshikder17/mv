@@ -26,9 +26,22 @@ describe('security headers', () => {
             'https://covers.openlibrary.org',
             'https://coverartarchive.org',
             'https://*.mzstatic.com',
+            // Both cover hosts redirect to numbered archive.org nodes, and CSP
+            // is enforced against the final target. Verified in a real browser:
+            // without this, every book and album cover is blocked.
+            'https://*.archive.org',
         ]) {
             expect(csp).toContain(host);
         }
+    });
+
+    it('allows the webfonts index.html asks for', async () => {
+        // Missing these does not error anywhere obvious - the site just falls
+        // back to system fonts, in production only. Caught by loading a real
+        // browser against the built bundle, not by reading the header.
+        const csp = (await api().get('/movies/variety')).headers['content-security-policy'];
+        expect(csp).toContain('https://fonts.googleapis.com');
+        expect(csp).toContain('https://fonts.gstatic.com');
     });
 
     it('does not permit inline or remote script', async () => {
