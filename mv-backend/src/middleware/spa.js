@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import express from 'express';
@@ -84,7 +85,18 @@ export const injectMeta = (html, tags) =>
 const wantsHtml = (req) => String(req.headers.accept ?? '').includes('text/html');
 
 export const mountSpa = (app) => {
-    const dist = path.resolve(process.env.FRONTEND_DIST ?? '../mv-frontend/dist');
+    // Resolved from THIS FILE, not the working directory.
+    //
+    // path.resolve('../mv-frontend/dist') resolves against process.cwd(), so
+    // it only found the build when the process happened to start inside
+    // mv-backend. A host that starts the server from the repository root
+    // would resolve it one level above the repo, find nothing, and mountSpa
+    // would return false - which looks like "the API works and every page
+    // 404s" rather than an error.
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    const dist = path.resolve(
+        process.env.FRONTEND_DIST ?? path.join(here, '..', '..', '..', 'mv-frontend', 'dist'),
+    );
 
     // In development Vite serves the frontend on its own port, so there is no
     // build to serve and this does nothing.

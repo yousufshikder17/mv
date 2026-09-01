@@ -7,7 +7,14 @@ import axios from 'axios'
 // An empty string is meaningful: when the backend serves the built SPA from
 // its own origin (see spa.js), relative URLs are correct and any absolute one
 // would be wrong.
-const baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:5001'
+// The production default is a RELATIVE base, because the backend serves this
+// bundle from its own origin. Falling back to localhost there would bake the
+// developer's machine into the deployed build - and it would only surface as
+// every request failing in a browser that is not this one.
+//
+// Dev still needs the absolute URL: Vite serves on 5173, the API on 5001.
+const baseURL = import.meta.env.VITE_API_URL
+  ?? (import.meta.env.DEV ? 'http://localhost:5001' : '')
 
 export { baseURL }
 
