@@ -15,6 +15,17 @@ good as the history behind them.
 Run once, in an **Administrator** PowerShell:
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Users\yousu\Projects\Watchlist Platform\mv\mv-backend\scripts\register-poll-task.ps1"
+```
+
+That script is the block below. It checks it is elevated before it starts,
+rather than failing with an access-denied at the last step, and re-running it
+replaces the task, so running it twice is safe.
+
+<details>
+<summary>What it does</summary>
+
+```powershell
 $dir     = "C:\Users\yousu\Projects\Watchlist Platform\mv\mv-backend"
 $action  = New-ScheduledTaskAction -Execute "cmd.exe" `
              -Argument "/c `"$dir\scripts\poll-daily.cmd`"" -WorkingDirectory $dir
@@ -33,6 +44,8 @@ $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" 
 Register-ScheduledTask -TaskName "mv-daily-poll" -Description "Media Vault price poll" `
   -Action $action -Trigger $trigger -Settings $settings -Principal $principal
 ```
+
+</details>
 
 ### No console window
 
