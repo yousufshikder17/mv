@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="mv">
+  <!-- The topbar mark, lifted: the accent diamond on the app's dark ground.
+       Drawn as a path rather than the ◆ glyph, because a favicon cannot rely
+       on a font being available. Wordmark omitted deliberately - "mv" in
+       italic Fraunces is illegible at 16px, and the diamond is the part that
+       is recognisable small. -->
+  <rect width="32" height="32" rx="7" fill="#0f1012"/>
+  <path d="M16 5 L25.5 16 L16 27 L6.5 16 Z" fill="#d4a853"/>
+</svg>
